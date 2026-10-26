@@ -271,6 +271,7 @@ jobs:
           REF=$(echo "$STREAM_DATA" | jq -r '.referer')
           COOKIE=$(echo "$STREAM_DATA" | jq -r '.cookie')
           
+          # إضافة omit_endlist لمنع المشغل من التوقف عند انقطاع المصدر
           CMD="ffmpeg -nostdin -loglevel error -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 5 -fflags +genpts+discardcorrupt"
           
           if [ "$UA" != "" ] && [ "$UA" != "null" ]; then
@@ -290,20 +291,25 @@ jobs:
             CMD="$CMD -headers \\"$HEADERS\\""
           fi
           
-          # فرمتة التوقيت لضمان عدم تكرار الأسماء واختراق كاش جيت هاب
-          CMD="$CMD -i \\"$SOURCE\\" -map 0:v:0? -map 0:a:0? -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments+temp_file -avoid_negative_ts make_zero -strftime 1 -hls_segment_filename \\"live_stream/segment_%s.png\\" live_stream/index.m3u8"
+          CMD="$CMD -i \\"$SOURCE\\" -map 0:v:0? -map 0:a:0? -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments+temp_file+omit_endlist -avoid_negative_ts make_zero -strftime 1 -hls_segment_filename \\"live_stream/segment_%s.png\\" live_stream/index.m3u8"
           
           eval "$CMD" &
           PID=$!
           
-          for i in {1..30}; do
-            sleep 10
+          # حلقة لا نهائية للرفع ونظام الإنعاش التلقائي للمحرك
+          while true; do
+            sleep 8
             
             CURRENT_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
             if [ "$CURRENT_STATUS" == "stopped" ]; then
-              echo "Stop command received! Stopping FFmpeg..."
-              kill $PID
+              kill -9 $PID 2>/dev/null || true
               break
+            fi
+            
+            # فحص نبض المحرك، وإذا توقف بسبب المصدر يعاد تشغيله فوراً
+            if ! kill -0 $PID 2>/dev/null; then
+              eval "$CMD" &
+              PID=$!
             fi
             
             git add live_stream/ || true
