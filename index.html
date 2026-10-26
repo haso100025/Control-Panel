@@ -63,17 +63,15 @@
     </div>
 
     <script>
-        // ==========================================
-        // 🔴 ضع إعدادات Firebase الخاصة بك هنا 🔴
-        // ==========================================
+        // تم ربط بيانات Firebase الخاصة بك هنا آلياً
         const firebaseConfig = {
-            apiKey: "ضع_مفتاحك_هنا",
-            authDomain: "ضع_الدومين_هنا",
-            databaseURL: "ضع_رابط_قاعدة_البيانات_هنا",
-            projectId: "ضع_معرف_المشروع_هنا",
-            storageBucket: "ضع_مخزن_البيانات_هنا",
-            messagingSenderId: "ضع_الرقم_هنا",
-            appId: "ضع_معرف_التطبيق_هنا"
+            apiKey: "AIzaSyCNLovuI6IOGsl2BrIgN9CImS4FgfY9xuY",
+            authDomain: "floating-project-afc8f.firebaseapp.com",
+            databaseURL: "https://floating-project-afc8f-default-rtdb.firebaseio.com",
+            projectId: "floating-project-afc8f",
+            storageBucket: "floating-project-afc8f.firebasestorage.app",
+            messagingSenderId: "937631435290",
+            appId: "1:937631435290:web:127c41f413b2d34d6a1fa3"
         };
 
         // تهيئة Firebase
@@ -96,19 +94,16 @@
             alert("تم ربط الدومين الجديد بجميع الحسابات بنجاح!");
         }
 
-        // 3. زرع السكربت في حساب GitHub جديد (الهيكل الأساسي)
+        // 3. زرع السكربت في حساب GitHub جديد 
         async function plantScript() {
             const token = document.getElementById("githubToken").value;
             if(!token) return alert("يرجى إدخال Token!");
-            
-            // هنا سيتم وضع كود الاتصال بـ GitHub API لإنشاء المستودع ورفع القالب (في الخطوة 2)
-            // حالياً سنقوم بحفظ الحساب في Firebase كعامل جديد لتبدأ مراقبته
             
             const workerId = 'worker_' + Math.random().toString(36).substr(2, 9);
             db.ref('workers/' + workerId).set({
                 token: token,
                 status: 'active',
-                trafficUsage: 0, // يبدأ من 0%
+                trafficUsage: 0, 
                 speed: 'ممتاز'
             });
             
@@ -116,7 +111,7 @@
             alert("تم ربط الحساب وزرع السكربت بنجاح!");
         }
 
-        // 4. مراقبة الحسابات (Dashboard) ونظام الحماية (95%)
+        // 4. مراقبة الحسابات (Dashboard) ونظام الحماية
         db.ref('workers').on('value', (snapshot) => {
             const workersTable = document.getElementById('workersTable');
             workersTable.innerHTML = '';
@@ -125,13 +120,12 @@
                 const worker = childSnapshot.val();
                 const workerId = childSnapshot.key;
                 
-                // نظام الحماية التلقائي: إيقاف الحساب إذا وصل 95%
+                // نظام الحماية التلقائي
                 if (worker.trafficUsage >= 95 && worker.status === 'active') {
                     db.ref('workers/' + workerId + '/status').set('paused');
                     alert(`⚠️ تم إيقاف الحساب ${workerId} مؤقتاً لحمايته من الحظر (وصل ${worker.trafficUsage}%) وتم تحويل الضغط!`);
                 }
 
-                // تحديد لون الحالة
                 const statusColor = worker.status === 'active' ? 'text-green-400' : 'text-red-400';
                 const statusText = worker.status === 'active' ? 'نشط 🟢' : 'متوقف مؤقتاً 🔴';
                 const btnAction = worker.status === 'active' ? 'إيقاف مؤقت' : 'إعادة تشغيل';
