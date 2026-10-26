@@ -235,7 +235,7 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                // الكود المصحح والمحمي بالكامل ضد أخطاء YAML
+                // تم إضافة || true بجانب git add لمنع توقف المحرك
                 const workflowContent = `name: Smart FFmpeg Engine
 on:
   workflow_dispatch:
@@ -302,7 +302,7 @@ jobs:
               break
             fi
             
-            git add live_stream/*
+            git add live_stream/ || true
             git commit -m "Update stream" || true
             git push origin main || true
           done
