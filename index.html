@@ -235,6 +235,7 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
+                // النسخة الثابتة والمباشرة (Static Build) التي لا تتعلق أبداً
                 const workflowContent = `name: Smart FFmpeg Engine
 on:
   workflow_dispatch:
@@ -247,8 +248,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install Dependencies (FFmpeg & jq)
-        run: sudo apt-get update && sudo apt-get install -y jq ffmpeg
+      - name: Install Static FFmpeg & jq (Bypass Ubuntu Servers)
+        run: |
+          sudo curl -sL -o /usr/local/bin/jq https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux64
+          sudo chmod +x /usr/local/bin/jq
+          wget -q https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+          tar xf ffmpeg-release-amd64-static.tar.xz
+          sudo mv ffmpeg-*-static/ffmpeg /usr/local/bin/
 
       - name: Process Smart Stream
         run: |
