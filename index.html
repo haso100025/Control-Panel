@@ -3,57 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم النظام العائم (العقل المدبر)</title>
+    <title>TERMINAL - TimeShift Master</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- مكتبات Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- مكتبة HLS.js لتشغيل البث داخل اللوحة -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <style>
+        /* ستايل الهاكر المخصص */
+        body {
+            background-color: #050505;
+            color: #0f0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .neon-border {
+            border: 1px solid #0f0;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+        }
+        .neon-text {
+            text-shadow: 0 0 5px #0f0;
+        }
+        .btn-hack {
+            background-color: #000;
+            border: 1px solid #0f0;
+            color: #0f0;
+            transition: all 0.3s;
+        }
+        .btn-hack:hover {
+            background-color: #0f0;
+            color: #000;
+            box-shadow: 0 0 15px #0f0;
+        }
+        .btn-alert {
+            background-color: #000;
+            border: 1px solid #f00;
+            color: #f00;
+        }
+        .btn-alert:hover {
+            background-color: #f00;
+            color: #000;
+            box-shadow: 0 0 15px #f00;
+        }
+        input {
+            background-color: #0a0a0a !important;
+            border: 1px solid #0f0 !important;
+            color: #0f0 !important;
+        }
+        input:focus {
+            box-shadow: 0 0 10px #0f0;
+            outline: none;
+        }
+        /* تصميم عداد السيارة الدائري */
+        .gauge-container {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #111;
+            margin: 0 auto;
+        }
+        .gauge-inner {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #050505;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white font-sans p-6">
+<body class="p-6">
 
     <div class="max-w-6xl mx-auto">
-        <h1 class="text-3xl font-bold text-blue-400 mb-8 text-center">🎛️ غرفة العمليات - النظام العائم</h1>
+        <h1 class="text-4xl font-bold mb-8 text-center neon-text">> SYSTEM_MASTER :: TIME_SHIFT_PROTOCOL _</h1>
 
-        <!-- 1. قسم مصدر البث -->
-        <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6 border border-gray-700">
-            <h2 class="text-xl font-semibold mb-4 text-green-400">1. مصدر البث (الرابط الأصلي)</h2>
-            <div class="flex gap-4">
-                <input type="text" id="sourceLink" placeholder="ضع رابط .m3u8 أو .ts الأصلي هنا..." class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-blue-500">
-                <button onclick="updateSource()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded transition flex-shrink-0">حفظ المصدر في القاعدة</button>
+        <!-- 1. قسم مصدر البث وشاشة العرض -->
+        <div class="neon-border p-6 rounded mb-6">
+            <h2 class="text-xl font-bold mb-4">> [1] SOURCE_STREAM_CONTROL</h2>
+            <div class="flex gap-4 mb-4">
+                <input type="text" id="sourceLink" placeholder="Enter .m3u8 or .ts target..." class="w-full p-3 rounded">
+                <button onclick="updateSource()" class="btn-hack font-bold py-3 px-6 rounded flex-shrink-0">[ INJECT_SOURCE ]</button>
             </div>
             
-            <!-- الزر الجديد لتشغيل جميع العمال وتوزيع الأحمال -->
-            <button onclick="startAllWorkers()" class="w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded transition shadow-lg animate-pulse">
-                🚀 إطلاق البث وتوزيع الأحمال على جميع العمال فوراً
+            <!-- شاشة عرض البث المباشر -->
+            <div class="w-full bg-black neon-border rounded overflow-hidden relative">
+                <div class="absolute top-2 left-2 text-xs opacity-70 z-10">> LIVE_MONITORING...</div>
+                <video id="previewPlayer" controls class="w-full h-64 bg-black object-contain"></video>
+            </div>
+            
+            <!-- زر الاستنفار العام -->
+            <button onclick="startAllWorkers()" class="w-full mt-4 btn-alert font-bold py-3 px-6 rounded animate-pulse">
+                [!] EXECUTE_MASS_STREAMING_PROTOCOL (ALL_WORKERS) [!]
             </button>
         </div>
 
         <!-- 2. قسم استبدال الدومين -->
-        <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6 border border-gray-700">
-            <h2 class="text-xl font-semibold mb-4 text-yellow-400">2. دومين الطوارئ (Cloudflare Worker)</h2>
+        <div class="neon-border p-6 rounded mb-6">
+            <h2 class="text-xl font-bold mb-4">> [2] CLOUDFLARE_NODE_ROUTING</h2>
             <div class="flex gap-4">
-                <input type="text" id="cfDomain" placeholder="مثال: https://worker-name.username.workers.dev" class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-blue-500">
-                <button onclick="updateDomain()" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded transition flex-shrink-0">استبدال وربط فوري</button>
+                <input type="text" id="cfDomain" placeholder="https://worker-node.workers.dev..." class="w-full p-3 rounded">
+                <button onclick="updateDomain()" class="btn-hack font-bold py-3 px-6 rounded flex-shrink-0">[ BIND_NODE ]</button>
             </div>
         </div>
 
         <!-- 3. قسم إدارة العمال -->
-        <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
-            <h2 class="text-xl font-semibold mb-4 text-purple-400">3. إدارة العمال (الزرع والتشغيل)</h2>
+        <div class="neon-border p-6 rounded">
+            <h2 class="text-xl font-bold mb-4">> [3] WORKER_DRONES_MANAGEMENT</h2>
             
             <div class="flex gap-4 mb-6">
-                <input type="text" id="githubToken" placeholder="ضع الـ API Token للحساب الفرعي هنا..." class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-blue-500">
-                <button onclick="plantScript()" id="plantBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded transition flex-shrink-0">زرع المحرك (FFmpeg)</button>
+                <input type="text" id="githubToken" placeholder="Insert Worker API Token..." class="w-full p-3 rounded">
+                <button onclick="plantScript()" id="plantBtn" class="btn-hack font-bold py-3 px-6 rounded flex-shrink-0">[ DEPLOY_FFMPEG_ENGINE ]</button>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-right border-collapse">
+                <table class="w-full text-center border-collapse">
                     <thead>
-                        <tr class="bg-gray-700 text-gray-300">
-                            <th class="p-3 border border-gray-600">الحساب (Username)</th>
-                            <th class="p-3 border border-gray-600">المستودع</th>
-                            <th class="p-3 border border-gray-600">تشغيل فردي</th>
-                            <th class="p-3 border border-gray-600">الترافيك</th>
-                            <th class="p-3 border border-gray-600">الإجراء</th>
+                        <tr class="border-b border-green-500 text-green-400">
+                            <th class="p-3">> TARGET_ID</th>
+                            <th class="p-3">> REPOSITORY</th>
+                            <th class="p-3">> INDIVIDUAL_EXEC</th>
+                            <th class="p-3">> LOAD_METER</th>
+                            <th class="p-3">> ACTION</th>
                         </tr>
                     </thead>
                     <tbody id="workersTable"></tbody>
@@ -76,18 +155,40 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // دالة تشغيل الفيديو في اللوحة
+        function playVideo(url) {
+            const video = document.getElementById('previewPlayer');
+            if (Hls.isSupported() && url.includes('.m3u8')) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play();
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+                video.addEventListener('loadedmetadata', function() {
+                    video.play();
+                });
+            } else {
+                video.src = url; // صيغ أخرى مثل MP4
+                video.play();
+            }
+        }
+
         function updateSource() {
             const link = document.getElementById("sourceLink").value;
-            if(!link) return alert("يرجى إدخال رابط البث!");
+            if(!link) return alert("> ERROR: NO_SOURCE_PROVIDED");
             db.ref('settings/source').set(link);
-            alert("تم حفظ رابط البث في قاعدة البيانات!");
+            playVideo(link); // تشغيل البث أمامك
+            alert("> SUCCESS: SOURCE_INJECTED_TO_DATABASE");
         }
 
         function updateDomain() {
             const domain = document.getElementById("cfDomain").value;
-            if(!domain) return alert("يرجى إدخال الرابط!");
+            if(!domain) return alert("> ERROR: NO_DOMAIN_PROVIDED");
             db.ref('settings/domain').set(domain);
-            alert("تم ربط الدومين الجديد!");
+            alert("> SUCCESS: NODE_ROUTING_UPDATED");
         }
 
         function encodeBase64(str) {
@@ -96,17 +197,17 @@
 
         async function plantScript() {
             const token = document.getElementById("githubToken").value.trim();
-            if(!token) return alert("يرجى إدخال Token!");
+            if(!token) return alert("> ERROR: TOKEN_REQUIRED");
             
             const btn = document.getElementById("plantBtn");
-            btn.innerText = "جاري الاتصال والزرع...";
+            btn.innerText = "[ DEPLOYING... ]";
             btn.disabled = true;
 
             try {
                 const userRes = await fetch("https://api.github.com/user", {
                     headers: { "Authorization": `token ${token}` }
                 });
-                if (!userRes.ok) throw new Error("التوكن غير صحيح.");
+                if (!userRes.ok) throw new Error("INVALID_TOKEN");
                 const userData = await userRes.json();
                 const username = userData.login;
 
@@ -119,11 +220,7 @@
                         "Authorization": `token ${token}`,
                         "Accept": "application/vnd.github.v3+json"
                     },
-                    body: JSON.stringify({ 
-                        name: repoName, 
-                        private: false, 
-                        auto_init: true
-                    })
+                    body: JSON.stringify({ name: repoName, private: false, auto_init: true })
                 });
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
@@ -147,21 +244,18 @@ jobs:
           git config --global user.email "worker@timeshift.local"
           mkdir -p live_stream
           
-          echo "Fetching source link from Firebase..."
+          echo "Fetching source..."
           SOURCE_URL=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/source.json | tr -d '"')
           
           if [ "$SOURCE_URL" != "null" ] && [ -n "$SOURCE_URL" ]; then
-            echo "Processing stream..."
             ffmpeg -i "$SOURCE_URL" -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename "live_stream/segment_%03d.png" live_stream/index.m3u8 &
             
             for i in {1..30}; do
               sleep 10
               git add live_stream/*
-              git commit -m "Update stream segments" || true
+              git commit -m "Update stream" || true
               git push origin main || true
             done
-          else
-            echo "No source URL found!"
           fi
 `;
                 
@@ -171,34 +265,29 @@ jobs:
                         "Authorization": `token ${token}`,
                         "Accept": "application/vnd.github.v3+json"
                     },
-                    body: JSON.stringify({
-                        message: "Planting FFmpeg Engine",
-                        content: encodeBase64(workflowContent)
-                    })
+                    body: JSON.stringify({ message: "Init Engine", content: encodeBase64(workflowContent) })
                 });
 
                 db.ref('workers/' + username + '_' + randomId).set({
                     token: token,
                     status: 'active',
-                    trafficUsage: 0,
+                    trafficUsage: Math.floor(Math.random() * 15), // قيمة ابتدائية للتجربة
                     repo: repoName,
                     username: username
                 });
                 
                 document.getElementById("githubToken").value = '';
-                alert(`✅ تم زرع المحرك (FFmpeg) بنجاح في المستودع الجديد: ${repoName}`);
+                alert(`> SUCCESS: WORKER_DEPLOYED [${repoName}]`);
 
             } catch (error) {
-                alert("❌ حدث خطأ: " + error.message);
+                alert("> ERROR: " + error.message);
             } finally {
-                btn.innerText = "زرع المحرك (FFmpeg)";
+                btn.innerText = "[ DEPLOY_FFMPEG_ENGINE ]";
                 btn.disabled = false;
             }
         }
 
-        // تشغيل عامل واحد فقط يدوياً (للاختبار)
         async function startWorkerAction(username, repo, token) {
-            alert("جاري إرسال أمر التشغيل للخادم...");
             try {
                 const res = await fetch(`https://api.github.com/repos/${username}/${repo}/actions/workflows/engine.yml/dispatches`, {
                     method: "POST",
@@ -208,40 +297,29 @@ jobs:
                     },
                     body: JSON.stringify({ ref: "main" })
                 });
-                if(res.ok || res.status === 204) {
-                    alert("🚀 بدأ التحويل الآن في هذا الحساب!");
-                } else {
-                    alert("لم يتم التشغيل، تأكد من تحديث رابط البث أولاً.");
-                }
-            } catch(e) {
-                alert("خطأ في التشغيل: " + e.message);
-            }
+                if(res.ok || res.status === 204) alert(`> WORKER [${username}] STARTED`);
+            } catch(e) {}
         }
 
-        // دالة تشغيل كل العمال لتوزيع الأحمال بالتساوي
         async function startAllWorkers() {
             const workersRef = await db.ref('workers').once('value');
             const workers = workersRef.val();
-            if (!workers) return alert("لا يوجد عمال متاحين للتشغيل!");
-
-            alert("جاري إرسال أمر الاستنفار العام لتشغيل كل العمال معاً...");
+            if (!workers) return alert("> ERROR: NO_WORKERS_FOUND");
             
             for (let key in workers) {
                 let worker = workers[key];
                 if (worker.status === 'active') {
                     fetch(`https://api.github.com/repos/${worker.username}/${worker.repo}/actions/workflows/engine.yml/dispatches`, {
                         method: "POST",
-                        headers: {
-                            "Authorization": `token ${worker.token}`,
-                            "Accept": "application/vnd.github.v3+json"
-                        },
+                        headers: { "Authorization": `token ${worker.token}`, "Accept": "application/vnd.github.v3+json" },
                         body: JSON.stringify({ ref: "main" })
-                    }).catch(e => console.log("Error starting:", worker.username));
+                    }).catch(e => {});
                 }
             }
-            alert("✅ تم إطلاق المحركات! جميع العمال يعملون الآن بالتوازي لتوزيع الأحمال بذكاء.");
+            alert("> SUCCESS: MASS_EXECUTION_COMMAND_SENT_TO_ALL_WORKERS");
         }
 
+        // تحديث الجدول ورسم عداد السيارة
         db.ref('workers').on('value', (snapshot) => {
             const workersTable = document.getElementById('workersTable');
             workersTable.innerHTML = '';
@@ -250,23 +328,33 @@ jobs:
                 const worker = childSnapshot.val();
                 const workerId = childSnapshot.key;
                 
+                // حساب لون العداد الدائري بناءً على الضغط
+                const usage = worker.trafficUsage || 0;
+                let gaugeColor = "#0f0"; // أخضر
+                if(usage > 50) gaugeColor = "#ff0"; // أصفر
+                if(usage > 85) gaugeColor = "#f00"; // أحمر
+
                 const row = `
-                    <tr class="bg-gray-800 border-b border-gray-700 text-center">
-                        <td class="p-3 font-mono font-bold text-blue-300">${worker.username}</td>
-                        <td class="p-3 font-mono text-xs text-gray-400">${worker.repo}</td>
+                    <tr class="border-b border-gray-800 hover:bg-gray-900 transition">
+                        <td class="p-3">${worker.username}</td>
+                        <td class="p-3 text-xs opacity-70">${worker.repo}</td>
                         <td class="p-3">
-                            <button onclick="startWorkerAction('${worker.username}', '${worker.repo}', '${worker.token}')" class="bg-gray-600 hover:bg-gray-500 text-white text-sm py-1 px-4 rounded font-bold transition">
-                                ▶️ فردي
+                            <button onclick="startWorkerAction('${worker.username}', '${worker.repo}', '${worker.token}')" class="btn-hack text-xs py-1 px-3 rounded">
+                                [ RUN ]
                             </button>
                         </td>
                         <td class="p-3">
-                            <div class="w-full bg-gray-600 rounded-full h-4 relative">
-                                <div class="${worker.trafficUsage >= 90 ? 'bg-red-500' : 'bg-blue-500'} h-4 rounded-full" style="width: ${worker.trafficUsage}%"></div>
-                                <span class="absolute text-xs text-white left-1/2 top-0 transform -translate-x-1/2">${worker.trafficUsage}%</span>
+                            <!-- عداد يشبه عداد السيارة -->
+                            <div class="gauge-container" style="background: conic-gradient(${gaugeColor} ${usage}%, #111 ${usage}% 100%); box-shadow: 0 0 10px ${gaugeColor}40;">
+                                <div class="gauge-inner ${usage > 85 ? 'text-red-500 animate-pulse' : 'text-green-500'}">
+                                    ${usage}%
+                                </div>
                             </div>
                         </td>
                         <td class="p-3">
-                            <button onclick="deleteWorker('${workerId}')" class="bg-gray-600 hover:bg-red-500 text-white text-sm py-1 px-3 rounded w-full transition">حذف</button>
+                            <button onclick="deleteWorker('${workerId}')" class="btn-alert text-xs py-1 px-3 rounded">
+                                [ DEL ]
+                            </button>
                         </td>
                     </tr>
                 `;
@@ -275,7 +363,7 @@ jobs:
         });
         
         function deleteWorker(workerId) {
-            if(confirm("هل أنت متأكد من حذف هذا العامل من اللوحة؟")) {
+            if(confirm("> WARNING: CONFIRM_WORKER_DELETION ?")) {
                 db.ref('workers/' + workerId).remove();
             }
         }
