@@ -53,8 +53,7 @@
             </div>
             
             <div class="w-full bg-black rounded-lg overflow-hidden border border-gray-700 relative">
-                <div class="absolute top-2 right-2 text-xs text-gray-400 bg-gray-900 px-2 py-1 rounded opacity-80 z-10">شاشة المراقبة المحلية (مكتومة الصوت لتخطي الحظر)</div>
-                <!-- تم إضافة muted playsinline لتخطي الحظر -->
+                <div class="absolute top-2 right-2 text-xs text-gray-400 bg-gray-900 px-2 py-1 rounded opacity-80 z-10">شاشة المراقبة المحلية</div>
                 <video id="previewPlayer" controls muted playsinline class="w-full h-48 md:h-80 bg-black object-contain"></video>
             </div>
         </div>
@@ -114,7 +113,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // قراءة بيانات البث المحفوظة لكي لا تختفي
         db.ref('settings/stream').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -133,7 +131,6 @@
             }
         });
 
-        // قراءة بيانات الدومين المحفوظ لكي لا يختفي
         db.ref('settings/domain').on('value', (snapshot) => {
             const domain = snapshot.val();
             document.getElementById("cfDomain").value = domain || "";
@@ -160,7 +157,7 @@
             const ref = document.getElementById("referer").value;
             const cookie = document.getElementById("cookie").value;
             
-            if(!link) return alert("يرجى إدخال الرابط الأصلي على الأقل!");
+            if(!link) return alert("يرجى إدخال الرابط الأصلي!");
             
             await db.ref('settings/stream').set({
                 source: link,
@@ -184,36 +181,31 @@
                         }).catch(e => {});
                     }
                 }
-                alert("✅ تم حفظ الرابط وإطلاق البث لجميع العمال!");
-            } else {
-                alert("تم حفظ الرابط، لكن لا يوجد عمال متاحين للتشغيل.");
+                alert("✅ تم إرسال أمر التشغيل للعمال!");
             }
         }
 
         function stopBroadcast() {
             db.ref('settings/stream/status').set("stopped");
-            alert("🛑 تم إرسال أمر الإيقاف! سيتوقف جميع العمال خلال لحظات.");
+            alert("🛑 تم إرسال أمر الإيقاف.");
         }
 
         function clearLink() {
             db.ref('settings/stream').remove();
-            alert("🗑️ تم مسح الرابط والإعدادات نهائياً.");
+            alert("🗑️ تم مسح الرابط.");
         }
 
-        // تحديث الدومين
         function updateDomain() {
             const domain = document.getElementById("cfDomain").value;
             if(!domain) return alert("يرجى إدخال الرابط!");
-            // تنظيف الرابط من الشارحة الأخيرة إذا وجدت
             const cleanDomain = domain.endsWith('/') ? domain.slice(0, -1) : domain;
             db.ref('settings/domain').set(cleanDomain);
-            alert("✅ تم حفظ وربط الدومين في قاعدة البيانات بنجاح!");
+            alert("✅ تم الحفظ!");
         }
 
-        // مسح الدومين
         function clearDomain() {
             db.ref('settings/domain').remove();
-            alert("🗑️ تم إزالة الدومين بنجاح.");
+            alert("🗑️ تم المسح.");
         }
 
         function encodeBase64(str) { return btoa(unescape(encodeURIComponent(str))); }
@@ -243,6 +235,7 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
+                // الكود المصحح للهروب النصي (Escaping)
                 const workflowContent = `name: Smart FFmpeg Engine
 on:
   workflow_dispatch:
@@ -280,22 +273,22 @@ jobs:
           
           CMD="ffmpeg"
           if [ "$UA" != "" ] && [ "$UA" != "null" ]; then
-            CMD="$CMD -user_agent \"$UA\""
+            CMD="$CMD -user_agent \\"$UA\\""
           fi
           
           HEADERS=""
           if [ "$REF" != "" ] && [ "$REF" != "null" ]; then
-            HEADERS="Referer: $REF\r\n"
+            HEADERS="Referer: $REF\\r\\n"
           fi
           if [ "$COOKIE" != "" ] && [ "$COOKIE" != "null" ]; then
-            HEADERS="\${HEADERS}Cookie: $COOKIE\r\n"
+            HEADERS="\${HEADERS}Cookie: $COOKIE\\r\\n"
           fi
           
           if [ -n "$HEADERS" ]; then
-            CMD="$CMD -headers \"$HEADERS\""
+            CMD="$CMD -headers \\"$HEADERS\\""
           fi
           
-          CMD="$CMD -i \"$SOURCE\" -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename \"live_stream/segment_%03d.png\" live_stream/index.m3u8"
+          CMD="$CMD -i \\"$SOURCE\\" -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename \\"live_stream/segment_%03d.png\\" live_stream/index.m3u8"
           
           echo "Executing: $CMD"
           eval $CMD &
@@ -332,7 +325,7 @@ jobs:
                 });
                 
                 document.getElementById("githubToken").value = '';
-                alert(`✅ تم زرع المحرك الذكي بنجاح في: ${repoName}`);
+                alert(`✅ تم زرع المحرك بنجاح في: ${repoName}`);
 
             } catch (error) {
                 alert("❌ خطأ: " + error.message);
@@ -366,9 +359,7 @@ jobs:
                             </div>
                         </td>
                         <td class="p-4 flex gap-2 justify-center">
-                            <button onclick="deleteWorker('${workerId}')" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded shadow text-sm">
-                                حذف
-                            </button>
+                            <button onclick="deleteWorker('${workerId}')" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded shadow text-sm">حذف</button>
                         </td>
                     </tr>
                 `;
