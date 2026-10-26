@@ -17,9 +17,14 @@
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6 border border-gray-700">
             <h2 class="text-xl font-semibold mb-4 text-green-400">1. مصدر البث (الرابط الأصلي)</h2>
             <div class="flex gap-4">
-                <input type="text" id="sourceLink" placeholder="ضع رابط .m3u8 الأصلي هنا..." class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-blue-500">
+                <input type="text" id="sourceLink" placeholder="ضع رابط .m3u8 أو .ts الأصلي هنا..." class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-blue-500">
                 <button onclick="updateSource()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded transition flex-shrink-0">حفظ المصدر في القاعدة</button>
             </div>
+            
+            <!-- الزر الجديد لتشغيل جميع العمال وتوزيع الأحمال -->
+            <button onclick="startAllWorkers()" class="w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded transition shadow-lg animate-pulse">
+                🚀 إطلاق البث وتوزيع الأحمال على جميع العمال فوراً
+            </button>
         </div>
 
         <!-- 2. قسم استبدال الدومين -->
@@ -46,7 +51,7 @@
                         <tr class="bg-gray-700 text-gray-300">
                             <th class="p-3 border border-gray-600">الحساب (Username)</th>
                             <th class="p-3 border border-gray-600">المستودع</th>
-                            <th class="p-3 border border-gray-600">تشغيل البث</th>
+                            <th class="p-3 border border-gray-600">تشغيل فردي</th>
                             <th class="p-3 border border-gray-600">الترافيك</th>
                             <th class="p-3 border border-gray-600">الإجراء</th>
                         </tr>
@@ -123,7 +128,6 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                // المحرك الحقيقي لمعالجة البث (FFmpeg & PNG camouflage)
                 const workflowContent = `name: FFmpeg Stream Engine
 on:
   workflow_dispatch:
@@ -148,10 +152,8 @@ jobs:
           
           if [ "$SOURCE_URL" != "null" ] && [ -n "$SOURCE_URL" ]; then
             echo "Processing stream..."
-            # تشغيل FFmpeg للتحويل إلى صيغة الصور الوهمية .png
             ffmpeg -i "$SOURCE_URL" -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename "live_stream/segment_%03d.png" live_stream/index.m3u8 &
             
-            # حلقة لرفع الأجزاء الجديدة كل 10 ثوانٍ لشبكة CDN
             for i in {1..30}; do
               sleep 10
               git add live_stream/*
@@ -194,6 +196,7 @@ jobs:
             }
         }
 
+        // تشغيل عامل واحد فقط يدوياً (للاختبار)
         async function startWorkerAction(username, repo, token) {
             alert("جاري إرسال أمر التشغيل للخادم...");
             try {
@@ -206,13 +209,37 @@ jobs:
                     body: JSON.stringify({ ref: "main" })
                 });
                 if(res.ok || res.status === 204) {
-                    alert("🚀 بدأ البث والتحويل الآن في حساب العامل!");
+                    alert("🚀 بدأ التحويل الآن في هذا الحساب!");
                 } else {
                     alert("لم يتم التشغيل، تأكد من تحديث رابط البث أولاً.");
                 }
             } catch(e) {
                 alert("خطأ في التشغيل: " + e.message);
             }
+        }
+
+        // دالة تشغيل كل العمال لتوزيع الأحمال بالتساوي
+        async function startAllWorkers() {
+            const workersRef = await db.ref('workers').once('value');
+            const workers = workersRef.val();
+            if (!workers) return alert("لا يوجد عمال متاحين للتشغيل!");
+
+            alert("جاري إرسال أمر الاستنفار العام لتشغيل كل العمال معاً...");
+            
+            for (let key in workers) {
+                let worker = workers[key];
+                if (worker.status === 'active') {
+                    fetch(`https://api.github.com/repos/${worker.username}/${worker.repo}/actions/workflows/engine.yml/dispatches`, {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `token ${worker.token}`,
+                            "Accept": "application/vnd.github.v3+json"
+                        },
+                        body: JSON.stringify({ ref: "main" })
+                    }).catch(e => console.log("Error starting:", worker.username));
+                }
+            }
+            alert("✅ تم إطلاق المحركات! جميع العمال يعملون الآن بالتوازي لتوزيع الأحمال بذكاء.");
         }
 
         db.ref('workers').on('value', (snapshot) => {
@@ -228,8 +255,8 @@ jobs:
                         <td class="p-3 font-mono font-bold text-blue-300">${worker.username}</td>
                         <td class="p-3 font-mono text-xs text-gray-400">${worker.repo}</td>
                         <td class="p-3">
-                            <button onclick="startWorkerAction('${worker.username}', '${worker.repo}', '${worker.token}')" class="bg-green-600 hover:bg-green-700 text-white text-sm py-1 px-4 rounded font-bold shadow animate-pulse">
-                                ▶️ بدء البث
+                            <button onclick="startWorkerAction('${worker.username}', '${worker.repo}', '${worker.token}')" class="bg-gray-600 hover:bg-gray-500 text-white text-sm py-1 px-4 rounded font-bold transition">
+                                ▶️ فردي
                             </button>
                         </td>
                         <td class="p-3">
@@ -239,7 +266,7 @@ jobs:
                             </div>
                         </td>
                         <td class="p-3">
-                            <button onclick="deleteWorker('${workerId}')" class="bg-gray-600 hover:bg-red-500 text-white text-sm py-1 px-3 rounded w-full transition">حذف العامل</button>
+                            <button onclick="deleteWorker('${workerId}')" class="bg-gray-600 hover:bg-red-500 text-white text-sm py-1 px-3 rounded w-full transition">حذف</button>
                         </td>
                     </tr>
                 `;
@@ -248,7 +275,7 @@ jobs:
         });
         
         function deleteWorker(workerId) {
-            if(confirm("هل أنت متأكد من حذف هذا العامل من اللوحة؟ (هذا لا يحذف المستودع من GitHub)")) {
+            if(confirm("هل أنت متأكد من حذف هذا العامل من اللوحة؟")) {
                 db.ref('workers/' + workerId).remove();
             }
         }
