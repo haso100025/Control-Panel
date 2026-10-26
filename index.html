@@ -271,7 +271,8 @@ jobs:
           REF=$(echo "$STREAM_DATA" | jq -r '.referer')
           COOKIE=$(echo "$STREAM_DATA" | jq -r '.cookie')
           
-          CMD="ffmpeg"
+          CMD="ffmpeg -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 5"
+          
           if [ "$UA" != "" ] && [ "$UA" != "null" ]; then
             CMD="$CMD -user_agent \\"$UA\\""
           fi
