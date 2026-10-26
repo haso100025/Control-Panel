@@ -350,7 +350,8 @@ jobs:
           REF=$(echo "$STREAM_DATA" | jq -r '.referer')
           COOKIE=$(echo "$STREAM_DATA" | jq -r '.cookie')
           
-          CMD="ffmpeg -nostdin -loglevel error -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2 -fflags +genpts+discardcorrupt"
+          # إلغاء مخزن المصدر القديم لتقليل تكرار الجملة الصوتية عند الفصلة
+          CMD="ffmpeg -nostdin -loglevel error -fflags +genpts+discardcorrupt+nobuffer -flags low_delay -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2"
           
           if [ "$UA" != "" ] && [ "$UA" != "null" ]; then
             CMD="$CMD -user_agent \\"$UA\\""
@@ -369,21 +370,20 @@ jobs:
             CMD="$CMD -headers \\"$HEADERS\\""
           fi
           
-          # سر عدم تكرار اللقطة: append_list يكمل الترقيم ولا يصفر العداد عند الفصلة، و discont_start يربط المقاطع ببعضها
-          CMD="$CMD -i \\"$SOURCE\\" -map 0:v:0? -map 0:a:0? -c copy -f hls -hls_time 3 -hls_list_size 6 -hls_flags append_list+delete_segments+omit_endlist+discont_start+temp_file -avoid_negative_ts make_zero -strftime 1 -hls_segment_filename \\"live_stream/segment_%s.png\\" live_stream/index.m3u8"
+          # جعل القطعة ثانيتين (hls_time 2) والاحتفاظ بـ 8 قطع لتسريع الاستجابة
+          CMD="$CMD -i \\"$SOURCE\\" -map 0:v:0? -map 0:a:0? -c copy -f hls -hls_time 2 -hls_list_size 8 -hls_flags append_list+delete_segments+omit_endlist+discont_start+temp_file -avoid_negative_ts make_zero -strftime 1 -hls_segment_filename \\"live_stream/segment_%s.png\\" live_stream/index.m3u8"
           
-          # 1. حلقة خلفية سريعة جداً (تتحقق كل ثانية) لإعادة تشغيل FFmpeg فوراً إذا فصل المصدر بعد 12 أو 22 ثانية
           (
             while true; do
               eval "$CMD"
-              sleep 1
+              sleep 0.5
             done
           ) &
           RUNNER_PID=$!
           
-          # 2. حلقة الرفع والتنظيف كل 5 ثوانٍ
+          # حلقة الرفع السريعة كل 3 ثوانٍ لمواكبة التقطيع السريع
           while true; do
-            sleep 5
+            sleep 3
             
             CURRENT_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
             if [ "$CURRENT_STATUS" == "stopped" ]; then
@@ -392,8 +392,7 @@ jobs:
               break
             fi
             
-            # تنظيف الملفات القديمة (الاحتفاظ بآخر 8 قطع فقط في المستودع لمنع التراكم)
-            ls -1t live_stream/segment_*.png 2>/dev/null | tail -n +9 | xargs -r rm -f
+            ls -1t live_stream/segment_*.png 2>/dev/null | tail -n +11 | xargs -r rm -f
             
             git add -A live_stream/ || true
             if ! git diff --staged --quiet; then
