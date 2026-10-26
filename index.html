@@ -235,10 +235,12 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                // تم إضافة || true بجانب git add لمنع توقف المحرك
+                // الكود النهائي المحصن ضد الصلاحيات وتحطم المحرك
                 const workflowContent = `name: Smart FFmpeg Engine
 on:
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   process-stream:
     runs-on: ubuntu-latest
@@ -271,9 +273,9 @@ jobs:
           REF=$(echo "$STREAM_DATA" | jq -r '.referer')
           COOKIE=$(echo "$STREAM_DATA" | jq -r '.cookie')
           
-          INPUT_ARGS=()
+          CMD="ffmpeg"
           if [ "$UA" != "" ] && [ "$UA" != "null" ]; then
-            INPUT_ARGS+=("-user_agent" "$UA")
+            CMD="$CMD -user_agent \\"$UA\\""
           fi
           
           CRLF=$(printf '\\015\\012')
@@ -286,10 +288,12 @@ jobs:
           fi
           
           if [ -n "$HEADERS" ]; then
-            INPUT_ARGS+=("-headers" "$HEADERS")
+            CMD="$CMD -headers \\"$HEADERS\\""
           fi
           
-          ffmpeg "\${INPUT_ARGS[@]}" -i "$SOURCE" -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename "live_stream/segment_%03d.png" live_stream/index.m3u8 &
+          CMD="$CMD -i \\"$SOURCE\\" -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename \\"live_stream/segment_%03d.png\\" live_stream/index.m3u8"
+          
+          eval "$CMD" &
           PID=$!
           
           for i in {1..30}; do
