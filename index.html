@@ -235,7 +235,7 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                // الكود النهائي المحصن ضد الصلاحيات وتحطم المحرك
+                // الكود النهائي المحصن الذي يستخدم النسخة الرسمية من FFmpeg
                 const workflowContent = `name: Smart FFmpeg Engine
 on:
   workflow_dispatch:
@@ -248,11 +248,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Setup jq for JSON parsing
-        run: sudo apt-get install jq -y
-
-      - name: Setup FFmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v2
+      - name: Install Dependencies (FFmpeg & jq)
+        run: sudo apt-get update && sudo apt-get install -y jq ffmpeg
 
       - name: Process Smart Stream
         run: |
