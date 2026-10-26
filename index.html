@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>غرفة العمليات - النظام العائم</title>
-    <!-- Tailwind CSS -->
+    <title>غرفة العمليات - النظام العائم (النسخة الذكية)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <!-- HLS.js -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body class="bg-gray-900 text-gray-100 font-sans p-4 md:p-8">
@@ -17,26 +14,50 @@
     <div class="max-w-6xl mx-auto">
         <h1 class="text-3xl font-bold text-blue-400 mb-8 text-center border-b border-gray-700 pb-4">🎛️ العقل المدبر - غرفة العمليات</h1>
 
-        <!-- 1. قسم مصدر البث -->
+        <!-- 1. قسم البث الذكي -->
         <div class="bg-gray-800 p-6 rounded-xl shadow-lg mb-6 border border-gray-700">
             <h2 class="text-xl font-bold mb-4 text-green-400 flex items-center gap-2">
-                <span>📡</span> 1. مصدر البث الأصلي
+                <span>📡</span> 1. مصدر البث (دعم الروابط المحمية)
             </h2>
-            <div class="flex flex-col gap-3 mb-4">
-                <input type="text" id="sourceLink" placeholder="ضع رابط .m3u8 أو .ts هنا (الخانة تدعم الروابط الطويلة جداً)..." class="w-full p-4 rounded-lg bg-gray-950 border border-gray-600 text-green-300 focus:outline-none focus:border-green-500 font-mono text-left dir-ltr">
-                <button onclick="updateSource()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition shadow">حفظ المصدر في القاعدة</button>
+            
+            <!-- خانات الرابط والحماية -->
+            <div class="flex flex-col gap-3 mb-6">
+                <label class="text-sm font-bold text-gray-400">الرابط الأصلي (مطلوب):</label>
+                <input type="text" id="sourceLink" placeholder="رابط البث (m3u8, ts, css...)" class="w-full p-4 rounded-lg bg-gray-950 border border-gray-600 text-green-300 focus:outline-none focus:border-green-500 font-mono text-left dir-ltr">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500">User-Agent (اختياري):</label>
+                        <input type="text" id="userAgent" placeholder="مثال: OSCARTV2021" class="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 text-gray-300 focus:border-blue-500 font-mono text-left dir-ltr text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500">Referer (اختياري):</label>
+                        <input type="text" id="referer" placeholder="https://example.com" class="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 text-gray-300 focus:border-blue-500 font-mono text-left dir-ltr text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500">Cookie (اختياري):</label>
+                        <input type="text" id="cookie" placeholder="ot=tmzd6f..." class="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 text-gray-300 focus:border-blue-500 font-mono text-left dir-ltr text-sm">
+                    </div>
+                </div>
+            </div>
+
+            <!-- أزرار التحكم الثلاثة -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <button onclick="startSmartBroadcast()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg transition shadow-lg flex justify-center items-center gap-2">
+                    <span>▶️</span> 1. تشغيل البث للجميع
+                </button>
+                <button onclick="stopBroadcast()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-lg transition shadow-lg flex justify-center items-center gap-2">
+                    <span>⏹️</span> 2. إيقاف البث
+                </button>
+                <button onclick="clearLink()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-4 px-6 rounded-lg transition shadow-lg flex justify-center items-center gap-2">
+                    <span>🗑️</span> 3. مسح الرابط
+                </button>
             </div>
             
-            <!-- شاشة العرض -->
-            <div class="w-full bg-black rounded-lg overflow-hidden border border-gray-700 relative mt-4">
-                <div class="absolute top-2 right-2 text-xs text-gray-400 bg-gray-900 px-2 py-1 rounded opacity-80 z-10">شاشة المراقبة</div>
+            <div class="w-full bg-black rounded-lg overflow-hidden border border-gray-700 relative">
+                <div class="absolute top-2 right-2 text-xs text-gray-400 bg-gray-900 px-2 py-1 rounded opacity-80 z-10">شاشة المراقبة المحلية</div>
                 <video id="previewPlayer" controls class="w-full h-48 md:h-80 bg-black object-contain"></video>
             </div>
-            
-            <!-- زر الاستنفار العام -->
-            <button onclick="startAllWorkers()" class="w-full mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-lg transition shadow-lg text-lg flex justify-center items-center gap-2">
-                <span>🚀</span> إطلاق البث وتوزيع الأحمال على جميع العمال
-            </button>
         </div>
 
         <!-- 2. قسم استبدال الدومين -->
@@ -53,28 +74,25 @@
         <!-- 3. قسم إدارة العمال -->
         <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
             <h2 class="text-xl font-bold mb-4 text-purple-400 flex items-center gap-2">
-                <span>🤖</span> 3. إدارة العمال (GitHub Workers)
+                <span>🤖</span> 3. إدارة العمال
             </h2>
             
             <div class="flex flex-col gap-3 mb-6 bg-gray-700 p-4 rounded-lg">
                 <label class="text-sm text-gray-300 font-bold">إضافة عامل جديد:</label>
                 <input type="text" id="githubToken" placeholder="ضع الـ API Token للحساب الفرعي هنا..." class="w-full p-4 rounded-lg bg-gray-950 border border-gray-600 text-purple-300 focus:outline-none focus:border-purple-500 font-mono text-left dir-ltr">
-                <button onclick="plantScript()" id="plantBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition shadow">زرع المحرك (FFmpeg)</button>
+                <button onclick="plantScript()" id="plantBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition shadow">زرع المحرك الذكي (FFmpeg)</button>
             </div>
 
-            <!-- جدول العمال -->
             <div class="overflow-x-auto border border-gray-700 rounded-lg">
                 <table class="w-full text-center border-collapse whitespace-nowrap">
                     <thead class="bg-gray-900">
                         <tr class="text-gray-300 border-b border-gray-700">
                             <th class="p-4 font-bold">الحساب والمستودع</th>
-                            <th class="p-4 font-bold">الترافيك الفعلي</th>
+                            <th class="p-4 font-bold">الترافيك</th>
                             <th class="p-4 font-bold">إجراءات</th>
                         </tr>
                     </thead>
-                    <tbody id="workersTable" class="divide-y divide-gray-700">
-                        <!-- العمال هنا -->
-                    </tbody>
+                    <tbody id="workersTable" class="divide-y divide-gray-700"></tbody>
                 </table>
             </div>
         </div>
@@ -107,12 +125,63 @@
             }
         }
 
-        function updateSource() {
+        // 1. زر تشغيل البث
+        async function startSmartBroadcast() {
             const link = document.getElementById("sourceLink").value;
-            if(!link) return alert("يرجى إدخال رابط البث!");
-            db.ref('settings/source').set(link);
+            const ua = document.getElementById("userAgent").value;
+            const ref = document.getElementById("referer").value;
+            const cookie = document.getElementById("cookie").value;
+            
+            if(!link) return alert("يرجى إدخال الرابط الأصلي على الأقل!");
+            
+            // حفظ الرابط وإعدادات الحماية مع حالة "قيد التشغيل"
+            await db.ref('settings/stream').set({
+                source: link,
+                userAgent: ua || "",
+                referer: ref || "",
+                cookie: cookie || "",
+                status: "running"
+            });
+            
             playVideo(link);
-            alert("تم حفظ رابط البث في قاعدة البيانات!");
+            
+            // إطلاق العمال تلقائياً
+            const workersRef = await db.ref('workers').once('value');
+            const workers = workersRef.val();
+            if (workers) {
+                for (let key in workers) {
+                    if (workers[key].status === 'active') {
+                        fetch(`https://api.github.com/repos/${workers[key].username}/${workers[key].repo}/actions/workflows/engine.yml/dispatches`, {
+                            method: "POST",
+                            headers: { "Authorization": `token ${workers[key].token}`, "Accept": "application/vnd.github.v3+json" },
+                            body: JSON.stringify({ ref: "main" })
+                        }).catch(e => {});
+                    }
+                }
+                alert("✅ تم حفظ الرابط وإطلاق البث لجميع العمال!");
+            } else {
+                alert("تم حفظ الرابط، لكن لا يوجد عمال متاحين للتشغيل.");
+            }
+        }
+
+        // 2. زر إيقاف البث
+        function stopBroadcast() {
+            db.ref('settings/stream/status').set("stopped");
+            alert("🛑 تم إرسال أمر الإيقاف! سيتوقف جميع العمال خلال لحظات.");
+        }
+
+        // 3. زر مسح الرابط
+        function clearLink() {
+            document.getElementById("sourceLink").value = "";
+            document.getElementById("userAgent").value = "";
+            document.getElementById("referer").value = "";
+            document.getElementById("cookie").value = "";
+            db.ref('settings/stream').remove();
+            
+            const video = document.getElementById('previewPlayer');
+            video.pause();
+            video.src = "";
+            alert("🗑️ تم مسح الرابط والإعدادات.");
         }
 
         function updateDomain() {
@@ -129,7 +198,7 @@
             if(!token) return alert("يرجى إدخال Token!");
             
             const btn = document.getElementById("plantBtn");
-            btn.innerText = "جاري الاتصال والزرع...";
+            btn.innerText = "جاري الزرع...";
             btn.disabled = true;
 
             try {
@@ -149,7 +218,8 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                const workflowContent = `name: FFmpeg Stream Engine
+                // المحرك الذكي الذي يدعم قراءة Headers ويراقب أمر التوقف
+                const workflowContent = `name: Smart FFmpeg Engine
 on:
   workflow_dispatch:
 jobs:
@@ -159,36 +229,80 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Setup jq for JSON parsing
+        run: sudo apt-get install jq -y
+
       - name: Setup FFmpeg
         uses: FedericoCarboni/setup-ffmpeg@v2
 
-      - name: Process and Convert to PNG
+      - name: Process Smart Stream
         run: |
           git config --global user.name "TimeShift Worker"
           git config --global user.email "worker@timeshift.local"
           mkdir -p live_stream
           
-          SOURCE_URL=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/source.json | tr -d '"')
+          # جلب الإعدادات من Firebase
+          STREAM_DATA=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream.json)
+          STATUS=$(echo "$STREAM_DATA" | jq -r '.status')
           
-          if [ "$SOURCE_URL" != "null" ] && [ -n "$SOURCE_URL" ]; then
-            ffmpeg -i "$SOURCE_URL" -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename "live_stream/segment_%03d.png" live_stream/index.m3u8 &
-            
-            for i in {1..30}; do
-              sleep 10
-              git add live_stream/*
-              git commit -m "Update stream" || true
-              git push origin main || true
-            done
+          if [ "$STATUS" != "running" ]; then
+            echo "Stream is not running. Exiting."
+            exit 0
           fi
+          
+          SOURCE=$(echo "$STREAM_DATA" | jq -r '.source')
+          UA=$(echo "$STREAM_DATA" | jq -r '.userAgent')
+          REF=$(echo "$STREAM_DATA" | jq -r '.referer')
+          COOKIE=$(echo "$STREAM_DATA" | jq -r '.cookie')
+          
+          # بناء أمر FFmpeg مع الحمايات
+          CMD="ffmpeg"
+          if [ "$UA" != "" ] && [ "$UA" != "null" ]; then
+            CMD="$CMD -user_agent \"$UA\""
+          fi
+          
+          HEADERS=""
+          if [ "$REF" != "" ] && [ "$REF" != "null" ]; then
+            HEADERS="Referer: $REF\r\n"
+          fi
+          if [ "$COOKIE" != "" ] && [ "$COOKIE" != "null" ]; then
+            HEADERS="\${HEADERS}Cookie: $COOKIE\r\n"
+          fi
+          
+          if [ -n "$HEADERS" ]; then
+            CMD="$CMD -headers \"$HEADERS\""
+          fi
+          
+          CMD="$CMD -i \"$SOURCE\" -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename \"live_stream/segment_%03d.png\" live_stream/index.m3u8"
+          
+          echo "Executing: $CMD"
+          eval $CMD &
+          PID=$!
+          
+          # حلقة الرفع ومراقبة التوقف
+          for i in {1..30}; do
+            sleep 10
+            
+            # التحقق إذا تم ضغط زر إيقاف البث
+            CURRENT_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
+            if [ "$CURRENT_STATUS" == "stopped" ]; then
+              echo "Stop command received! Stopping FFmpeg..."
+              kill $PID
+              break
+            fi
+            
+            git add live_stream/*
+            git commit -m "Update stream" || true
+            git push origin main || true
+          done
 `;
                 
                 await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, {
                     method: "PUT",
                     headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
-                    body: JSON.stringify({ message: "Init Engine", content: encodeBase64(workflowContent) })
+                    body: JSON.stringify({ message: "Init Smart Engine", content: encodeBase64(workflowContent) })
                 });
 
-                // القيمة الحقيقية للعداد تبدأ من 0
                 db.ref('workers/' + username + '_' + randomId).set({
                     token: token,
                     status: 'active',
@@ -198,43 +312,14 @@ jobs:
                 });
                 
                 document.getElementById("githubToken").value = '';
-                alert(`✅ تم الزرع بنجاح في: ${repoName}`);
+                alert(`✅ تم زرع المحرك الذكي بنجاح في: ${repoName}`);
 
             } catch (error) {
                 alert("❌ خطأ: " + error.message);
             } finally {
-                btn.innerText = "زرع المحرك (FFmpeg)";
+                btn.innerText = "زرع المحرك الذكي (FFmpeg)";
                 btn.disabled = false;
             }
-        }
-
-        async function startWorkerAction(username, repo, token) {
-            try {
-                const res = await fetch(`https://api.github.com/repos/${username}/${repo}/actions/workflows/engine.yml/dispatches`, {
-                    method: "POST",
-                    headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
-                    body: JSON.stringify({ ref: "main" })
-                });
-                if(res.ok || res.status === 204) alert(`تم التشغيل في الخادم!`);
-            } catch(e) {}
-        }
-
-        async function startAllWorkers() {
-            const workersRef = await db.ref('workers').once('value');
-            const workers = workersRef.val();
-            if (!workers) return alert("لا يوجد عمال!");
-            
-            for (let key in workers) {
-                let worker = workers[key];
-                if (worker.status === 'active') {
-                    fetch(`https://api.github.com/repos/${worker.username}/${worker.repo}/actions/workflows/engine.yml/dispatches`, {
-                        method: "POST",
-                        headers: { "Authorization": `token ${worker.token}`, "Accept": "application/vnd.github.v3+json" },
-                        body: JSON.stringify({ ref: "main" })
-                    }).catch(e => {});
-                }
-            }
-            alert("✅ تم إرسال أمر التشغيل لجميع العمال بنجاح.");
         }
 
         db.ref('workers').on('value', (snapshot) => {
@@ -244,7 +329,7 @@ jobs:
             snapshot.forEach((childSnapshot) => {
                 const worker = childSnapshot.val();
                 const workerId = childSnapshot.key;
-                const usage = worker.trafficUsage || 0; // القيمة الحقيقية
+                const usage = worker.trafficUsage || 0;
                 
                 const row = `
                     <tr class="hover:bg-gray-800 transition">
@@ -261,9 +346,6 @@ jobs:
                             </div>
                         </td>
                         <td class="p-4 flex gap-2 justify-center">
-                            <button onclick="startWorkerAction('${worker.username}', '${worker.repo}', '${worker.token}')" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded shadow text-sm">
-                                تشغيل فردي
-                            </button>
                             <button onclick="deleteWorker('${workerId}')" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded shadow text-sm">
                                 حذف
                             </button>
