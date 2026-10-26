@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحكم النظام العائم (العقل المدبر)</title>
-    <!-- استخدام Tailwind CSS لتصميم احترافي وسريع -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- استدعاء مكتبات Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
@@ -37,33 +35,28 @@
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
             <h2 class="text-xl font-semibold mb-4 text-purple-400">3. إدارة العمال (حسابات GitHub الفرعية)</h2>
             
-            <!-- إضافة حساب جديد -->
             <div class="flex gap-4 mb-6">
                 <input type="text" id="githubToken" placeholder="ضع الـ API Token للحساب الجديد هنا..." class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-blue-500">
-                <button onclick="plantScript()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded transition flex-shrink-0">زرع السكربت وربط الحساب</button>
+                <button onclick="plantScript()" id="plantBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded transition flex-shrink-0">زرع السكربت وربط الحساب</button>
             </div>
 
-            <!-- شاشة المراقبة VPS Dashboard -->
             <div class="overflow-x-auto">
                 <table class="w-full text-right border-collapse">
                     <thead>
                         <tr class="bg-gray-700 text-gray-300">
-                            <th class="p-3 border border-gray-600">الحساب (Token)</th>
+                            <th class="p-3 border border-gray-600">الحساب (Username)</th>
                             <th class="p-3 border border-gray-600">السرعة / الحالة</th>
                             <th class="p-3 border border-gray-600">استهلاك الترافيك (الحد 95%)</th>
                             <th class="p-3 border border-gray-600">الإجراء اليدوي</th>
                         </tr>
                     </thead>
-                    <tbody id="workersTable">
-                        <!-- سيتم إضافة الحسابات هنا تلقائياً عبر JavaScript -->
-                    </tbody>
+                    <tbody id="workersTable"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
     <script>
-        // تم ربط بيانات Firebase الخاصة بك هنا آلياً
         const firebaseConfig = {
             apiKey: "AIzaSyCNLovuI6IOGsl2BrIgN9CImS4FgfY9xuY",
             authDomain: "floating-project-afc8f.firebaseapp.com",
@@ -74,11 +67,9 @@
             appId: "1:937631435290:web:127c41f413b2d34d6a1fa3"
         };
 
-        // تهيئة Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 1. تحديث مصدر البث
         function updateSource() {
             const link = document.getElementById("sourceLink").value;
             if(!link) return alert("يرجى إدخال رابط البث!");
@@ -86,32 +77,67 @@
             alert("تم تحديث رابط البث بنجاح! سيتم إرسال الأمر للعمال.");
         }
 
-        // 2. تحديث دومين Cloudflare
         function updateDomain() {
             const domain = document.getElementById("cfDomain").value;
             if(!domain) return alert("يرجى إدخال رابط الدومين!");
             db.ref('settings/domain').set(domain);
-            alert("تم ربط الدومين الجديد بجميع الحسابات بنجاح!");
+            alert("تم ربط الدومين الجديد بنجاح!");
         }
 
-        // 3. زرع السكربت في حساب GitHub جديد 
+        // دالة الزرع التلقائي المطورة
         async function plantScript() {
-            const token = document.getElementById("githubToken").value;
+            const token = document.getElementById("githubToken").value.trim();
             if(!token) return alert("يرجى إدخال Token!");
             
-            const workerId = 'worker_' + Math.random().toString(36).substr(2, 9);
-            db.ref('workers/' + workerId).set({
-                token: token,
-                status: 'active',
-                trafficUsage: 0, 
-                speed: 'ممتاز'
-            });
-            
-            document.getElementById("githubToken").value = '';
-            alert("تم ربط الحساب وزرع السكربت بنجاح!");
+            const btn = document.getElementById("plantBtn");
+            btn.innerText = "جاري الزرع...";
+            btn.disabled = true;
+
+            try {
+                // 1. جلب اسم المستخدم من التوكن
+                const userRes = await fetch("https://api.github.com/user", {
+                    headers: { "Authorization": `token ${token}` }
+                });
+                if (!userRes.ok) throw new Error("التوكن غير صحيح أو لا يملك صلاحيات.");
+                const userData = await userRes.json();
+                const username = userData.login;
+
+                // 2. إنشاء مستودع جديد للعامل
+                const repoName = "Stream-Worker";
+                const createRepoRes = await fetch("https://api.github.com/user/repos", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `token ${token}`,
+                        "Accept": "application/vnd.github.v3+json"
+                    },
+                    body: JSON.stringify({ 
+                        name: repoName, 
+                        private: false, 
+                        auto_init: true,
+                        description: "Worker repository for processing stream segments to PNG"
+                    })
+                });
+
+                // 3. حفظ الحساب في قاعدة البيانات
+                db.ref('workers/' + username).set({
+                    token: token,
+                    status: 'active',
+                    trafficUsage: 0, 
+                    speed: 'ممتاز',
+                    repo: repoName
+                });
+                
+                document.getElementById("githubToken").value = '';
+                alert(`تم ربط الحساب (${username}) وإنشاء المستودع (${repoName}) بنجاح!`);
+
+            } catch (error) {
+                alert("حدث خطأ: " + error.message);
+            } finally {
+                btn.innerText = "زرع السكربت وربط الحساب";
+                btn.disabled = false;
+            }
         }
 
-        // 4. مراقبة الحسابات (Dashboard) ونظام الحماية
         db.ref('workers').on('value', (snapshot) => {
             const workersTable = document.getElementById('workersTable');
             workersTable.innerHTML = '';
@@ -120,20 +146,18 @@
                 const worker = childSnapshot.val();
                 const workerId = childSnapshot.key;
                 
-                // نظام الحماية التلقائي
                 if (worker.trafficUsage >= 95 && worker.status === 'active') {
                     db.ref('workers/' + workerId + '/status').set('paused');
-                    alert(`⚠️ تم إيقاف الحساب ${workerId} مؤقتاً لحمايته من الحظر (وصل ${worker.trafficUsage}%) وتم تحويل الضغط!`);
                 }
 
                 const statusColor = worker.status === 'active' ? 'text-green-400' : 'text-red-400';
-                const statusText = worker.status === 'active' ? 'نشط 🟢' : 'متوقف مؤقتاً 🔴';
+                const statusText = worker.status === 'active' ? 'نشط 🟢' : 'متوقف 🔴';
                 const btnAction = worker.status === 'active' ? 'إيقاف مؤقت' : 'إعادة تشغيل';
                 const btnClass = worker.status === 'active' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700';
 
                 const row = `
                     <tr class="bg-gray-800 border-b border-gray-700 text-center">
-                        <td class="p-3 font-mono text-sm">${worker.token.substring(0, 8)}...</td>
+                        <td class="p-3 font-mono font-bold text-blue-300">${workerId}</td>
                         <td class="p-3 ${statusColor} font-bold">${statusText} - ${worker.speed}</td>
                         <td class="p-3">
                             <div class="w-full bg-gray-600 rounded-full h-4 relative">
@@ -145,6 +169,7 @@
                             <button onclick="toggleWorkerStatus('${workerId}', '${worker.status}')" class="${btnClass} text-white text-sm py-1 px-3 rounded">
                                 ${btnAction}
                             </button>
+                            <button onclick="deleteWorker('${workerId}')" class="bg-gray-600 hover:bg-gray-500 text-white text-sm py-1 px-3 rounded mr-2">حذف</button>
                         </td>
                     </tr>
                 `;
@@ -152,10 +177,15 @@
             });
         });
 
-        // 5. التحكم اليدوي بالحسابات
         function toggleWorkerStatus(workerId, currentStatus) {
             const newStatus = currentStatus === 'active' ? 'paused' : 'active';
             db.ref('workers/' + workerId + '/status').set(newStatus);
+        }
+        
+        function deleteWorker(workerId) {
+            if(confirm("هل أنت متأكد من حذف هذا العامل من اللوحة؟")) {
+                db.ref('workers/' + workerId).remove();
+            }
         }
     </script>
 </body>
