@@ -18,7 +18,7 @@
             <h2 class="text-xl font-semibold mb-4 text-green-400">1. مصدر البث (الرابط الأصلي)</h2>
             <div class="flex gap-4">
                 <input type="text" id="sourceLink" placeholder="ضع رابط .m3u8 الأصلي هنا..." class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-blue-500">
-                <button onclick="updateSource()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded transition flex-shrink-0">تحديث وبدء البث</button>
+                <button onclick="updateSource()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded transition flex-shrink-0">حفظ المصدر في القاعدة</button>
             </div>
         </div>
 
@@ -33,11 +33,11 @@
 
         <!-- 3. قسم إدارة العمال -->
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
-            <h2 class="text-xl font-semibold mb-4 text-purple-400">3. إدارة العمال (حسابات GitHub الفرعية)</h2>
+            <h2 class="text-xl font-semibold mb-4 text-purple-400">3. إدارة العمال (الزرع والتشغيل)</h2>
             
             <div class="flex gap-4 mb-6">
-                <input type="text" id="githubToken" placeholder="ضع الـ API Token للحساب الجديد هنا..." class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-blue-500">
-                <button onclick="plantScript()" id="plantBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded transition flex-shrink-0">زرع السكربت وربط الحساب</button>
+                <input type="text" id="githubToken" placeholder="ضع الـ API Token للحساب الفرعي هنا..." class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-blue-500">
+                <button onclick="plantScript()" id="plantBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded transition flex-shrink-0">زرع المحرك (FFmpeg)</button>
             </div>
 
             <div class="overflow-x-auto">
@@ -46,7 +46,7 @@
                         <tr class="bg-gray-700 text-gray-300">
                             <th class="p-3 border border-gray-600">الحساب (Username)</th>
                             <th class="p-3 border border-gray-600">المستودع</th>
-                            <th class="p-3 border border-gray-600">السرعة / الحالة</th>
+                            <th class="p-3 border border-gray-600">تشغيل البث</th>
                             <th class="p-3 border border-gray-600">الترافيك</th>
                             <th class="p-3 border border-gray-600">الإجراء</th>
                         </tr>
@@ -75,7 +75,7 @@
             const link = document.getElementById("sourceLink").value;
             if(!link) return alert("يرجى إدخال رابط البث!");
             db.ref('settings/source').set(link);
-            alert("تم تحديث رابط البث! سيتم إرسال الأمر للعمال.");
+            alert("تم حفظ رابط البث في قاعدة البيانات!");
         }
 
         function updateDomain() {
@@ -85,7 +85,6 @@
             alert("تم ربط الدومين الجديد!");
         }
 
-        // دالة تحويل النص إلى Base64 تدعم اللغة العربية والرموز
         function encodeBase64(str) {
             return btoa(unescape(encodeURIComponent(str)));
         }
@@ -95,21 +94,19 @@
             if(!token) return alert("يرجى إدخال Token!");
             
             const btn = document.getElementById("plantBtn");
-            btn.innerText = "جاري الاتصال والزرع (قد يستغرق ثواني)...";
+            btn.innerText = "جاري الاتصال والزرع...";
             btn.disabled = true;
 
             try {
-                // 1. جلب بيانات الحساب
                 const userRes = await fetch("https://api.github.com/user", {
                     headers: { "Authorization": `token ${token}` }
                 });
-                if (!userRes.ok) throw new Error("التوكن غير صحيح أو لا يملك صلاحيات.");
+                if (!userRes.ok) throw new Error("التوكن غير صحيح.");
                 const userData = await userRes.json();
                 const username = userData.login;
 
-                // 2. إنشاء مستودع جديد باسم متغير لتجنب التكرار
                 const randomId = Math.floor(Math.random() * 10000);
-                const repoName = "Stream-Worker-" + randomId;
+                const repoName = "TimeShift-Worker-" + randomId;
                 
                 await fetch("https://api.github.com/user/repos", {
                     method: "POST",
@@ -120,60 +117,101 @@
                     body: JSON.stringify({ 
                         name: repoName, 
                         private: false, 
-                        auto_init: true,
-                        description: "Worker repository for Time Shift Project"
+                        auto_init: true
                     })
                 });
 
-                // الانتظار ثانية واحدة للتأكد من إنشاء المستودع في خوادم GitHub
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 1500));
 
-                // 3. زرع ملف التشغيل (GitHub Actions Workflow)
-                // هذا هو الملف الذي سيقوم بسحب البث وتحويله
-                const workflowContent = `name: Stream Processing Worker
+                // المحرك الحقيقي لمعالجة البث (FFmpeg & PNG camouflage)
+                const workflowContent = `name: FFmpeg Stream Engine
 on:
   workflow_dispatch:
-  # سيتم تفعيل الجدولة لاحقاً
 jobs:
-  build:
+  process-stream:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
+      - name: Checkout Repository
         uses: actions/checkout@v3
-      - name: System Ready
-        run: echo "Worker is ready to receive commands from Control Panel!"
+
+      - name: Setup FFmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v2
+
+      - name: Process and Convert to PNG
+        run: |
+          git config --global user.name "TimeShift Worker"
+          git config --global user.email "worker@timeshift.local"
+          mkdir -p live_stream
+          
+          echo "Fetching source link from Firebase..."
+          SOURCE_URL=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/source.json | tr -d '"')
+          
+          if [ "$SOURCE_URL" != "null" ] && [ -n "$SOURCE_URL" ]; then
+            echo "Processing stream..."
+            # تشغيل FFmpeg للتحويل إلى صيغة الصور الوهمية .png
+            ffmpeg -i "$SOURCE_URL" -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename "live_stream/segment_%03d.png" live_stream/index.m3u8 &
+            
+            # حلقة لرفع الأجزاء الجديدة كل 10 ثوانٍ لشبكة CDN
+            for i in {1..30}; do
+              sleep 10
+              git add live_stream/*
+              git commit -m "Update stream segments" || true
+              git push origin main || true
+            done
+          else
+            echo "No source URL found!"
+          fi
 `;
                 
-                await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/worker.yml`, {
+                await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, {
                     method: "PUT",
                     headers: {
                         "Authorization": `token ${token}`,
                         "Accept": "application/vnd.github.v3+json"
                     },
                     body: JSON.stringify({
-                        message: "Planting automatic worker script",
+                        message: "Planting FFmpeg Engine",
                         content: encodeBase64(workflowContent)
                     })
                 });
 
-                // 4. حفظ العامل في قاعدة البيانات
                 db.ref('workers/' + username + '_' + randomId).set({
                     token: token,
                     status: 'active',
-                    trafficUsage: 0, 
-                    speed: 'ممتاز',
+                    trafficUsage: 0,
                     repo: repoName,
                     username: username
                 });
                 
                 document.getElementById("githubToken").value = '';
-                alert(`✅ تمت العملية بنجاح! تم إنشاء المستودع (${repoName}) وزرع ملفات التشغيل داخله.`);
+                alert(`✅ تم زرع المحرك (FFmpeg) بنجاح في المستودع الجديد: ${repoName}`);
 
             } catch (error) {
                 alert("❌ حدث خطأ: " + error.message);
             } finally {
-                btn.innerText = "زرع السكربت وربط الحساب";
+                btn.innerText = "زرع المحرك (FFmpeg)";
                 btn.disabled = false;
+            }
+        }
+
+        async function startWorkerAction(username, repo, token) {
+            alert("جاري إرسال أمر التشغيل للخادم...");
+            try {
+                const res = await fetch(`https://api.github.com/repos/${username}/${repo}/actions/workflows/engine.yml/dispatches`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `token ${token}`,
+                        "Accept": "application/vnd.github.v3+json"
+                    },
+                    body: JSON.stringify({ ref: "main" })
+                });
+                if(res.ok || res.status === 204) {
+                    alert("🚀 بدأ البث والتحويل الآن في حساب العامل!");
+                } else {
+                    alert("لم يتم التشغيل، تأكد من تحديث رابط البث أولاً.");
+                }
+            } catch(e) {
+                alert("خطأ في التشغيل: " + e.message);
             }
         }
 
@@ -185,20 +223,15 @@ jobs:
                 const worker = childSnapshot.val();
                 const workerId = childSnapshot.key;
                 
-                if (worker.trafficUsage >= 95 && worker.status === 'active') {
-                    db.ref('workers/' + workerId + '/status').set('paused');
-                }
-
-                const statusColor = worker.status === 'active' ? 'text-green-400' : 'text-red-400';
-                const statusText = worker.status === 'active' ? 'نشط 🟢' : 'متوقف 🔴';
-                const btnAction = worker.status === 'active' ? 'إيقاف مؤقت' : 'إعادة تشغيل';
-                const btnClass = worker.status === 'active' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700';
-
                 const row = `
                     <tr class="bg-gray-800 border-b border-gray-700 text-center">
                         <td class="p-3 font-mono font-bold text-blue-300">${worker.username}</td>
                         <td class="p-3 font-mono text-xs text-gray-400">${worker.repo}</td>
-                        <td class="p-3 ${statusColor} font-bold">${statusText} - ${worker.speed}</td>
+                        <td class="p-3">
+                            <button onclick="startWorkerAction('${worker.username}', '${worker.repo}', '${worker.token}')" class="bg-green-600 hover:bg-green-700 text-white text-sm py-1 px-4 rounded font-bold shadow animate-pulse">
+                                ▶️ بدء البث
+                            </button>
+                        </td>
                         <td class="p-3">
                             <div class="w-full bg-gray-600 rounded-full h-4 relative">
                                 <div class="${worker.trafficUsage >= 90 ? 'bg-red-500' : 'bg-blue-500'} h-4 rounded-full" style="width: ${worker.trafficUsage}%"></div>
@@ -206,24 +239,16 @@ jobs:
                             </div>
                         </td>
                         <td class="p-3">
-                            <button onclick="toggleWorkerStatus('${workerId}', '${worker.status}')" class="${btnClass} text-white text-sm py-1 px-3 rounded mb-1 w-full">
-                                ${btnAction}
-                            </button>
-                            <button onclick="deleteWorker('${workerId}')" class="bg-gray-600 hover:bg-gray-500 text-white text-sm py-1 px-3 rounded w-full">حذف</button>
+                            <button onclick="deleteWorker('${workerId}')" class="bg-gray-600 hover:bg-red-500 text-white text-sm py-1 px-3 rounded w-full transition">حذف العامل</button>
                         </td>
                     </tr>
                 `;
                 workersTable.innerHTML += row;
             });
         });
-
-        function toggleWorkerStatus(workerId, currentStatus) {
-            const newStatus = currentStatus === 'active' ? 'paused' : 'active';
-            db.ref('workers/' + workerId + '/status').set(newStatus);
-        }
         
         function deleteWorker(workerId) {
-            if(confirm("هل أنت متأكد من حذف هذا العامل من اللوحة؟")) {
+            if(confirm("هل أنت متأكد من حذف هذا العامل من اللوحة؟ (هذا لا يحذف المستودع من GitHub)")) {
                 db.ref('workers/' + workerId).remove();
             }
         }
