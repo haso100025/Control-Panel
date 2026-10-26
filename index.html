@@ -18,20 +18,20 @@
             <h2 class="text-xl font-semibold mb-4 text-green-400">1. مصدر البث (الرابط الأصلي)</h2>
             <div class="flex gap-4">
                 <input type="text" id="sourceLink" placeholder="ضع رابط .m3u8 الأصلي هنا..." class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-blue-500">
-                <button onclick="updateSource()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded transition">تحديث وبدء البث</button>
+                <button onclick="updateSource()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded transition flex-shrink-0">تحديث وبدء البث</button>
             </div>
         </div>
 
-        <!-- 2. قسم استبدال الدومين (Cloudflare) -->
+        <!-- 2. قسم استبدال الدومين -->
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6 border border-gray-700">
             <h2 class="text-xl font-semibold mb-4 text-yellow-400">2. دومين الطوارئ (Cloudflare Worker)</h2>
             <div class="flex gap-4">
                 <input type="text" id="cfDomain" placeholder="مثال: https://worker-name.username.workers.dev" class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-blue-500">
-                <button onclick="updateDomain()" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded transition">استبدال وربط فوري</button>
+                <button onclick="updateDomain()" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded transition flex-shrink-0">استبدال وربط فوري</button>
             </div>
         </div>
 
-        <!-- 3. قسم العمال (حسابات GitHub الفرعية) -->
+        <!-- 3. قسم إدارة العمال -->
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
             <h2 class="text-xl font-semibold mb-4 text-purple-400">3. إدارة العمال (حسابات GitHub الفرعية)</h2>
             
@@ -45,9 +45,10 @@
                     <thead>
                         <tr class="bg-gray-700 text-gray-300">
                             <th class="p-3 border border-gray-600">الحساب (Username)</th>
+                            <th class="p-3 border border-gray-600">المستودع</th>
                             <th class="p-3 border border-gray-600">السرعة / الحالة</th>
-                            <th class="p-3 border border-gray-600">استهلاك الترافيك (الحد 95%)</th>
-                            <th class="p-3 border border-gray-600">الإجراء اليدوي</th>
+                            <th class="p-3 border border-gray-600">الترافيك</th>
+                            <th class="p-3 border border-gray-600">الإجراء</th>
                         </tr>
                     </thead>
                     <tbody id="workersTable"></tbody>
@@ -74,27 +75,31 @@
             const link = document.getElementById("sourceLink").value;
             if(!link) return alert("يرجى إدخال رابط البث!");
             db.ref('settings/source').set(link);
-            alert("تم تحديث رابط البث بنجاح! سيتم إرسال الأمر للعمال.");
+            alert("تم تحديث رابط البث! سيتم إرسال الأمر للعمال.");
         }
 
         function updateDomain() {
             const domain = document.getElementById("cfDomain").value;
-            if(!domain) return alert("يرجى إدخال رابط الدومين!");
+            if(!domain) return alert("يرجى إدخال الرابط!");
             db.ref('settings/domain').set(domain);
-            alert("تم ربط الدومين الجديد بنجاح!");
+            alert("تم ربط الدومين الجديد!");
         }
 
-        // دالة الزرع التلقائي المطورة
+        // دالة تحويل النص إلى Base64 تدعم اللغة العربية والرموز
+        function encodeBase64(str) {
+            return btoa(unescape(encodeURIComponent(str)));
+        }
+
         async function plantScript() {
             const token = document.getElementById("githubToken").value.trim();
             if(!token) return alert("يرجى إدخال Token!");
             
             const btn = document.getElementById("plantBtn");
-            btn.innerText = "جاري الزرع...";
+            btn.innerText = "جاري الاتصال والزرع (قد يستغرق ثواني)...";
             btn.disabled = true;
 
             try {
-                // 1. جلب اسم المستخدم من التوكن
+                // 1. جلب بيانات الحساب
                 const userRes = await fetch("https://api.github.com/user", {
                     headers: { "Authorization": `token ${token}` }
                 });
@@ -102,9 +107,11 @@
                 const userData = await userRes.json();
                 const username = userData.login;
 
-                // 2. إنشاء مستودع جديد للعامل
-                const repoName = "Stream-Worker";
-                const createRepoRes = await fetch("https://api.github.com/user/repos", {
+                // 2. إنشاء مستودع جديد باسم متغير لتجنب التكرار
+                const randomId = Math.floor(Math.random() * 10000);
+                const repoName = "Stream-Worker-" + randomId;
+                
+                await fetch("https://api.github.com/user/repos", {
                     method: "POST",
                     headers: {
                         "Authorization": `token ${token}`,
@@ -114,24 +121,56 @@
                         name: repoName, 
                         private: false, 
                         auto_init: true,
-                        description: "Worker repository for processing stream segments to PNG"
+                        description: "Worker repository for Time Shift Project"
                     })
                 });
 
-                // 3. حفظ الحساب في قاعدة البيانات
-                db.ref('workers/' + username).set({
+                // الانتظار ثانية واحدة للتأكد من إنشاء المستودع في خوادم GitHub
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // 3. زرع ملف التشغيل (GitHub Actions Workflow)
+                // هذا هو الملف الذي سيقوم بسحب البث وتحويله
+                const workflowContent = `name: Stream Processing Worker
+on:
+  workflow_dispatch:
+  # سيتم تفعيل الجدولة لاحقاً
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: System Ready
+        run: echo "Worker is ready to receive commands from Control Panel!"
+`;
+                
+                await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/worker.yml`, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `token ${token}`,
+                        "Accept": "application/vnd.github.v3+json"
+                    },
+                    body: JSON.stringify({
+                        message: "Planting automatic worker script",
+                        content: encodeBase64(workflowContent)
+                    })
+                });
+
+                // 4. حفظ العامل في قاعدة البيانات
+                db.ref('workers/' + username + '_' + randomId).set({
                     token: token,
                     status: 'active',
                     trafficUsage: 0, 
                     speed: 'ممتاز',
-                    repo: repoName
+                    repo: repoName,
+                    username: username
                 });
                 
                 document.getElementById("githubToken").value = '';
-                alert(`تم ربط الحساب (${username}) وإنشاء المستودع (${repoName}) بنجاح!`);
+                alert(`✅ تمت العملية بنجاح! تم إنشاء المستودع (${repoName}) وزرع ملفات التشغيل داخله.`);
 
             } catch (error) {
-                alert("حدث خطأ: " + error.message);
+                alert("❌ حدث خطأ: " + error.message);
             } finally {
                 btn.innerText = "زرع السكربت وربط الحساب";
                 btn.disabled = false;
@@ -157,7 +196,8 @@
 
                 const row = `
                     <tr class="bg-gray-800 border-b border-gray-700 text-center">
-                        <td class="p-3 font-mono font-bold text-blue-300">${workerId}</td>
+                        <td class="p-3 font-mono font-bold text-blue-300">${worker.username}</td>
+                        <td class="p-3 font-mono text-xs text-gray-400">${worker.repo}</td>
                         <td class="p-3 ${statusColor} font-bold">${statusText} - ${worker.speed}</td>
                         <td class="p-3">
                             <div class="w-full bg-gray-600 rounded-full h-4 relative">
@@ -166,10 +206,10 @@
                             </div>
                         </td>
                         <td class="p-3">
-                            <button onclick="toggleWorkerStatus('${workerId}', '${worker.status}')" class="${btnClass} text-white text-sm py-1 px-3 rounded">
+                            <button onclick="toggleWorkerStatus('${workerId}', '${worker.status}')" class="${btnClass} text-white text-sm py-1 px-3 rounded mb-1 w-full">
                                 ${btnAction}
                             </button>
-                            <button onclick="deleteWorker('${workerId}')" class="bg-gray-600 hover:bg-gray-500 text-white text-sm py-1 px-3 rounded mr-2">حذف</button>
+                            <button onclick="deleteWorker('${workerId}')" class="bg-gray-600 hover:bg-gray-500 text-white text-sm py-1 px-3 rounded w-full">حذف</button>
                         </td>
                     </tr>
                 `;
