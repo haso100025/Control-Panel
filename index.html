@@ -17,7 +17,7 @@
         <!-- 1. قسم البث الذكي -->
         <div class="bg-gray-800 p-6 rounded-xl shadow-lg mb-6 border border-gray-700">
             <h2 class="text-xl font-bold mb-4 text-green-400 flex items-center gap-2">
-                <span>📡</span> 1. مصدر البث (دعم الروابط المحمية)
+                <span>📡</span> 1. مصدر البث (دعم الروابط المحمية والمتقطعة)
             </h2>
             
             <div class="flex flex-col gap-3 mb-6">
@@ -100,9 +100,8 @@
     </div>
 
     <script>
-        // رادار اصطياد الأخطاء: سيخبرك فوراً إذا كان هناك نقص في الكود
         window.onerror = function(msg, url, lineNo, columnNo, error) {
-            alert("⚠️ تنبيه هندسي: يوجد خطأ في الكود منع الصفحة من العمل.\nالسبب: " + msg);
+            alert("⚠️ تنبيه هندسي: يوجد خطأ في الكود.\nالسبب: " + msg);
             return false;
         };
 
@@ -150,9 +149,9 @@
                     
                     const hls = new Hls({
                         manifestLoadingMaxRetry: Infinity,
-                        manifestLoadingRetryDelay: 2000,
+                        manifestLoadingRetryDelay: 1500,
                         levelLoadingMaxRetry: Infinity,
-                        levelLoadingRetryDelay: 2000,
+                        levelLoadingRetryDelay: 1500,
                         liveSyncDurationCount: 3
                     });
                     
@@ -167,12 +166,12 @@
                     hls.on(Hls.Events.ERROR, function (event, data) {
                         if (data.fatal) {
                             if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-                                setTimeout(() => { hls.startLoad(); }, 2000);
+                                setTimeout(() => { hls.startLoad(); }, 1500);
                             } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
                                 hls.recoverMediaError();
                             } else {
                                 hls.destroy();
-                                setTimeout(() => { playVideo(url); }, 2000);
+                                setTimeout(() => { playVideo(url); }, 1500);
                             }
                         }
                     });
@@ -217,7 +216,6 @@
             }
         }
 
-        // نظام الإعدام الفوري
         async function stopBroadcast() {
             if(!confirm("هل أنت متأكد من إيقاف البث؟ سيتم إعدام جميع العمليات الجارية فوراً.")) return;
             
@@ -285,7 +283,6 @@
 
         function encodeBase64(str) { return btoa(unescape(encodeURIComponent(str))); }
 
-        // دالة زرع المحرك مع حماية ضد التوقف المفاجئ
         async function plantScript() {
             const btn = document.getElementById("plantBtn");
             try {
@@ -337,6 +334,7 @@ jobs:
         run: |
           git config --global user.name "TimeShift Worker"
           git config --global user.email "worker@timeshift.local"
+          rm -rf live_stream
           mkdir -p live_stream
           
           STREAM_DATA=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream.json)
@@ -352,7 +350,7 @@ jobs:
           REF=$(echo "$STREAM_DATA" | jq -r '.referer')
           COOKIE=$(echo "$STREAM_DATA" | jq -r '.cookie')
           
-          CMD="ffmpeg -nostdin -loglevel error -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 5 -fflags +genpts+discardcorrupt"
+          CMD="ffmpeg -nostdin -loglevel error -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2 -fflags +genpts+discardcorrupt"
           
           if [ "$UA" != "" ] && [ "$UA" != "null" ]; then
             CMD="$CMD -user_agent \\"$UA\\""
@@ -371,28 +369,37 @@ jobs:
             CMD="$CMD -headers \\"$HEADERS\\""
           fi
           
-          CMD="$CMD -i \\"$SOURCE\\" -map 0:v:0? -map 0:a:0? -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments+temp_file+omit_endlist+discont_start -avoid_negative_ts make_zero -strftime 1 -hls_segment_filename \\"live_stream/segment_%s.png\\" live_stream/index.m3u8"
+          # سر عدم تكرار اللقطة: append_list يكمل الترقيم ولا يصفر العداد عند الفصلة، و discont_start يربط المقاطع ببعضها
+          CMD="$CMD -i \\"$SOURCE\\" -map 0:v:0? -map 0:a:0? -c copy -f hls -hls_time 3 -hls_list_size 6 -hls_flags append_list+delete_segments+omit_endlist+discont_start+temp_file -avoid_negative_ts make_zero -strftime 1 -hls_segment_filename \\"live_stream/segment_%s.png\\" live_stream/index.m3u8"
           
-          eval "$CMD" &
-          PID=$!
+          # 1. حلقة خلفية سريعة جداً (تتحقق كل ثانية) لإعادة تشغيل FFmpeg فوراً إذا فصل المصدر بعد 12 أو 22 ثانية
+          (
+            while true; do
+              eval "$CMD"
+              sleep 1
+            done
+          ) &
+          RUNNER_PID=$!
           
+          # 2. حلقة الرفع والتنظيف كل 5 ثوانٍ
           while true; do
-            sleep 8
+            sleep 5
             
             CURRENT_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
             if [ "$CURRENT_STATUS" == "stopped" ]; then
-              kill -9 $PID 2>/dev/null || true
+              kill -9 $RUNNER_PID 2>/dev/null || true
+              pkill -9 ffmpeg 2>/dev/null || true
               break
             fi
             
-            if ! kill -0 $PID 2>/dev/null; then
-              eval "$CMD" &
-              PID=$!
-            fi
+            # تنظيف الملفات القديمة (الاحتفاظ بآخر 8 قطع فقط في المستودع لمنع التراكم)
+            ls -1t live_stream/segment_*.png 2>/dev/null | tail -n +9 | xargs -r rm -f
             
-            git add live_stream/ || true
-            git commit -m "Update stream" || true
-            git push origin main || true
+            git add -A live_stream/ || true
+            if ! git diff --staged --quiet; then
+              git commit -m "Live update" || true
+              git push origin main || true
+            fi
           done
 `;
                 
