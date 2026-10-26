@@ -235,7 +235,7 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                // الكود المصحح للهروب النصي (Escaping)
+                // الكود المصحح والمحمي بالكامل ضد أخطاء YAML
                 const workflowContent = `name: Smart FFmpeg Engine
 on:
   workflow_dispatch:
@@ -271,27 +271,25 @@ jobs:
           REF=$(echo "$STREAM_DATA" | jq -r '.referer')
           COOKIE=$(echo "$STREAM_DATA" | jq -r '.cookie')
           
-          CMD="ffmpeg"
+          INPUT_ARGS=()
           if [ "$UA" != "" ] && [ "$UA" != "null" ]; then
-            CMD="$CMD -user_agent \\"$UA\\""
+            INPUT_ARGS+=("-user_agent" "$UA")
           fi
           
+          CRLF=$(printf '\\015\\012')
           HEADERS=""
           if [ "$REF" != "" ] && [ "$REF" != "null" ]; then
-            HEADERS="Referer: $REF\\r\\n"
+            HEADERS="\${HEADERS}Referer: \${REF}\${CRLF}"
           fi
           if [ "$COOKIE" != "" ] && [ "$COOKIE" != "null" ]; then
-            HEADERS="\${HEADERS}Cookie: $COOKIE\\r\\n"
+            HEADERS="\${HEADERS}Cookie: \${COOKIE}\${CRLF}"
           fi
           
           if [ -n "$HEADERS" ]; then
-            CMD="$CMD -headers \\"$HEADERS\\""
+            INPUT_ARGS+=("-headers" "$HEADERS")
           fi
           
-          CMD="$CMD -i \\"$SOURCE\\" -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename \\"live_stream/segment_%03d.png\\" live_stream/index.m3u8"
-          
-          echo "Executing: $CMD"
-          eval $CMD &
+          ffmpeg "\${INPUT_ARGS[@]}" -i "$SOURCE" -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename "live_stream/segment_%03d.png" live_stream/index.m3u8 &
           PID=$!
           
           for i in {1..30}; do
