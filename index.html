@@ -44,7 +44,7 @@
                 <button onclick="startSmartBroadcast()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg transition shadow-lg flex justify-center items-center gap-2">
                     <span>▶️</span> 1. تشغيل البث للجميع
                 </button>
-                <button onclick="stopBroadcast()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-lg transition shadow-lg flex justify-center items-center gap-2">
+                <button id="stopBtn" onclick="stopBroadcast()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-lg transition shadow-lg flex justify-center items-center gap-2">
                     <span>⏹️</span> 2. إيقاف البث
                 </button>
                 <button onclick="clearLink()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-4 px-6 rounded-lg transition shadow-lg flex justify-center items-center gap-2">
@@ -136,7 +136,6 @@
             document.getElementById("cfDomain").value = domain || "";
         });
 
-        // مشغل فدائي لا يستسلم أبداً: يحاول إعادة التشغيل تلقائياً إذا واجه شاشة سوداء
         function playVideo(url) {
             const video = document.getElementById('previewPlayer');
             if (url.includes('.m3u8') || url.includes('.ts')) {
@@ -212,9 +211,57 @@
             }
         }
 
-        function stopBroadcast() {
-            db.ref('settings/stream/status').set("stopped");
-            alert("🛑 تم إرسال أمر الإيقاف.");
+        // --- نظام الإعدام الفوري المحدث ---
+        async function stopBroadcast() {
+            if(!confirm("هل أنت متأكد من إيقاف البث؟ سيتم إعدام جميع العمليات الجارية فوراً.")) return;
+            
+            const stopBtn = document.getElementById("stopBtn");
+            const originalText = stopBtn.innerHTML;
+            stopBtn.innerHTML = "<span>⏳</span> جاري الإعدام...";
+            stopBtn.disabled = true;
+
+            try {
+                // 1. إيقاف في قاعدة البيانات
+                await db.ref('settings/stream/status').set("stopped");
+                
+                // 2. إيقاف المشغل المحلي
+                const video = document.getElementById('previewPlayer');
+                video.pause();
+                video.src = "";
+                if(window.hlsInstance) window.hlsInstance.destroy();
+                
+                // 3. الاتصال الفوري بجيت هاب لإعدام العمليات عنوة
+                const workersRef = await db.ref('workers').once('value');
+                const workers = workersRef.val();
+                
+                if (workers) {
+                    for (let key in workers) {
+                        if (workers[key].status === 'active') {
+                            const worker = workers[key];
+                            // جلب كل العمليات الشغالة حالياً (in_progress)
+                            fetch(`https://api.github.com/repos/${worker.username}/${worker.repo}/actions/runs?status=in_progress`, {
+                                headers: { "Authorization": `token ${worker.token}`, "Accept": "application/vnd.github.v3+json" }
+                            }).then(res => res.json()).then(data => {
+                                if (data && data.workflow_runs) {
+                                    data.workflow_runs.forEach(run => {
+                                        // إرسال أمر الإيقاف الإجباري (Cancel) عبر API جيت هاب
+                                        fetch(`https://api.github.com/repos/${worker.username}/${worker.repo}/actions/runs/${run.id}/cancel`, {
+                                            method: "POST",
+                                            headers: { "Authorization": `token ${worker.token}`, "Accept": "application/vnd.github.v3+json" }
+                                        });
+                                    });
+                                }
+                            }).catch(e => console.log("خطأ في الاتصال بالعمال:", e));
+                        }
+                    }
+                }
+                alert("🛑 تم إيقاف البث وتم إعدام جميع عمليات الخوادم بنجاح!");
+            } catch (error) {
+                alert("حدث خطأ أثناء الإيقاف: " + error.message);
+            } finally {
+                stopBtn.innerHTML = originalText;
+                stopBtn.disabled = false;
+            }
         }
 
         function clearLink() {
@@ -317,8 +364,6 @@ jobs:
             CMD="$CMD -headers \\"$HEADERS\\""
           fi
           
-          # إزالة التسجيل (append_list) لإنهاء مشكلة التكرار
-          # إضافة discont_start لإخبار المشغل بالاستمرار عند الانقطاع
           CMD="$CMD -i \\"$SOURCE\\" -map 0:v:0? -map 0:a:0? -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments+temp_file+omit_endlist+discont_start -avoid_negative_ts make_zero -strftime 1 -hls_segment_filename \\"live_stream/segment_%s.png\\" live_stream/index.m3u8"
           
           eval "$CMD" &
@@ -370,40 +415,4 @@ jobs:
         }
 
         db.ref('workers').on('value', (snapshot) => {
-            const workersTable = document.getElementById('workersTable');
-            workersTable.innerHTML = '';
-            
-            snapshot.forEach((childSnapshot) => {
-                const worker = childSnapshot.val();
-                const workerId = childSnapshot.key;
-                const usage = worker.trafficUsage || 0;
-                
-                const row = `
-                    <tr class="hover:bg-gray-800 transition">
-                        <td class="p-4 text-right">
-                            <div class="font-bold text-blue-300 text-lg">${worker.username}</div>
-                            <div class="text-sm text-gray-500 font-mono">${worker.repo}</div>
-                        </td>
-                        <td class="p-4 w-1/3">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold w-10 text-left ${usage > 85 ? 'text-red-500' : 'text-green-400'}">${usage}%</span>
-                                <div class="w-full bg-gray-700 rounded-full h-3">
-                                    <div class="h-3 rounded-full ${usage > 85 ? 'bg-red-500' : 'bg-green-500'}" style="width: ${usage}%"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="p-4 flex gap-2 justify-center">
-                            <button onclick="deleteWorker('${workerId}')" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded shadow text-sm">حذف</button>
-                        </td>
-                    </tr>
-                `;
-                workersTable.innerHTML += row;
-            });
-        });
-        
-        function deleteWorker(workerId) {
-            if(confirm("هل أنت متأكد من حذف هذا العامل؟")) db.ref('workers/' + workerId).remove();
-        }
-    </script>
-</body>
-</html>
+            const
