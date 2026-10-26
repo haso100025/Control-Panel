@@ -55,7 +55,7 @@
             </div>
             
             <div class="w-full bg-black rounded-lg overflow-hidden border border-gray-700 relative">
-                <div class="absolute top-2 right-2 text-xs text-gray-400 bg-gray-900 px-2 py-1 rounded opacity-80 z-10">شاشة المراقبة المحلية</div>
+                <div class="absolute top-2 right-2 text-xs text-gray-400 bg-gray-900 px-2 py-1 rounded opacity-80 z-10">شاشة المراقبة المحلية (تعمل مع الروابط المكشوفة فقط)</div>
                 <video id="previewPlayer" controls class="w-full h-48 md:h-80 bg-black object-contain"></video>
             </div>
         </div>
@@ -112,16 +112,38 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // التعديل الجديد: جلب الإعدادات المحفوظة فوراً عند فتح الصفحة لكي لا تختفي بعد الريفريش
+        db.ref('settings/stream').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById("sourceLink").value = data.source || "";
+                document.getElementById("userAgent").value = data.userAgent || "";
+                document.getElementById("referer").value = data.referer || "";
+                document.getElementById("cookie").value = data.cookie || "";
+            } else {
+                document.getElementById("sourceLink").value = "";
+                document.getElementById("userAgent").value = "";
+                document.getElementById("referer").value = "";
+                document.getElementById("cookie").value = "";
+                const video = document.getElementById('previewPlayer');
+                video.pause();
+                video.src = "";
+            }
+        });
+
         function playVideo(url) {
             const video = document.getElementById('previewPlayer');
-            if (Hls.isSupported() && url.includes('.m3u8')) {
-                const hls = new Hls();
-                hls.loadSource(url);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, function() { video.play(); });
-            } else {
-                video.src = url;
-                video.play();
+            // تعمل شاشة المراقبة المحلية فقط مع الروابط المكشوفة
+            if (url.includes('.m3u8') || url.includes('.ts')) {
+                if (Hls.isSupported() && url.includes('.m3u8')) {
+                    const hls = new Hls();
+                    hls.loadSource(url);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, function() { video.play(); });
+                } else {
+                    video.src = url;
+                    video.play();
+                }
             }
         }
 
@@ -134,7 +156,6 @@
             
             if(!link) return alert("يرجى إدخال الرابط الأصلي على الأقل!");
             
-            // حفظ الرابط وإعدادات الحماية مع حالة "قيد التشغيل"
             await db.ref('settings/stream').set({
                 source: link,
                 userAgent: ua || "",
@@ -145,7 +166,6 @@
             
             playVideo(link);
             
-            // إطلاق العمال تلقائياً
             const workersRef = await db.ref('workers').once('value');
             const workers = workersRef.val();
             if (workers) {
@@ -172,16 +192,8 @@
 
         // 3. زر مسح الرابط
         function clearLink() {
-            document.getElementById("sourceLink").value = "";
-            document.getElementById("userAgent").value = "";
-            document.getElementById("referer").value = "";
-            document.getElementById("cookie").value = "";
             db.ref('settings/stream').remove();
-            
-            const video = document.getElementById('previewPlayer');
-            video.pause();
-            video.src = "";
-            alert("🗑️ تم مسح الرابط والإعدادات.");
+            alert("🗑️ تم مسح الرابط والإعدادات نهائياً من قاعدة البيانات وإيقاف العمال.");
         }
 
         function updateDomain() {
@@ -218,7 +230,6 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                // المحرك الذكي الذي يدعم قراءة Headers ويراقب أمر التوقف
                 const workflowContent = `name: Smart FFmpeg Engine
 on:
   workflow_dispatch:
@@ -241,7 +252,6 @@ jobs:
           git config --global user.email "worker@timeshift.local"
           mkdir -p live_stream
           
-          # جلب الإعدادات من Firebase
           STREAM_DATA=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream.json)
           STATUS=$(echo "$STREAM_DATA" | jq -r '.status')
           
@@ -255,7 +265,6 @@ jobs:
           REF=$(echo "$STREAM_DATA" | jq -r '.referer')
           COOKIE=$(echo "$STREAM_DATA" | jq -r '.cookie')
           
-          # بناء أمر FFmpeg مع الحمايات
           CMD="ffmpeg"
           if [ "$UA" != "" ] && [ "$UA" != "null" ]; then
             CMD="$CMD -user_agent \"$UA\""
@@ -279,11 +288,9 @@ jobs:
           eval $CMD &
           PID=$!
           
-          # حلقة الرفع ومراقبة التوقف
           for i in {1..30}; do
             sleep 10
             
-            # التحقق إذا تم ضغط زر إيقاف البث
             CURRENT_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
             if [ "$CURRENT_STATUS" == "stopped" ]; then
               echo "Stop command received! Stopping FFmpeg..."
