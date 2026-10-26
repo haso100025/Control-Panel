@@ -45,7 +45,7 @@
                     <span>▶️</span> 1. تشغيل البث للجميع
                 </button>
                 <button id="stopBtn" onclick="stopBroadcast()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-lg transition shadow-lg flex justify-center items-center gap-2">
-                    <span>⏹️</span> 2. إيقاف البث
+                    <span>⏹️</span> 2. إيقاف البث (إعدام فوري)
                 </button>
                 <button onclick="clearLink()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-4 px-6 rounded-lg transition shadow-lg flex justify-center items-center gap-2">
                     <span>🗑️</span> 3. مسح الرابط
@@ -100,6 +100,12 @@
     </div>
 
     <script>
+        // رادار اصطياد الأخطاء: سيخبرك فوراً إذا كان هناك نقص في الكود
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            alert("⚠️ تنبيه هندسي: يوجد خطأ في الكود منع الصفحة من العمل.\nالسبب: " + msg);
+            return false;
+        };
+
         const firebaseConfig = {
             apiKey: "AIzaSyCNLovuI6IOGsl2BrIgN9CImS4FgfY9xuY",
             authDomain: "floating-project-afc8f.firebaseapp.com",
@@ -207,11 +213,11 @@
                         }).catch(e => {});
                     }
                 }
-                alert("✅ تم إرسال أمر التشغيل للعمال!");
+                alert("✅ تم إرسال أمر التشغيل لجميع العمال!");
             }
         }
 
-        // --- نظام الإعدام الفوري المحدث ---
+        // نظام الإعدام الفوري
         async function stopBroadcast() {
             if(!confirm("هل أنت متأكد من إيقاف البث؟ سيتم إعدام جميع العمليات الجارية فوراً.")) return;
             
@@ -221,16 +227,13 @@
             stopBtn.disabled = true;
 
             try {
-                // 1. إيقاف في قاعدة البيانات
                 await db.ref('settings/stream/status').set("stopped");
                 
-                // 2. إيقاف المشغل المحلي
                 const video = document.getElementById('previewPlayer');
                 video.pause();
                 video.src = "";
                 if(window.hlsInstance) window.hlsInstance.destroy();
                 
-                // 3. الاتصال الفوري بجيت هاب لإعدام العمليات عنوة
                 const workersRef = await db.ref('workers').once('value');
                 const workers = workersRef.val();
                 
@@ -238,24 +241,22 @@
                     for (let key in workers) {
                         if (workers[key].status === 'active') {
                             const worker = workers[key];
-                            // جلب كل العمليات الشغالة حالياً (in_progress)
                             fetch(`https://api.github.com/repos/${worker.username}/${worker.repo}/actions/runs?status=in_progress`, {
                                 headers: { "Authorization": `token ${worker.token}`, "Accept": "application/vnd.github.v3+json" }
                             }).then(res => res.json()).then(data => {
                                 if (data && data.workflow_runs) {
                                     data.workflow_runs.forEach(run => {
-                                        // إرسال أمر الإيقاف الإجباري (Cancel) عبر API جيت هاب
                                         fetch(`https://api.github.com/repos/${worker.username}/${worker.repo}/actions/runs/${run.id}/cancel`, {
                                             method: "POST",
                                             headers: { "Authorization": `token ${worker.token}`, "Accept": "application/vnd.github.v3+json" }
                                         });
                                     });
                                 }
-                            }).catch(e => console.log("خطأ في الاتصال بالعمال:", e));
+                            }).catch(e => console.log("خطأ:", e));
                         }
                     }
                 }
-                alert("🛑 تم إيقاف البث وتم إعدام جميع عمليات الخوادم بنجاح!");
+                alert("🛑 تم إيقاف البث وإعدام عمليات الخوادم بنجاح!");
             } catch (error) {
                 alert("حدث خطأ أثناء الإيقاف: " + error.message);
             } finally {
@@ -284,17 +285,23 @@
 
         function encodeBase64(str) { return btoa(unescape(encodeURIComponent(str))); }
 
+        // دالة زرع المحرك مع حماية ضد التوقف المفاجئ
         async function plantScript() {
-            const token = document.getElementById("githubToken").value.trim();
-            if(!token) return alert("يرجى إدخال Token!");
-            
             const btn = document.getElementById("plantBtn");
-            btn.innerText = "جاري الزرع...";
-            btn.disabled = true;
-
             try {
+                const token = document.getElementById("githubToken").value.trim();
+                if(!token) {
+                    alert("يرجى إدخال Token!");
+                    return;
+                }
+                
+                btn.innerText = "جاري الزرع...";
+                btn.disabled = true;
+
                 const userRes = await fetch("https://api.github.com/user", { headers: { "Authorization": `token ${token}` } });
-                if (!userRes.ok) throw new Error("التوكن غير صحيح.");
+                if (!userRes.ok) {
+                    throw new Error("التوكن غير صحيح أو لا يمتلك صلاحيات (repo و workflow).");
+                }
                 const userData = await userRes.json();
                 const username = userData.login;
 
@@ -407,7 +414,7 @@ jobs:
                 alert(`✅ تم زرع المحرك بنجاح في: ${repoName}`);
 
             } catch (error) {
-                alert("❌ خطأ: " + error.message);
+                alert("❌ حدث خطأ أثناء الزرع: " + error.message);
             } finally {
                 btn.innerText = "زرع المحرك الذكي (FFmpeg)";
                 btn.disabled = false;
@@ -415,4 +422,40 @@ jobs:
         }
 
         db.ref('workers').on('value', (snapshot) => {
-            const
+            const workersTable = document.getElementById('workersTable');
+            workersTable.innerHTML = '';
+            
+            snapshot.forEach((childSnapshot) => {
+                const worker = childSnapshot.val();
+                const workerId = childSnapshot.key;
+                const usage = worker.trafficUsage || 0;
+                
+                const row = `
+                    <tr class="hover:bg-gray-800 transition">
+                        <td class="p-4 text-right">
+                            <div class="font-bold text-blue-300 text-lg">${worker.username}</div>
+                            <div class="text-sm text-gray-500 font-mono">${worker.repo}</div>
+                        </td>
+                        <td class="p-4 w-1/3">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold w-10 text-left ${usage > 85 ? 'text-red-500' : 'text-green-400'}">${usage}%</span>
+                                <div class="w-full bg-gray-700 rounded-full h-3">
+                                    <div class="h-3 rounded-full ${usage > 85 ? 'bg-red-500' : 'bg-green-500'}" style="width: ${usage}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4 flex gap-2 justify-center">
+                            <button onclick="deleteWorker('${workerId}')" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded shadow text-sm">حذف</button>
+                        </td>
+                    </tr>
+                `;
+                workersTable.innerHTML += row;
+            });
+        });
+        
+        function deleteWorker(workerId) {
+            if(confirm("هل أنت متأكد من حذف هذا العامل؟")) db.ref('workers/' + workerId).remove();
+        }
+    </script>
+</body>
+</html>
