@@ -136,14 +136,41 @@
             document.getElementById("cfDomain").value = domain || "";
         });
 
+        // مشغل فدائي لا يستسلم أبداً: يحاول إعادة التشغيل تلقائياً إذا واجه شاشة سوداء
         function playVideo(url) {
             const video = document.getElementById('previewPlayer');
             if (url.includes('.m3u8') || url.includes('.ts')) {
                 if (Hls.isSupported() && url.includes('.m3u8')) {
-                    const hls = new Hls();
+                    if(window.hlsInstance) window.hlsInstance.destroy();
+                    
+                    const hls = new Hls({
+                        manifestLoadingMaxRetry: Infinity,
+                        manifestLoadingRetryDelay: 2000,
+                        levelLoadingMaxRetry: Infinity,
+                        levelLoadingRetryDelay: 2000,
+                        liveSyncDurationCount: 3
+                    });
+                    
+                    window.hlsInstance = hls;
                     hls.loadSource(url);
                     hls.attachMedia(video);
-                    hls.on(Hls.Events.MANIFEST_PARSED, function() { video.play(); });
+                    
+                    hls.on(Hls.Events.MANIFEST_PARSED, function() { 
+                        video.play().catch(e => console.log("Auto-play prevented")); 
+                    });
+                    
+                    hls.on(Hls.Events.ERROR, function (event, data) {
+                        if (data.fatal) {
+                            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                                setTimeout(() => { hls.startLoad(); }, 2000);
+                            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                                hls.recoverMediaError();
+                            } else {
+                                hls.destroy();
+                                setTimeout(() => { playVideo(url); }, 2000);
+                            }
+                        }
+                    });
                 } else {
                     video.src = url;
                     video.play();
@@ -290,8 +317,9 @@ jobs:
             CMD="$CMD -headers \\"$HEADERS\\""
           fi
           
-          # إضافة أمر append_list لمنع مسح الخريطة عند إعادة تشغيل المحرك
-          CMD="$CMD -i \\"$SOURCE\\" -map 0:v:0? -map 0:a:0? -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags append_list+delete_segments+temp_file+omit_endlist -avoid_negative_ts make_zero -strftime 1 -hls_segment_filename \\"live_stream/segment_%s.png\\" live_stream/index.m3u8"
+          # إزالة التسجيل (append_list) لإنهاء مشكلة التكرار
+          # إضافة discont_start لإخبار المشغل بالاستمرار عند الانقطاع
+          CMD="$CMD -i \\"$SOURCE\\" -map 0:v:0? -map 0:a:0? -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments+temp_file+omit_endlist+discont_start -avoid_negative_ts make_zero -strftime 1 -hls_segment_filename \\"live_stream/segment_%s.png\\" live_stream/index.m3u8"
           
           eval "$CMD" &
           PID=$!
