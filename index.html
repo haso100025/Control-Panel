@@ -33,8 +33,6 @@
             transform: rotate(135deg);
             transform-origin: 50% 50%;
         }
-        .neon-green { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
-        .neon-red { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
     </style>
 </head>
 <body class="p-3 md:p-6 pb-20">
@@ -62,6 +60,7 @@
             </div>
         </div>
 
+        <!-- العدادات الحقيقية -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div class="carbon-card rounded-2xl p-3 flex flex-col items-center justify-center relative">
                 <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120">
@@ -114,12 +113,12 @@
 
         <div class="carbon-card rounded-2xl p-4 md:p-6">
             <h2 class="text-base md:text-lg font-bold mb-4 text-cyan-400 flex items-center gap-2 border-b border-gray-800 pb-2">
-                <span>🚀</span> 1. محرك البث الموحد (يعالج M3U8 و TS)
+                <span>🚀</span> 1. المحرك القاهر (يعالج التقطيع والقفز والتزامن تلقائياً)
             </h2>
             
             <div class="space-y-3 mb-4">
                 <div>
-                    <label class="text-xs font-bold text-gray-400 block mb-1">الرابط الأصلي للمصدر (M3U8, TS, MPD, FLV):</label>
+                    <label class="text-xs font-bold text-gray-400 block mb-1">الرابط الأصلي للمصدر:</label>
                     <input type="text" id="sourceLink" placeholder="https://example.com/live/stream.m3u8 أو .ts" class="w-full p-3.5 rounded-xl bg-black/70 border border-gray-700 text-emerald-400 focus:outline-none focus:border-cyan-500 font-mono text-xs md:text-sm text-left" dir="ltr">
                 </div>
                 
@@ -140,10 +139,10 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-                <button id="startBtn" onclick="startSmartBroadcast()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3.5 px-4 rounded-xl transition neon-green flex justify-center items-center gap-2 text-sm">
+                <button id="startBtn" onclick="startSmartBroadcast()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3.5 px-4 rounded-xl transition flex justify-center items-center gap-2 text-sm">
                     <span>⚡</span> تشغيل البث الشامل
                 </button>
-                <button id="stopBtn" onclick="stopBroadcastAndWipe()" class="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white font-black py-3.5 px-4 rounded-xl transition neon-red flex justify-center items-center gap-2 text-sm">
+                <button id="stopBtn" onclick="stopBroadcastAndWipe()" class="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white font-black py-3.5 px-4 rounded-xl transition flex justify-center items-center gap-2 text-sm">
                     <span>🛑</span> إيقاف ومسح الأثر فوراً
                 </button>
                 <button onclick="clearLink()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3.5 px-4 rounded-xl transition border border-gray-700 flex justify-center items-center gap-2 text-sm">
@@ -182,7 +181,7 @@
             <div class="flex flex-col sm:flex-row gap-2.5 mb-5 bg-black/40 p-3 rounded-xl border border-gray-800">
                 <input type="text" id="githubToken" placeholder="أدخل GitHub Token (صلاحيات repo + workflow)..." class="flex-1 p-3 rounded-xl bg-gray-950 border border-gray-700 text-purple-300 font-mono text-xs text-left" dir="ltr">
                 <button onclick="plantScript()" id="plantBtn" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-3 px-6 rounded-xl transition text-xs md:text-sm whitespace-nowrap">
-                    + زرع المحرك الموحد
+                    + زرع المحرك القاهر
                 </button>
             </div>
 
@@ -325,10 +324,14 @@
 
             if (Hls.isSupported()) {
                 if (window.hlsInstance) window.hlsInstance.destroy();
+                
+                // إعدادات المشغل لمنع القفز والتسريع (Fast Forward) وحل مشاكل الـ m3u8
                 const hls = new Hls({
-                    liveSyncDurationCount: 2,
-                    liveMaxLatencyDurationCount: 5,
-                    maxBufferLength: 15,
+                    liveSyncDurationCount: 3,
+                    liveMaxLatencyDurationCount: 7,
+                    maxBufferLength: 30,
+                    enableWorker: true,
+                    lowLatencyMode: false, // تعطيل اللاتنسي المنخفض الذي يسبب ركض الفيديو
                     manifestLoadingMaxRetry: Infinity,
                     manifestLoadingRetryDelay: 1000,
                     levelLoadingMaxRetry: Infinity,
@@ -336,6 +339,7 @@
                     fragLoadingMaxRetry: Infinity,
                     fragLoadingRetryDelay: 1000
                 });
+                
                 window.hlsInstance = hls;
                 hls.loadSource(url);
                 hls.attachMedia(video);
@@ -427,7 +431,7 @@
                     refreshWorkersTelemetry();
                 }, 5000);
 
-                alert("✅ تم إطلاق المحرك الموحد في جميع الحسابات!");
+                alert("✅ تم إطلاق المحرك في جميع الحسابات!");
             } catch (e) {
                 alert("خطأ: " + e.message);
             } finally {
@@ -457,10 +461,7 @@
                 if (workers) {
                     const wipePromises = Object.keys(workers).map(async (key) => {
                         const worker = workers[key];
-                        const headers = { 
-                            "Authorization": `token ${worker.token}`, 
-                            "Accept": "application/vnd.github.v3+json" 
-                        };
+                        const headers = { "Authorization": `token ${worker.token}`, "Accept": "application/vnd.github.v3+json" };
                         const baseUrl = `https://api.github.com/repos/${worker.username}/${worker.repo}`;
 
                         try {
@@ -480,9 +481,7 @@
                             if (m3u8Res.ok) {
                                 const m3u8File = await m3u8Res.json();
                                 await fetch(`${baseUrl}/contents/live_stream/index.m3u8`, {
-                                    method: "DELETE",
-                                    headers,
-                                    body: JSON.stringify({ message: "Wipe stream trace", sha: m3u8File.sha })
+                                    method: "DELETE", headers, body: JSON.stringify({ message: "Wipe stream trace", sha: m3u8File.sha })
                                 }).catch(() => {});
                             }
                         } catch (err) {}
@@ -501,9 +500,7 @@
             }
         }
 
-        function clearLink() {
-            db.ref('settings/stream').remove();
-        }
+        function clearLink() { db.ref('settings/stream').remove(); }
 
         function updateDomain() {
             const domain = document.getElementById("cfDomain").value.trim();
@@ -567,9 +564,7 @@ jobs:
           STREAM_DATA=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream.json)
           STATUS=$(echo "$STREAM_DATA" | jq -r '.status')
           
-          if [ "$STATUS" != "running" ]; then
-            exit 0
-          fi
+          if [ "$STATUS" != "running" ]; then exit 0; fi
           
           SOURCE=$(echo "$STREAM_DATA" | jq -r '.source')
           UA=$(echo "$STREAM_DATA" | jq -r '.userAgent')
@@ -580,47 +575,30 @@ jobs:
           if [ -n "$UA" ] && [ "$UA" != "null" ]; then
             HEADER_ARGS+=(-user_agent "$UA")
           else
-            HEADER_ARGS+=(-user_agent "VLC/3.0.18")
+            HEADER_ARGS+=(-user_agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
           fi
           
           CRLF=$(printf '\\r\\n')
           custom_headers=""
-          if [ -n "$REF" ] && [ "$REF" != "null" ]; then
-            custom_headers="\${custom_headers}Referer: \${REF}\${CRLF}"
-          fi
-          if [ -n "$COOKIE" ] && [ "$COOKIE" != "null" ]; then
-            custom_headers="\${custom_headers}Cookie: \${COOKIE}\${CRLF}"
-          fi
-          if [ -n "$custom_headers" ]; then
-            HEADER_ARGS+=(-headers "$custom_headers")
-          fi
+          if [ -n "$REF" ] && [ "$REF" != "null" ]; then custom_headers="\${custom_headers}Referer: \${REF}\${CRLF}"; fi
+          if [ -n "$COOKIE" ] && [ "$COOKIE" != "null" ]; then custom_headers="\${custom_headers}Cookie: \${COOKIE}\${CRLF}"; fi
+          if [ -n "$custom_headers" ]; then HEADER_ARGS+=(-headers "$custom_headers"); fi
 
+          # الكود الهندسي القاهر: يولد توقيتات جديدة ويمنع القفز والتراجع، ومزود بمساحة كافية لامتصاص الصدمات 
           (
             while true; do
               S_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
               if [ "$S_STATUS" == "stopped" ]; then break; fi
 
-              if [[ "$SOURCE" == *".m3u8"* ]]; then
-                ffmpeg -nostdin -loglevel warning -use_wallclock_as_timestamps 1 "\${HEADER_ARGS[@]}" \\
-                  -allowed_extensions ALL -rw_timeout 8000000 \\
-                  -fflags +genpts+discardcorrupt \\
-                  -i "$SOURCE" \\
-                  -map 0:v:0? -map 0:a:0? -c:v copy -c:a aac -b:a 128k \\
-                  -f hls -hls_time 3 -hls_list_size 5 \\
-                  -hls_flags append_list+delete_segments+omit_endlist+discont_start+temp_file+independent_segments \\
-                  -avoid_negative_ts make_zero -strftime 1 \\
-                  -hls_segment_filename "live_stream/seg_%Y%m%d%H%M%S.png" live_stream/index.m3u8
-              else
-                ffmpeg -nostdin -loglevel warning -use_wallclock_as_timestamps 1 "\${HEADER_ARGS[@]}" \\
-                  -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2 -rw_timeout 8000000 \\
-                  -fflags +genpts+discardcorrupt \\
-                  -i "$SOURCE" \\
-                  -map 0:v:0? -map 0:a:0? -c:v copy -c:a aac -b:a 128k \\
-                  -f hls -hls_time 3 -hls_list_size 5 \\
-                  -hls_flags append_list+delete_segments+omit_endlist+discont_start+temp_file+independent_segments \\
-                  -avoid_negative_ts make_zero -strftime 1 \\
-                  -hls_segment_filename "live_stream/seg_%Y%m%d%H%M%S.png" live_stream/index.m3u8
-              fi
+              ffmpeg -nostdin -hide_banner -loglevel warning "\${HEADER_ARGS[@]}" \\
+                -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2 -rw_timeout 8000000 \\
+                -fflags +genpts+discardcorrupt+igndts \\
+                -i "$SOURCE" \\
+                -map 0:v:0? -map 0:a:0? -c copy -max_muxing_queue_size 9999 \\
+                -f hls -hls_time 3 -hls_list_size 6 \\
+                -hls_flags append_list+delete_segments+omit_endlist+discont_start+temp_file \\
+                -avoid_negative_ts make_zero -strftime 1 \\
+                -hls_segment_filename "live_stream/seg_%Y%m%d%H%M%S.png" live_stream/index.m3u8
 
               sleep 0.5
             done
@@ -640,7 +618,7 @@ jobs:
               break
             fi
             
-            ls -1t live_stream/seg_*.png 2>/dev/null | tail -n +8 | xargs -r rm -f
+            ls -1t live_stream/seg_*.png 2>/dev/null | tail -n +9 | xargs -r rm -f
             
             git add -A live_stream/ || true
             if ! git diff --staged --quiet; then
@@ -651,27 +629,22 @@ jobs:
 `;
                 
                 await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, {
-                    method: "PUT",
-                    headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
+                    method: "PUT", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
                     body: JSON.stringify({ message: "Init Unified Engine", content: encodeBase64(workflowContent) })
                 });
 
                 await db.ref('workers/' + username + '_' + randomId).set({
-                    token: token,
-                    status: 'active',
-                    trafficUsage: 0,
-                    repo: repoName,
-                    username: username
+                    token: token, status: 'active', trafficUsage: 0, repo: repoName, username: username
                 });
                 
                 document.getElementById("githubToken").value = '';
                 await refreshWorkersTelemetry();
-                alert(`✅ تم زرع المحرك الموحد بنجاح في: ${repoName}`);
+                alert(`✅ تم زرع المحرك القاهر بنجاح في: ${repoName}`);
 
             } catch (error) {
                 alert("❌ خطأ أثناء الزرع: " + error.message);
             } finally {
-                btn.innerText = "+ زرع المحرك الموحد";
+                btn.innerText = "+ زرع المحرك القاهر";
                 btn.disabled = false;
             }
         }
@@ -679,31 +652,23 @@ jobs:
         async function refreshWorkersTelemetry() {
             const keys = Object.keys(workersMemory);
             if (keys.length === 0) {
-                setGaugeValue("gaugeWorkers", 0);
-                document.getElementById("valWorkers").innerText = "0/0";
-                setGaugeValue("gaugeQuota", 0);
-                document.getElementById("valQuota").innerText = "0%";
-                document.getElementById("subQuota").innerText = "0/0";
+                setGaugeValue("gaugeWorkers", 0); document.getElementById("valWorkers").innerText = "0/0";
+                setGaugeValue("gaugeQuota", 0); document.getElementById("valQuota").innerText = "0%"; document.getElementById("subQuota").innerText = "0/0";
                 return;
             }
 
-            let actuallyRunningCount = 0;
-            let totalRemainingCalls = 0;
-            let totalLimitCalls = 0;
+            let actuallyRunningCount = 0; let totalRemainingCalls = 0; let totalLimitCalls = 0;
 
             await Promise.all(keys.map(async (key) => {
                 const w = workersMemory[key];
                 const headers = { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" };
-
                 try {
                     const runsRes = await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers });
                     if (runsRes.ok) {
                         const runsData = await runsRes.json();
                         const isBroadcasting = (runsData.total_count && runsData.total_count > 0);
                         liveWorkerStates[key] = isBroadcasting;
-                        if (isBroadcasting && w.status === 'active') {
-                            actuallyRunningCount++;
-                        }
+                        if (isBroadcasting && w.status === 'active') actuallyRunningCount++;
                     }
 
                     const rateRes = await fetch(`https://api.github.com/rate_limit?t=${Date.now()}`, { headers });
@@ -711,9 +676,7 @@ jobs:
                         const rateData = await rateRes.json();
                         const limit = rateData.rate.limit || 5000;
                         const remaining = rateData.rate.remaining || 0;
-                        totalLimitCalls += limit;
-                        totalRemainingCalls += remaining;
-
+                        totalLimitCalls += limit; totalRemainingCalls += remaining;
                         const usedPct = Math.round(((limit - remaining) / limit) * 100);
                         db.ref(`workers/${key}/trafficUsage`).set(usedPct);
                     }
@@ -730,7 +693,6 @@ jobs:
                 document.getElementById("subQuota").innerText = `${totalRemainingCalls}/${totalLimitCalls}`;
                 setGaugeValue("gaugeQuota", remainPct, remainPct > 25 ? "#a855f7" : "#ef4444");
             }
-
             renderWorkerCards();
         }
 
@@ -759,7 +721,6 @@ jobs:
                                 ${isPaused ? 'موقوف مؤقتاً' : (isBroadcastingNow ? '🔥 يبث الآن' : 'جاهز بالانتظار')}
                             </span>
                         </div>
-
                         <div>
                             <div class="flex justify-between text-[11px] mb-1">
                                 <span class="text-gray-400">استهلاك طلبات GitHub API</span>
@@ -769,7 +730,6 @@ jobs:
                                 <div class="h-full ${usage > 80 ? 'bg-red-500' : 'bg-gradient-to-r from-cyan-500 to-emerald-500'}" style="width: ${usage}%"></div>
                             </div>
                         </div>
-
                         <div class="flex gap-2 pt-1 border-t border-gray-800/80">
                             <button onclick="toggleWorkerStatus('${workerId}', '${worker.status}')" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-200 py-1.5 px-3 rounded-lg text-xs font-bold transition">
                                 ${isPaused ? '▶️ تفعيل' : '⏸️ إيقاف مؤقت'}
@@ -786,19 +746,14 @@ jobs:
 
         db.ref('workers').on('value', (snapshot) => {
             workersMemory = snapshot.val() || {};
-            renderWorkerCards();
-            refreshWorkersTelemetry();
+            renderWorkerCards(); refreshWorkersTelemetry();
         });
 
         function toggleWorkerStatus(workerId, currentStatus) {
-            const nextStatus = currentStatus === 'active' ? 'paused' : 'active';
-            db.ref('workers/' + workerId + '/status').set(nextStatus);
+            db.ref('workers/' + workerId + '/status').set(currentStatus === 'active' ? 'paused' : 'active');
         }
-        
         function deleteWorker(workerId) {
-            if(confirm("هل أنت متأكد من إزالة هذا العامل من المنظومة؟")) {
-                db.ref('workers/' + workerId).remove();
-            }
+            if(confirm("هل أنت متأكد من إزالة هذا العامل؟")) db.ref('workers/' + workerId).remove();
         }
     </script>
 </body>
