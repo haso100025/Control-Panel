@@ -25,7 +25,7 @@
             box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
         }
         .gauge-ring {
-            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.4s ease;
+            transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease;
             transform: rotate(135deg);
             transform-origin: 50% 50%;
         }
@@ -52,7 +52,7 @@
             </div>
             <div class="flex items-center gap-4 bg-black/50 px-4 py-2 rounded-xl border border-gray-800">
                 <div class="text-center">
-                    <span class="text-[10px] text-gray-400 block">وقت التشغيل</span>
+                    <span class="text-[10px] text-gray-400 block">وقت التشغيل الفعلي</span>
                     <span id="uptimeCounter" class="digital-font text-sm md:text-base font-bold text-cyan-400">00:00:00</span>
                 </div>
                 <div class="h-6 w-[1px] bg-gray-800"></div>
@@ -63,9 +63,9 @@
             </div>
         </div>
 
-        <!-- طبلون عدادات السيارات الحقيقية (4 Gauges) -->
+        <!-- طبلون عدادات السيارات الحقيقية (تحديث حي كل 4 ثوانٍ) -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <!-- عداد 1: قوة المحركات النشطة (RPM) -->
+            <!-- عداد 1: المحركات الشغالة فعلياً في GitHub Actions -->
             <div class="carbon-card rounded-2xl p-3 flex flex-col items-center justify-center relative">
                 <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120">
                     <circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/>
@@ -73,12 +73,12 @@
                 </svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center mt-2">
                     <span id="valWorkers" class="digital-font text-2xl font-extrabold text-white">0/0</span>
-                    <span class="text-[10px] text-cyan-400 font-bold">RPM المحركات</span>
+                    <span class="text-[10px] text-cyan-400 font-bold">LIVE RPM</span>
                 </div>
-                <span class="text-[11px] text-gray-400 -mt-2">العمال النشطون</span>
+                <span class="text-[11px] text-gray-400 -mt-2">يبث الآن / الإجمالي</span>
             </div>
 
-            <!-- عداد 2: سرعة تدفق البث (Bitrate Speedometer) -->
+            <!-- عداد 2: سرعة تدفق البث الحقيقية (Bitrate Speedometer) -->
             <div class="carbon-card rounded-2xl p-3 flex flex-col items-center justify-center relative">
                 <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120">
                     <circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/>
@@ -88,20 +88,20 @@
                     <span id="valSpeed" class="digital-font text-2xl font-extrabold text-white">0.0</span>
                     <span class="text-[10px] text-emerald-400 font-bold">Mbps السرعة</span>
                 </div>
-                <span class="text-[11px] text-gray-400 -mt-2">سرعة سحب البث</span>
+                <span class="text-[11px] text-gray-400 -mt-2">سرعة سحب القطع</span>
             </div>
 
-            <!-- عداد 3: ضغط التوربو (GitHub API Quota) -->
+            <!-- عداد 3: ضغط التوربو الحقيقي (GitHub API Quota) -->
             <div class="carbon-card rounded-2xl p-3 flex flex-col items-center justify-center relative">
                 <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120">
                     <circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/>
                     <circle id="gaugeQuota" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#a855f7" stroke-width="10" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/>
                 </svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center mt-2">
-                    <span id="valQuota" class="digital-font text-2xl font-extrabold text-white">100%</span>
-                    <span class="text-[10px] text-purple-400 font-bold">TURBO API</span>
+                    <span id="valQuota" class="digital-font text-xl font-extrabold text-white">0%</span>
+                    <span id="subQuota" class="digital-font text-[9px] text-purple-300">0/0</span>
                 </div>
-                <span class="text-[11px] text-gray-400 -mt-2">رصيد طلبات التوكنات</span>
+                <span class="text-[11px] text-gray-400 -mt-2">رصيد API الحقيقي</span>
             </div>
 
             <!-- عداد 4: استقرار وحرارة البث (Buffer Health) -->
@@ -111,7 +111,7 @@
                     <circle id="gaugeHealth" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#f59e0b" stroke-width="10" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/>
                 </svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center mt-2">
-                    <span id="valHealth" class="digital-font text-2xl font-extrabold text-white">0s</span>
+                    <span id="valHealth" class="digital-font text-2xl font-extrabold text-white">0.0s</span>
                     <span class="text-[10px] text-amber-400 font-bold">BUFFER SYNC</span>
                 </div>
                 <span class="text-[11px] text-gray-400 -mt-2">مخزون أمان المشغل</span>
@@ -121,19 +121,19 @@
         <!-- 1. وحدة التحكم بالبث والشاشة -->
         <div class="carbon-card rounded-2xl p-4 md:p-6">
             <h2 class="text-base md:text-lg font-bold mb-4 text-cyan-400 flex items-center gap-2 border-b border-gray-800 pb-2">
-                <span>🚀</span> 1. محرك البث الشامل (يدعم M3U8, TS, MPD, FLV وكافة الصيغ)
+                <span>🚀</span> 1. محرك البث الموحد (يعالج M3U8 و TS والسيرفرات المتقطعة والمستقرة)
             </h2>
             
             <div class="space-y-3 mb-4">
                 <div>
-                    <label class="text-xs font-bold text-gray-400 block mb-1">الرابط الأصلي للمصدر:</label>
+                    <label class="text-xs font-bold text-gray-400 block mb-1">الرابط الأصلي للمصدر (M3U8, TS, MPD, FLV):</label>
                     <input type="text" id="sourceLink" placeholder="https://example.com/live/stream.m3u8 أو .ts" class="w-full p-3.5 rounded-xl bg-black/70 border border-gray-700 text-emerald-400 focus:outline-none focus:border-cyan-500 font-mono text-xs md:text-sm text-left" dir="ltr">
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
                     <div>
                         <label class="text-[11px] font-bold text-gray-500">User-Agent (اختياري):</label>
-                        <input type="text" id="userAgent" placeholder="OSCARTV2021" class="w-full p-2.5 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr">
+                        <input type="text" id="userAgent" placeholder="VLC/3.0.18" class="w-full p-2.5 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr">
                     </div>
                     <div>
                         <label class="text-[11px] font-bold text-gray-500">Referer (اختياري):</label>
@@ -159,11 +159,11 @@
                 </button>
             </div>
             
-            <!-- شاشة المراقبة الحية (تختبر دومين الكلاود فلير مباشرة) -->
+            <!-- شاشة المراقبة الحية -->
             <div class="w-full bg-black rounded-xl overflow-hidden border border-gray-800 relative">
                 <div class="absolute top-2 right-2 flex items-center gap-2 bg-black/80 px-2.5 py-1 rounded-lg border border-gray-800 z-10">
-                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                    <span class="text-[10px] text-gray-300 font-bold">رادار المراقبة الحية</span>
+                    <span id="playerRadarDot" class="w-2 h-2 rounded-full bg-gray-500"></span>
+                    <span id="playerRadarText" class="text-[10px] text-gray-300 font-bold">رادار المشغل: متوقف</span>
                 </div>
                 <video id="previewPlayer" controls muted playsinline class="w-full h-52 md:h-80 bg-black object-contain"></video>
             </div>
@@ -177,7 +177,7 @@
             <div class="flex flex-col sm:flex-row gap-2.5">
                 <input type="text" id="cfDomain" placeholder="https://your-worker.workers.dev" class="flex-1 p-3 rounded-xl bg-black/70 border border-gray-700 text-amber-300 font-mono text-xs md:text-sm text-left" dir="ltr">
                 <button onclick="updateDomain()" class="bg-amber-600 hover:bg-amber-500 text-black font-black py-3 px-6 rounded-xl transition text-xs md:text-sm">حفظ الدومين</button>
-                <button onclick="testCloudflareStream()" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-xl transition text-xs md:text-sm">فحص الدومين بالمشغل</button>
+                <button onclick="testCloudflareStream()" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-xl transition text-xs md:text-sm">تشغيل الدومين بالرادار</button>
             </div>
         </div>
 
@@ -187,17 +187,16 @@
                 <h2 class="text-base md:text-lg font-bold text-purple-400 flex items-center gap-2">
                     <span>🤖</span> 3. أسطول العمال (GitHub Sub-Accounts)
                 </h2>
-                <button onclick="refreshWorkersTelemetry()" class="text-xs bg-gray-800 hover:bg-gray-700 text-cyan-400 px-3 py-1.5 rounded-lg border border-gray-700">🔄 تحديث العدادات</button>
+                <button onclick="refreshWorkersTelemetry()" class="text-xs bg-gray-800 hover:bg-gray-700 text-cyan-400 px-3 py-1.5 rounded-lg border border-gray-700">🔄 فحص حي للعدادات</button>
             </div>
             
             <div class="flex flex-col sm:flex-row gap-2.5 mb-5 bg-black/40 p-3 rounded-xl border border-gray-800">
                 <input type="text" id="githubToken" placeholder="أدخل GitHub Token (صلاحيات repo + workflow)..." class="flex-1 p-3 rounded-xl bg-gray-950 border border-gray-700 text-purple-300 font-mono text-xs text-left" dir="ltr">
                 <button onclick="plantScript()" id="plantBtn" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-3 px-6 rounded-xl transition text-xs md:text-sm whitespace-nowrap">
-                    + زرع المحرك الشامل
+                    + زرع المحرك الموحد
                 </button>
             </div>
 
-            <!-- قائمة العمال المتجاوبة للهواتف -->
             <div id="workersList" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
         </div>
 
@@ -218,10 +217,11 @@
         const db = firebase.database();
 
         let workersMemory = {};
+        let liveWorkerStates = {}; // يحفظ الحالة الحقيقية من داخل GitHub Actions
         let streamStartTime = null;
         let currentStreamStatus = "stopped";
+        let lastFragTime = 0;
 
-        // دالة تحريك عدادات السيارات (من 0 إلى 100%)
         function setGaugeValue(gaugeId, percent, colorHex) {
             const circle = document.getElementById(gaugeId);
             if (!circle) return;
@@ -232,7 +232,6 @@
             if (colorHex) circle.style.stroke = colorHex;
         }
 
-        // كشف صيغة الرابط تلقائياً
         function detectStreamFormat(url) {
             if (!url) return "NONE";
             const lower = url.toLowerCase();
@@ -240,11 +239,9 @@
             if (lower.includes(".ts")) return "MPEG-TS";
             if (lower.includes(".mpd")) return "DASH (MPD)";
             if (lower.includes(".flv")) return "FLV STREAM";
-            if (lower.includes("rtmp://")) return "RTMP LIVE";
-            return "AUTO-STREAM";
+            return "UNIVERSAL";
         }
 
-        // مراقبة حالة البث من فايربيس
         db.ref('settings/stream').on('value', (snapshot) => {
             const data = snapshot.val();
             const dot = document.getElementById("statusDot");
@@ -263,7 +260,7 @@
                     dot.className = "w-4 h-4 rounded-full bg-emerald-400 animate-ping";
                     statusTxt.innerText = "المحركات تشتغل بأقصى طاقة (BROADCASTING LIVE)";
                     statusTxt.className = "text-xs text-emerald-400 font-bold";
-                    if (!streamStartTime) streamStartTime = data.startedAt || Date.now();
+                    streamStartTime = data.startedAt || Date.now();
                 } else {
                     dot.className = "w-4 h-4 rounded-full bg-red-500";
                     statusTxt.innerText = "تم إيقاف البث ومسح الأثر (STOPPED)";
@@ -272,20 +269,21 @@
                     setGaugeValue("gaugeSpeed", 0);
                     document.getElementById("valSpeed").innerText = "0.0";
                     setGaugeValue("gaugeHealth", 0);
-                    document.getElementById("valHealth").innerText = "0s";
+                    document.getElementById("valHealth").innerText = "0.0s";
                 }
             } else {
                 currentStreamStatus = "stopped";
                 streamStartTime = null;
                 fmtBadge.innerText = "NONE";
             }
+            refreshWorkersTelemetry();
         });
 
         db.ref('settings/domain').on('value', (snapshot) => {
             document.getElementById("cfDomain").value = snapshot.val() || "";
         });
 
-        // عداد الوقت الحقيقي وفحص صحة المشغل
+        // حلقة قياس حقيقية كل ثانية للوقت، السرعة، ومخزون المشغل
         setInterval(() => {
             const uptimeEl = document.getElementById("uptimeCounter");
             if (currentStreamStatus === "running" && streamStartTime) {
@@ -298,17 +296,44 @@
                 uptimeEl.innerText = "00:00:00";
             }
 
-            // فحص مخزون البث الحقيقي (Buffer Health) من الفيديو
+            // تصفير عداد السرعة إذا لم يتم تحميل أي قطعة منذ 6 ثوانٍ
+            if (Date.now() - lastFragTime > 6000) {
+                document.getElementById("valSpeed").innerText = "0.0";
+                setGaugeValue("gaugeSpeed", 0, "#10b981");
+            }
+
+            // قياس مخزون الفيديو الحقيقي بالثواني داخل المشغل
             const video = document.getElementById('previewPlayer');
-            if (video && !video.paused && video.buffered.length > 0) {
-                const bufferLen = Math.max(0, video.buffered.end(video.buffered.length - 1) - video.currentTime);
+            const radarDot = document.getElementById('playerRadarDot');
+            const radarTxt = document.getElementById('playerRadarText');
+
+            if (video && !video.paused && video.readyState >= 2) {
+                let bufferLen = 0;
+                for (let i = 0; i < video.buffered.length; i++) {
+                    if (video.currentTime >= video.buffered.start(i) && video.currentTime <= video.buffered.end(i)) {
+                        bufferLen = video.buffered.end(i) - video.currentTime;
+                        break;
+                    }
+                }
                 document.getElementById("valHealth").innerText = bufferLen.toFixed(1) + "s";
-                const healthPercent = Math.min(100, (bufferLen / 12) * 100);
-                setGaugeValue("gaugeHealth", healthPercent, bufferLen > 3 ? "#10b981" : "#f59e0b");
+                const healthPercent = Math.min(100, (bufferLen / 10) * 100);
+                setGaugeValue("gaugeHealth", healthPercent, bufferLen > 2.5 ? "#10b981" : "#f59e0b");
+
+                radarDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping";
+                radarTxt.innerText = "رادار المشغل: متصل ويعرض البث";
+            } else {
+                document.getElementById("valHealth").innerText = "0.0s";
+                setGaugeValue("gaugeHealth", 0, "#f59e0b");
+                radarDot.className = "w-2 h-2 rounded-full bg-gray-500";
+                radarTxt.innerText = "رادار المشغل: خامل";
             }
         }, 1000);
 
-        // تشغيل الفيديو وفحص سرعة البث الحقيقية (Bitrate)
+        // حلقة فحص حقيقية من GitHub API كل 6 ثوانٍ لحساب العمال الشغالين ورصيد التوكنات الفعلي
+        setInterval(() => {
+            refreshWorkersTelemetry();
+        }, 6000);
+
         function playVideo(url) {
             const video = document.getElementById('previewPlayer');
             if (!url) return;
@@ -316,11 +341,15 @@
             if (Hls.isSupported()) {
                 if (window.hlsInstance) window.hlsInstance.destroy();
                 const hls = new Hls({
+                    liveSyncDurationCount: 2,
+                    liveMaxLatencyDurationCount: 5,
+                    maxBufferLength: 15,
                     manifestLoadingMaxRetry: Infinity,
-                    manifestLoadingRetryDelay: 1500,
+                    manifestLoadingRetryDelay: 1000,
                     levelLoadingMaxRetry: Infinity,
-                    levelLoadingRetryDelay: 1500,
-                    liveSyncDurationCount: 3
+                    levelLoadingRetryDelay: 1000,
+                    fragLoadingMaxRetry: Infinity,
+                    fragLoadingRetryDelay: 1000
                 });
                 window.hlsInstance = hls;
                 hls.loadSource(url);
@@ -330,24 +359,28 @@
                     video.play().catch(() => {});
                 });
 
-                // حساب سرعة سحب البث الحقيقية عند تحميل كل قطعة
+                // قياس حقيقي لسرعة التحميل بالميجابايت في الثانية لكل قطعة فيديو
                 hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
+                    lastFragTime = Date.now();
                     const stats = data.frag.stats;
                     const durationMs = stats.loading.end - stats.loading.start;
-                    if (durationMs > 0) {
-                        const mbps = ((stats.total * 8) / (durationMs / 1000)) / 1000000;
-                        const cleanMbps = Math.min(25, Math.max(0.5, mbps));
+                    const bytes = stats.total || stats.loaded || 0;
+                    if (durationMs > 0 && bytes > 0) {
+                        const mbps = ((bytes * 8) / (durationMs / 1000)) / 1000000;
+                        const cleanMbps = Math.min(30, Math.max(0.2, mbps));
                         document.getElementById("valSpeed").innerText = cleanMbps.toFixed(1);
-                        setGaugeValue("gaugeSpeed", (cleanMbps / 15) * 100, "#10b981");
+                        setGaugeValue("gaugeSpeed", Math.min(100, (cleanMbps / 12) * 100), "#10b981");
                     }
                 });
 
                 hls.on(Hls.Events.ERROR, (event, data) => {
                     if (data.fatal && currentStreamStatus === "running") {
                         if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-                            setTimeout(() => hls.startLoad(), 1500);
+                            setTimeout(() => hls.startLoad(), 1000);
                         } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
                             hls.recoverMediaError();
+                        } else {
+                            setTimeout(() => playVideo(url), 1500);
                         }
                     }
                 });
@@ -363,7 +396,6 @@
             playVideo(cf);
         }
 
-        // 1. تشغيل البث الشامل
         async function startSmartBroadcast() {
             const link = document.getElementById("sourceLink").value.trim();
             const ua = document.getElementById("userAgent").value.trim();
@@ -409,9 +441,9 @@
                 setTimeout(() => {
                     if (cf) playVideo(cf);
                     refreshWorkersTelemetry();
-                }, 4000);
+                }, 5000);
 
-                alert("✅ تم إطلاق البث في جميع الحسابات الفرعية بنجاح!");
+                alert("✅ تم إطلاق المحرك الموحد في جميع الحسابات!");
             } catch (e) {
                 alert("خطأ: " + e.message);
             } finally {
@@ -420,7 +452,6 @@
             }
         }
 
-        // 2. الإيقاف القاطع + مسح سجل الحركة بالكامل من GitHub + تصفير المستودع
         async function stopBroadcastAndWipe() {
             const stopBtn = document.getElementById("stopBtn");
             const originalText = stopBtn.innerHTML;
@@ -428,11 +459,9 @@
             stopBtn.disabled = true;
 
             try {
-                // أولاً: إغلاق حالة البث فوراً لكي يقطع Cloudflare الدومين في نفس الثانية
                 await db.ref('settings/stream/status').set("stopped");
                 streamStartTime = null;
 
-                // إيقاف المشغل المحلي
                 const video = document.getElementById('previewPlayer');
                 video.pause();
                 video.src = "";
@@ -451,22 +480,18 @@
                         const baseUrl = `https://api.github.com/repos/${worker.username}/${worker.repo}`;
 
                         try {
-                            // أ) جلب كل العمليات في Actions (الشغالة والسابقة)
                             const runsRes = await fetch(`${baseUrl}/actions/runs?per_page=30`, { headers });
                             const runsData = await runsRes.json();
 
                             if (runsData && runsData.workflow_runs) {
                                 for (const run of runsData.workflow_runs) {
-                                    // إعدام أي عملية شغالة أو بالانتظار
                                     if (run.status === "in_progress" || run.status === "queued" || run.status === "waiting") {
                                         await fetch(`${baseUrl}/actions/runs/${run.id}/cancel`, { method: "POST", headers }).catch(() => {});
                                     }
-                                    // مسح سجل العملية بالكامل من صفحة Actions لمسح الأثر
                                     await fetch(`${baseUrl}/actions/runs/${run.id}`, { method: "DELETE", headers }).catch(() => {});
                                 }
                             }
 
-                            // ب) مسح محتوى ملف index.m3u8 من المستودع لضمان عدم بقاء أي لقطة قديمة
                             const m3u8Res = await fetch(`${baseUrl}/contents/live_stream/index.m3u8`, { headers });
                             if (m3u8Res.ok) {
                                 const m3u8File = await m3u8Res.json();
@@ -476,16 +501,14 @@
                                     body: JSON.stringify({ message: "Wipe stream trace", sha: m3u8File.sha })
                                 }).catch(() => {});
                             }
-                        } catch (err) {
-                            console.log("Error wiping worker:", worker.username);
-                        }
+                        } catch (err) {}
                     });
 
                     await Promise.all(wipePromises);
                 }
 
                 await refreshWorkersTelemetry();
-                alert("🛑 تم إيقاف البث فوراً، وتم مسح جميع الحركات والملفات من الحسابات الفرعية!");
+                alert("🛑 تم إيقاف البث فوراً ومسح جميع الحركات والملفات!");
             } catch (error) {
                 alert("حدث خطأ أثناء الإيقاف: " + error.message);
             } finally {
@@ -503,12 +526,12 @@
             if(!domain) return alert("يرجى إدخال الرابط!");
             const cleanDomain = domain.endsWith('/') ? domain.slice(0, -1) : domain;
             db.ref('settings/domain').set(cleanDomain);
-            alert("✅ تم حفظ وربط دومين Cloudflare!");
+            alert("✅ تم حفظ الدومين!");
         }
 
         function encodeBase64(str) { return btoa(unescape(encodeURIComponent(str))); }
 
-        // 3. زرع المحرك الشامل (يدعم M3U8 و TS وكل الصيغ بدون تكرار اللقطة عبر الأنبوب الذكي)
+        // زرع المحرك الموحد (يعالج m3u8 و ts والسيرفرات المتقطعة والمستقرة بدون أنبوب معقد)
         async function plantScript() {
             const btn = document.getElementById("plantBtn");
             try {
@@ -534,8 +557,6 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                // محرك الأنبوب العازل (Universal FIFO Pipe Engine)
-                // يفصل عملية السحب عن عملية التقطيع لمنع تكرار اللقطة ولدعم m3u8 و ts وكافة الصيغ
                 const workflowContent = `name: Smart FFmpeg Engine
 on:
   workflow_dispatch:
@@ -575,10 +596,12 @@ jobs:
           HEADER_ARGS=()
           if [ -n "$UA" ] && [ "$UA" != "null" ]; then
             HEADER_ARGS+=(-user_agent "$UA")
+          else
+            HEADER_ARGS+=(-user_agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
           fi
           
           CRLF=$(printf '\\r\\n')
-           custom_headers=""
+          custom_headers=""
           if [ -n "$REF" ] && [ "$REF" != "null" ]; then
             custom_headers="\${custom_headers}Referer: \${REF}\${CRLF}"
           fi
@@ -589,53 +612,56 @@ jobs:
             HEADER_ARGS+=(-headers "$custom_headers")
           fi
 
-          # إنشاء أنبوب تدفق داخلي مستمر لمنع تصفير العداد وتكرار اللقطة
-          rm -f /tmp/stream_pipe
-          mkfifo /tmp/stream_pipe
-
-          # 1. مشغل التقطيع الثابت (يقرأ من الأنبوب ولا ينطفئ أبداً)
-          ffmpeg -nostdin -loglevel error -fflags +genpts+discardcorrupt+igndts -i /tmp/stream_pipe \\
-            -map 0:v:0? -map 0:a:0? -c:v copy -c:a aac -b:a 128k \\
-            -f hls -hls_time 2 -hls_list_size 6 \\
-            -hls_flags delete_segments+omit_endlist+temp_file+independent_segments \\
-            -strftime 1 -hls_segment_filename "live_stream/segment_%s.png" live_stream/index.m3u8 &
-          MUXER_PID=$!
-
-          # فتح الأنبوب بالخلفية حتى لا ينغلق المشغل أثناء فصلة المصدر
-          sleep infinity > /tmp/stream_pipe &
-          HOLDER_PID=$!
-
-          # 2. الحاصد الذكي (يتكيف مع m3u8 و ts وجميع الصيغ ويصب في الأنبوب)
+          # 1. حلقة التقطيع المباشر الذكية (تدعم M3U8 و TS وكافة الصيغ)
           (
+            RESTART_COUNT=0
             while true; do
               S_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
               if [ "$S_STATUS" == "stopped" ]; then break; fi
 
-              if [[ "$SOURCE" == *".m3u8"* ]]; then
-                # إعدادات خاصة لروابط m3u8 تمنع أخذ لقطة واحدة وتجبره على ملاحقة البث الحي
-                ffmpeg -nostdin -loglevel error "\${HEADER_ARGS[@]}" \\
-                  -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 2 -rw_timeout 5000000 \\
-                  -live_start_index -1 -fflags +genpts+discardcorrupt+nobuffer \\
-                  -i "$SOURCE" -c copy -bsf:v h264_mp4toannexb -f mpegts - > /tmp/stream_pipe 2>/dev/null
-              else
-                # إعدادات شاملة لروابط ts و mpd و rtmp وغيرها
-                ffmpeg -nostdin -loglevel error "\${HEADER_ARGS[@]}" \\
-                  -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2 -rw_timeout 5000000 \\
-                  -fflags +genpts+discardcorrupt+nobuffer \\
-                  -i "$SOURCE" -c copy -f mpegts - > /tmp/stream_pipe 2>/dev/null
+              # إذا كان السيرفر يفصل ويعيد الاتصال، نتخطى أول ثانيتين من مخزنه القديم لمنع تكرار اللقطة
+              SKIP_ARGS=()
+              if [ $RESTART_COUNT -gt 0 ]; then
+                SKIP_ARGS=(-ss 2)
               fi
-              sleep 0.3
+
+              if [[ "$SOURCE" == *".m3u8"* ]]; then
+                # معالجة خاصة لروابط m3u8 بدون فلاتر معيقة وبملاحقة حية للبث
+                ffmpeg -nostdin -loglevel warning "\${HEADER_ARGS[@]}" \\
+                  -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 2 -http_persistent 1 -rw_timeout 8000000 \\
+                  -live_start_index -1 -fflags +genpts+discardcorrupt+igndts \\
+                  "\${SKIP_ARGS[@]}" -i "$SOURCE" \\
+                  -map 0:v:0? -map 0:a:0? -c:v copy -c:a aac -b:a 128k \\
+                  -f hls -hls_time 2 -hls_list_size 6 \\
+                  -hls_flags append_list+delete_segments+omit_endlist+discont_start+temp_file+independent_segments \\
+                  -avoid_negative_ts make_zero -strftime 1 \\
+                  -hls_segment_filename "live_stream/segment_%s.png" live_stream/index.m3u8
+              else
+                # معالجة شاملة لروابط TS وغيرها (تعمل مع السيرفرات المستقرة والمتقطعة)
+                ffmpeg -nostdin -loglevel warning "\${HEADER_ARGS[@]}" \\
+                  -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2 -rw_timeout 8000000 \\
+                  -fflags +genpts+discardcorrupt+igndts+nobuffer \\
+                  "\${SKIP_ARGS[@]}" -i "$SOURCE" \\
+                  -map 0:v:0? -map 0:a:0? -c:v copy -c:a aac -b:a 128k \\
+                  -f hls -hls_time 2 -hls_list_size 6 \\
+                  -hls_flags append_list+delete_segments+omit_endlist+discont_start+temp_file+independent_segments \\
+                  -avoid_negative_ts make_zero -strftime 1 \\
+                  -hls_segment_filename "live_stream/segment_%s.png" live_stream/index.m3u8
+              fi
+
+              RESTART_COUNT=$((RESTART_COUNT + 1))
+              sleep 0.4
             done
           ) &
-          FETCHER_PID=$!
+          RUNNER_PID=$!
           
-          # 3. حلقة الرفع السريعة والفحص الفوري للإيقاف
+          # 2. حلقة الرفع المتزامنة كل 3 ثوانٍ
           while true; do
             sleep 3
             
             CURRENT_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
             if [ "$CURRENT_STATUS" == "stopped" ]; then
-              kill -9 $FETCHER_PID $MUXER_PID $HOLDER_PID 2>/dev/null || true
+              kill -9 $RUNNER_PID 2>/dev/null || true
               pkill -9 ffmpeg 2>/dev/null || true
               git rm -rf live_stream/ 2>/dev/null || true
               git commit -m "Wipe stream on stop" || true
@@ -643,6 +669,7 @@ jobs:
               break
             fi
             
+            # إبقاء آخر 8 قطع فقط في المستودع لمنع التضخم
             ls -1t live_stream/segment_*.png 2>/dev/null | tail -n +9 | xargs -r rm -f
             
             git add -A live_stream/ || true
@@ -656,7 +683,7 @@ jobs:
                 await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, {
                     method: "PUT",
                     headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
-                    body: JSON.stringify({ message: "Init Universal Engine", content: encodeBase64(workflowContent) })
+                    body: JSON.stringify({ message: "Init Unified Engine", content: encodeBase64(workflowContent) })
                 });
 
                 await db.ref('workers/' + username + '_' + randomId).set({
@@ -668,89 +695,109 @@ jobs:
                 });
                 
                 document.getElementById("githubToken").value = '';
-                refreshWorkersTelemetry();
-                alert(`✅ تم زرع المحرك الشامل بنجاح في: ${repoName}`);
+                await refreshWorkersTelemetry();
+                alert(`✅ تم زرع المحرك الموحد بنجاح في: ${repoName}`);
 
             } catch (error) {
                 alert("❌ خطأ أثناء الزرع: " + error.message);
             } finally {
-                btn.innerText = "+ زرع المحرك الشامل";
+                btn.innerText = "+ زرع المحرك الموحد";
                 btn.disabled = false;
             }
         }
 
-        // تحديث بيانات العمال الحقيقية (فحص حالة Actions ورصيد الـ API الفعلي)
+        // فحص حقيقي 100% من GitHub API لحالة تشغيل كل عامل ورصيد التوكن الفعلي
         async function refreshWorkersTelemetry() {
             const keys = Object.keys(workersMemory);
             if (keys.length === 0) {
                 setGaugeValue("gaugeWorkers", 0);
                 document.getElementById("valWorkers").innerText = "0/0";
+                setGaugeValue("gaugeQuota", 0);
+                document.getElementById("valQuota").innerText = "0%";
+                document.getElementById("subQuota").innerText = "0/0";
                 return;
             }
 
-            let activeCount = 0;
-            let totalRatePercent = 0;
+            let actuallyRunningCount = 0;
+            let totalRemainingCalls = 0;
+            let totalLimitCalls = 0;
 
-            for (const key of keys) {
+            await Promise.all(keys.map(async (key) => {
                 const w = workersMemory[key];
-                if (w.status === 'active') activeCount++;
+                const headers = { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" };
 
                 try {
-                    const rateRes = await fetch("https://api.github.com/rate_limit", {
-                        headers: { "Authorization": `token ${w.token}` }
-                    });
+                    // 1. فحص هل العامل يبث فعلياً الآن داخل GitHub Actions؟
+                    const runsRes = await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers });
+                    if (runsRes.ok) {
+                        const runsData = await runsRes.json();
+                        const isBroadcasting = (runsData.total_count && runsData.total_count > 0);
+                        liveWorkerStates[key] = isBroadcasting;
+                        if (isBroadcasting && w.status === 'active') {
+                            actuallyRunningCount++;
+                        }
+                    }
+
+                    // 2. فحص رصيد API الحقيقي المتبقي للتوكن
+                    const rateRes = await fetch(`https://api.github.com/rate_limit?t=${Date.now()}`, { headers });
                     if (rateRes.ok) {
                         const rateData = await rateRes.json();
-                        const usedPct = Math.round(((rateData.rate.limit - rateData.rate.remaining) / rateData.rate.limit) * 100);
-                        const remainPct = 100 - usedPct;
-                        totalRatePercent += remainPct;
+                        const limit = rateData.rate.limit || 5000;
+                        const remaining = rateData.rate.remaining || 0;
+                        totalLimitCalls += limit;
+                        totalRemainingCalls += remaining;
+
+                        const usedPct = Math.round(((limit - remaining) / limit) * 100);
                         db.ref(`workers/${key}/trafficUsage`).set(usedPct);
                     }
                 } catch (e) {}
+            }));
+
+            // تحديث عداد RPM الحقيقي (كم محرك يبث فعلياً من أصل المضافين)
+            const rpmPercent = (actuallyRunningCount / keys.length) * 100;
+            document.getElementById("valWorkers").innerText = `${actuallyRunningCount}/${keys.length}`;
+            setGaugeValue("gaugeWorkers", rpmPercent, actuallyRunningCount > 0 ? "#06b6d4" : "#64748b");
+
+            // تحديث عداد التوربو الحقيقي (النسبة والعدد الفعلي للطلبات المتبقية)
+            if (totalLimitCalls > 0) {
+                const remainPct = Math.round((totalRemainingCalls / totalLimitCalls) * 100);
+                document.getElementById("valQuota").innerText = `${remainPct}%`;
+                document.getElementById("subQuota").innerText = `${totalRemainingCalls}/${totalLimitCalls}`;
+                setGaugeValue("gaugeQuota", remainPct, remainPct > 25 ? "#a855f7" : "#ef4444");
             }
 
-            const rpmPercent = (activeCount / keys.length) * 100;
-            document.getElementById("valWorkers").innerText = `${activeCount}/${keys.length}`;
-            setGaugeValue("gaugeWorkers", rpmPercent, "#06b6d4");
-
-            const avgQuota = Math.round(totalRatePercent / keys.length) || 100;
-            document.getElementById("valQuota").innerText = `${avgQuota}%`;
-            setGaugeValue("gaugeQuota", avgQuota, avgQuota > 30 ? "#a855f7" : "#ef4444");
+            renderWorkerCards();
         }
 
-        // عرض بطاقات العمال المتجاوبة مع الهاتف
-        db.ref('workers').on('value', (snapshot) => {
-            workersMemory = snapshot.val() || {};
+        function renderWorkerCards() {
             const container = document.getElementById('workersList');
             container.innerHTML = '';
-            
             const keys = Object.keys(workersMemory);
-            document.getElementById("valWorkers").innerText = `${keys.length}/${keys.length}`;
-            setGaugeValue("gaugeWorkers", keys.length > 0 ? 100 : 0, "#06b6d4");
 
             keys.forEach((workerId) => {
                 const worker = workersMemory[workerId];
                 const usage = worker.trafficUsage || 0;
                 const isPaused = worker.status !== 'active';
+                const isBroadcastingNow = liveWorkerStates[workerId] === true;
 
                 const card = `
-                    <div class="bg-black/60 border ${isPaused ? 'border-amber-500/40' : 'border-gray-800'} rounded-xl p-3.5 flex flex-col justify-between gap-3">
+                    <div class="bg-black/60 border ${isPaused ? 'border-amber-500/40' : (isBroadcastingNow ? 'border-emerald-500/50' : 'border-gray-800')} rounded-xl p-3.5 flex flex-col justify-between gap-3">
                         <div class="flex justify-between items-start">
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <span class="w-2.5 h-2.5 rounded-full ${isPaused ? 'bg-amber-500' : 'bg-emerald-400'}"></span>
+                                    <span class="w-2.5 h-2.5 rounded-full ${isPaused ? 'bg-amber-500' : (isBroadcastingNow ? 'bg-emerald-400 animate-ping' : 'bg-cyan-500')}"></span>
                                     <span class="font-bold text-white text-sm font-mono">${worker.username}</span>
                                 </div>
                                 <span class="text-[11px] text-gray-500 font-mono block mt-0.5">${worker.repo}</span>
                             </div>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isPaused ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}">
-                                ${isPaused ? 'موقوف مؤقتاً' : 'نشط (ACTIVE)'}
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isPaused ? 'bg-amber-500/20 text-amber-400' : (isBroadcastingNow ? 'bg-emerald-500/20 text-emerald-400' : 'bg-gray-800 text-gray-400')}">
+                                ${isPaused ? 'موقوف مؤقتاً' : (isBroadcastingNow ? '🔥 يبث الآن' : 'جاهز بالانتظار')}
                             </span>
                         </div>
 
                         <div>
                             <div class="flex justify-between text-[11px] mb-1">
-                                <span class="text-gray-400">استهلاك التوكن (API Load)</span>
+                                <span class="text-gray-400">استهلاك طلبات GitHub API</span>
                                 <span class="digital-font font-bold ${usage > 80 ? 'text-red-400' : 'text-cyan-400'}">${usage}%</span>
                             </div>
                             <div class="w-full bg-gray-900 rounded-full h-2 overflow-hidden border border-gray-800">
@@ -770,6 +817,12 @@ jobs:
                 `;
                 container.innerHTML += card;
             });
+        }
+
+        db.ref('workers').on('value', (snapshot) => {
+            workersMemory = snapshot.val() || {};
+            renderWorkerCards();
+            refreshWorkersTelemetry();
         });
 
         function toggleWorkerStatus(workerId, currentStatus) {
