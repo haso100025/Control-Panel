@@ -41,7 +41,6 @@
 
     <div class="max-w-5xl mx-auto space-y-5">
         
-        <!-- الرأس وحالة المحرك -->
         <div class="carbon-card rounded-2xl p-4 flex flex-wrap justify-between items-center gap-3 border-b-2 border-cyan-500/40">
             <div class="flex items-center gap-3">
                 <div id="statusDot" class="w-4 h-4 rounded-full bg-red-500 animate-pulse"></div>
@@ -63,9 +62,7 @@
             </div>
         </div>
 
-        <!-- طبلون عدادات السيارات الحقيقية (تحديث حي كل 4 ثوانٍ) -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <!-- عداد 1: المحركات الشغالة فعلياً في GitHub Actions -->
             <div class="carbon-card rounded-2xl p-3 flex flex-col items-center justify-center relative">
                 <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120">
                     <circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/>
@@ -78,7 +75,6 @@
                 <span class="text-[11px] text-gray-400 -mt-2">يبث الآن / الإجمالي</span>
             </div>
 
-            <!-- عداد 2: سرعة تدفق البث الحقيقية (Bitrate Speedometer) -->
             <div class="carbon-card rounded-2xl p-3 flex flex-col items-center justify-center relative">
                 <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120">
                     <circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/>
@@ -91,7 +87,6 @@
                 <span class="text-[11px] text-gray-400 -mt-2">سرعة سحب القطع</span>
             </div>
 
-            <!-- عداد 3: ضغط التوربو الحقيقي (GitHub API Quota) -->
             <div class="carbon-card rounded-2xl p-3 flex flex-col items-center justify-center relative">
                 <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120">
                     <circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/>
@@ -104,7 +99,6 @@
                 <span class="text-[11px] text-gray-400 -mt-2">رصيد API الحقيقي</span>
             </div>
 
-            <!-- عداد 4: استقرار وحرارة البث (Buffer Health) -->
             <div class="carbon-card rounded-2xl p-3 flex flex-col items-center justify-center relative">
                 <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120">
                     <circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/>
@@ -118,10 +112,9 @@
             </div>
         </div>
 
-        <!-- 1. وحدة التحكم بالبث والشاشة -->
         <div class="carbon-card rounded-2xl p-4 md:p-6">
             <h2 class="text-base md:text-lg font-bold mb-4 text-cyan-400 flex items-center gap-2 border-b border-gray-800 pb-2">
-                <span>🚀</span> 1. محرك البث الموحد (يعالج M3U8 و TS والسيرفرات المتقطعة والمستقرة)
+                <span>🚀</span> 1. محرك البث الموحد (يعالج M3U8 و TS)
             </h2>
             
             <div class="space-y-3 mb-4">
@@ -146,7 +139,6 @@
                 </div>
             </div>
 
-            <!-- أزرار القيادة -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
                 <button id="startBtn" onclick="startSmartBroadcast()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3.5 px-4 rounded-xl transition neon-green flex justify-center items-center gap-2 text-sm">
                     <span>⚡</span> تشغيل البث الشامل
@@ -159,7 +151,6 @@
                 </button>
             </div>
             
-            <!-- شاشة المراقبة الحية -->
             <div class="w-full bg-black rounded-xl overflow-hidden border border-gray-800 relative">
                 <div class="absolute top-2 right-2 flex items-center gap-2 bg-black/80 px-2.5 py-1 rounded-lg border border-gray-800 z-10">
                     <span id="playerRadarDot" class="w-2 h-2 rounded-full bg-gray-500"></span>
@@ -169,7 +160,6 @@
             </div>
         </div>
 
-        <!-- 2. قسم الدومين الموحد (Cloudflare) -->
         <div class="carbon-card rounded-2xl p-4 md:p-6">
             <h2 class="text-base md:text-lg font-bold mb-3 text-amber-400 flex items-center gap-2">
                 <span>🌐</span> 2. بوابة التوزيع (Cloudflare Load Balancer)
@@ -181,7 +171,6 @@
             </div>
         </div>
 
-        <!-- 3. إدارة أسطول العمال (GitHub Workers) -->
         <div class="carbon-card rounded-2xl p-4 md:p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-base md:text-lg font-bold text-purple-400 flex items-center gap-2">
@@ -217,7 +206,7 @@
         const db = firebase.database();
 
         let workersMemory = {};
-        let liveWorkerStates = {}; // يحفظ الحالة الحقيقية من داخل GitHub Actions
+        let liveWorkerStates = {}; 
         let streamStartTime = null;
         let currentStreamStatus = "stopped";
         let lastFragTime = 0;
@@ -283,7 +272,6 @@
             document.getElementById("cfDomain").value = snapshot.val() || "";
         });
 
-        // حلقة قياس حقيقية كل ثانية للوقت، السرعة، ومخزون المشغل
         setInterval(() => {
             const uptimeEl = document.getElementById("uptimeCounter");
             if (currentStreamStatus === "running" && streamStartTime) {
@@ -296,13 +284,11 @@
                 uptimeEl.innerText = "00:00:00";
             }
 
-            // تصفير عداد السرعة إذا لم يتم تحميل أي قطعة منذ 6 ثوانٍ
             if (Date.now() - lastFragTime > 6000) {
                 document.getElementById("valSpeed").innerText = "0.0";
                 setGaugeValue("gaugeSpeed", 0, "#10b981");
             }
 
-            // قياس مخزون الفيديو الحقيقي بالثواني داخل المشغل
             const video = document.getElementById('previewPlayer');
             const radarDot = document.getElementById('playerRadarDot');
             const radarTxt = document.getElementById('playerRadarText');
@@ -329,7 +315,6 @@
             }
         }, 1000);
 
-        // حلقة فحص حقيقية من GitHub API كل 6 ثوانٍ لحساب العمال الشغالين ورصيد التوكنات الفعلي
         setInterval(() => {
             refreshWorkersTelemetry();
         }, 6000);
@@ -359,7 +344,6 @@
                     video.play().catch(() => {});
                 });
 
-                // قياس حقيقي لسرعة التحميل بالميجابايت في الثانية لكل قطعة فيديو
                 hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
                     lastFragTime = Date.now();
                     const stats = data.frag.stats;
@@ -531,7 +515,6 @@
 
         function encodeBase64(str) { return btoa(unescape(encodeURIComponent(str))); }
 
-        // زرع المحرك الموحد (يعالج m3u8 و ts والسيرفرات المتقطعة والمستقرة بدون أنبوب معقد)
         async function plantScript() {
             const btn = document.getElementById("plantBtn");
             try {
@@ -597,7 +580,7 @@ jobs:
           if [ -n "$UA" ] && [ "$UA" != "null" ]; then
             HEADER_ARGS+=(-user_agent "$UA")
           else
-            HEADER_ARGS+=(-user_agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+            HEADER_ARGS+=(-user_agent "VLC/3.0.18")
           fi
           
           CRLF=$(printf '\\r\\n')
@@ -612,50 +595,38 @@ jobs:
             HEADER_ARGS+=(-headers "$custom_headers")
           fi
 
-          # 1. حلقة التقطيع المباشر الذكية (تدعم M3U8 و TS وكافة الصيغ)
           (
-            RESTART_COUNT=0
             while true; do
               S_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
               if [ "$S_STATUS" == "stopped" ]; then break; fi
 
-              # إذا كان السيرفر يفصل ويعيد الاتصال، نتخطى أول ثانيتين من مخزنه القديم لمنع تكرار اللقطة
-              SKIP_ARGS=()
-              if [ $RESTART_COUNT -gt 0 ]; then
-                SKIP_ARGS=(-ss 2)
-              fi
-
               if [[ "$SOURCE" == *".m3u8"* ]]; then
-                # معالجة خاصة لروابط m3u8 بدون فلاتر معيقة وبملاحقة حية للبث
-                ffmpeg -nostdin -loglevel warning "\${HEADER_ARGS[@]}" \\
-                  -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 2 -http_persistent 1 -rw_timeout 8000000 \\
-                  -live_start_index -1 -fflags +genpts+discardcorrupt+igndts \\
-                  "\${SKIP_ARGS[@]}" -i "$SOURCE" \\
+                ffmpeg -nostdin -loglevel warning -use_wallclock_as_timestamps 1 "\${HEADER_ARGS[@]}" \\
+                  -allowed_extensions ALL -rw_timeout 8000000 \\
+                  -fflags +genpts+discardcorrupt \\
+                  -i "$SOURCE" \\
                   -map 0:v:0? -map 0:a:0? -c:v copy -c:a aac -b:a 128k \\
-                  -f hls -hls_time 2 -hls_list_size 6 \\
+                  -f hls -hls_time 3 -hls_list_size 5 \\
                   -hls_flags append_list+delete_segments+omit_endlist+discont_start+temp_file+independent_segments \\
                   -avoid_negative_ts make_zero -strftime 1 \\
-                  -hls_segment_filename "live_stream/segment_%s.png" live_stream/index.m3u8
+                  -hls_segment_filename "live_stream/seg_%Y%m%d%H%M%S.png" live_stream/index.m3u8
               else
-                # معالجة شاملة لروابط TS وغيرها (تعمل مع السيرفرات المستقرة والمتقطعة)
-                ffmpeg -nostdin -loglevel warning "\${HEADER_ARGS[@]}" \\
+                ffmpeg -nostdin -loglevel warning -use_wallclock_as_timestamps 1 "\${HEADER_ARGS[@]}" \\
                   -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2 -rw_timeout 8000000 \\
-                  -fflags +genpts+discardcorrupt+igndts+nobuffer \\
-                  "\${SKIP_ARGS[@]}" -i "$SOURCE" \\
+                  -fflags +genpts+discardcorrupt \\
+                  -i "$SOURCE" \\
                   -map 0:v:0? -map 0:a:0? -c:v copy -c:a aac -b:a 128k \\
-                  -f hls -hls_time 2 -hls_list_size 6 \\
+                  -f hls -hls_time 3 -hls_list_size 5 \\
                   -hls_flags append_list+delete_segments+omit_endlist+discont_start+temp_file+independent_segments \\
                   -avoid_negative_ts make_zero -strftime 1 \\
-                  -hls_segment_filename "live_stream/segment_%s.png" live_stream/index.m3u8
+                  -hls_segment_filename "live_stream/seg_%Y%m%d%H%M%S.png" live_stream/index.m3u8
               fi
 
-              RESTART_COUNT=$((RESTART_COUNT + 1))
-              sleep 0.4
+              sleep 0.5
             done
           ) &
           RUNNER_PID=$!
           
-          # 2. حلقة الرفع المتزامنة كل 3 ثوانٍ
           while true; do
             sleep 3
             
@@ -669,8 +640,7 @@ jobs:
               break
             fi
             
-            # إبقاء آخر 8 قطع فقط في المستودع لمنع التضخم
-            ls -1t live_stream/segment_*.png 2>/dev/null | tail -n +9 | xargs -r rm -f
+            ls -1t live_stream/seg_*.png 2>/dev/null | tail -n +8 | xargs -r rm -f
             
             git add -A live_stream/ || true
             if ! git diff --staged --quiet; then
@@ -706,7 +676,6 @@ jobs:
             }
         }
 
-        // فحص حقيقي 100% من GitHub API لحالة تشغيل كل عامل ورصيد التوكن الفعلي
         async function refreshWorkersTelemetry() {
             const keys = Object.keys(workersMemory);
             if (keys.length === 0) {
@@ -727,7 +696,6 @@ jobs:
                 const headers = { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" };
 
                 try {
-                    // 1. فحص هل العامل يبث فعلياً الآن داخل GitHub Actions؟
                     const runsRes = await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers });
                     if (runsRes.ok) {
                         const runsData = await runsRes.json();
@@ -738,7 +706,6 @@ jobs:
                         }
                     }
 
-                    // 2. فحص رصيد API الحقيقي المتبقي للتوكن
                     const rateRes = await fetch(`https://api.github.com/rate_limit?t=${Date.now()}`, { headers });
                     if (rateRes.ok) {
                         const rateData = await rateRes.json();
@@ -753,12 +720,10 @@ jobs:
                 } catch (e) {}
             }));
 
-            // تحديث عداد RPM الحقيقي (كم محرك يبث فعلياً من أصل المضافين)
             const rpmPercent = (actuallyRunningCount / keys.length) * 100;
             document.getElementById("valWorkers").innerText = `${actuallyRunningCount}/${keys.length}`;
             setGaugeValue("gaugeWorkers", rpmPercent, actuallyRunningCount > 0 ? "#06b6d4" : "#64748b");
 
-            // تحديث عداد التوربو الحقيقي (النسبة والعدد الفعلي للطلبات المتبقية)
             if (totalLimitCalls > 0) {
                 const remainPct = Math.round((totalRemainingCalls / totalLimitCalls) * 100);
                 document.getElementById("valQuota").innerText = `${remainPct}%`;
