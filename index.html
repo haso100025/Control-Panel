@@ -112,7 +112,7 @@
 
         <div class="carbon-card rounded-2xl p-4 md:p-6">
             <h2 class="text-base md:text-lg font-bold mb-4 text-cyan-400 flex items-center gap-2 border-b border-gray-800 pb-2">
-                <span>🚀</span> 1. محرك الحصاد الذكي (Store-and-Forward Engine)
+                <span>🚀</span> 1. المحرك المستقل الذكي (GitHub Native Engine)
             </h2>
             
             <div class="space-y-3 mb-4">
@@ -139,7 +139,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
                 <button id="startBtn" onclick="startSmartBroadcast()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3.5 px-4 rounded-xl transition flex justify-center items-center gap-2 text-sm">
-                    <span>⚡</span> تشغيل حصاد البث
+                    <span>⚡</span> تشغيل البث
                 </button>
                 <button id="stopBtn" onclick="stopBroadcastAndWipe()" class="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white font-black py-3.5 px-4 rounded-xl transition flex justify-center items-center gap-2 text-sm">
                     <span>🛑</span> إيقاف ومسح الأثر فوراً
@@ -180,7 +180,7 @@
             <div class="flex flex-col sm:flex-row gap-2.5 mb-5 bg-black/40 p-3 rounded-xl border border-gray-800">
                 <input type="text" id="githubToken" placeholder="أدخل GitHub Token (صلاحيات repo + workflow)..." class="flex-1 p-3 rounded-xl bg-gray-950 border border-gray-700 text-purple-300 font-mono text-xs text-left" dir="ltr">
                 <button onclick="plantScript()" id="plantBtn" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-3 px-6 rounded-xl transition text-xs md:text-sm whitespace-nowrap">
-                    + زرع محرك الحصاد
+                    + زرع محرك المزامنة
                 </button>
             </div>
 
@@ -245,7 +245,7 @@
                 currentStreamStatus = data.status || "stopped";
                 if (currentStreamStatus === "running") {
                     dot.className = "w-4 h-4 rounded-full bg-emerald-400 animate-ping";
-                    statusTxt.innerText = "محرك الحصاد الذكي يعمل (STORE & FORWARD)";
+                    statusTxt.innerText = "المحركات تعمل بكفاءة (SYNC ENGINE RUNNING)";
                     statusTxt.className = "text-xs text-emerald-400 font-bold";
                     streamStartTime = data.startedAt || Date.now();
                 } else {
@@ -304,12 +304,12 @@
                 setGaugeValue("gaugeHealth", healthPercent, bufferLen > 3 ? "#10b981" : "#f59e0b");
 
                 radarDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping";
-                radarTxt.innerText = "رادار المشغل: متصل ويعرض الدفعات";
+                radarTxt.innerText = "رادار المشغل: متصل ويعرض البث";
             } else {
                 document.getElementById("valHealth").innerText = "0.0s";
                 setGaugeValue("gaugeHealth", 0, "#f59e0b");
                 radarDot.className = "w-2 h-2 rounded-full bg-gray-500";
-                radarTxt.innerText = "رادار المشغل: بانتظار الدفعة القادمة...";
+                radarTxt.innerText = "رادار المشغل: خامل";
             }
         }, 1000);
 
@@ -325,9 +325,9 @@
                 if (window.hlsInstance) window.hlsInstance.destroy();
                 
                 const hls = new Hls({
-                    liveSyncDurationCount: 4,
-                    liveMaxLatencyDurationCount: 8,
-                    maxBufferLength: 30,
+                    liveSyncDurationCount: 3,
+                    liveMaxLatencyDurationCount: 7,
+                    maxBufferLength: 20,
                     enableWorker: true,
                     lowLatencyMode: false,
                     manifestLoadingMaxRetry: Infinity,
@@ -392,7 +392,7 @@
             
             const startBtn = document.getElementById("startBtn");
             startBtn.disabled = true;
-            startBtn.innerText = "⏳ جاري بدء الحصاد...";
+            startBtn.innerText = "⏳ جاري إطلاق المحركات...";
 
             try {
                 streamStartTime = Date.now();
@@ -427,14 +427,14 @@
                 setTimeout(() => {
                     if (cf) playVideo(cf);
                     refreshWorkersTelemetry();
-                }, 15000);
+                }, 5000);
 
-                alert("✅ تم إطلاق محرك الحصاد! انتظر 15 ثانية لجمع الدفعة الأولى.");
+                alert("✅ تم إطلاق المحركات في جميع الحسابات!");
             } catch (e) {
                 alert("خطأ: " + e.message);
             } finally {
                 startBtn.disabled = false;
-                startBtn.innerHTML = "<span>⚡</span> تشغيل حصاد البث";
+                startBtn.innerHTML = "<span>⚡</span> تشغيل البث";
             }
         }
 
@@ -552,7 +552,7 @@ jobs:
           sudo apt-get update -qq || true
           sudo apt-get install -yq jq ffmpeg
 
-      - name: Process Store-and-Forward Stream
+      - name: Process Native Stream
         run: |
           git config --global user.name "TimeShift Worker"
           git config --global user.email "worker@timeshift.local"
@@ -583,41 +583,21 @@ jobs:
           if [ -n "$custom_headers" ]; then HEADER_ARGS+=(-headers "$custom_headers"); fi
 
           (
-            IS_FIRST=1
             while true; do
               S_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
               if [ "$S_STATUS" == "stopped" ]; then break; fi
 
-              rm -f /tmp/chunk.ts
+              # تمت إزالة أوامر -reconnect التي تسببت في خطأ التوقيت والتجميد!
+              # الميزة الجديدة: إضافة discont_start لإعلام المشغل بوجود قطع زمني ليتابع التشغيل بمرونة.
               
-              # 1. مرحلة الحصاد: سحب دفعة لمدة أقصاها 30 ثانية أو حتى ينقطع المصدر
-              ffmpeg -nostdin -hide_banner -loglevel error "\${HEADER_ARGS[@]}" \\
-                -rw_timeout 8000000 \\
-                -i "$SOURCE" -c copy -t 30 -f mpegts /tmp/chunk.ts
+              ffmpeg -nostdin -hide_banner -loglevel warning "\${HEADER_ARGS[@]}" \\
+                -timeout 5000000 \\
+                -i "$SOURCE" \\
+                -map 0:v:0? -map 0:a:0? -c copy \\
+                -f hls -hls_time 3 -hls_list_size 6 \\
+                -hls_flags append_list+omit_endlist+discont_start+temp_file \\
+                -hls_segment_filename "live_stream/seg_%Y%m%d%H%M%S.png" -strftime 1 live_stream/index.m3u8
 
-              if [ ! -f /tmp/chunk.ts ] || [ ! -s /tmp/chunk.ts ]; then
-                sleep 1
-                continue
-              fi
-
-              # 2. المعالجة والدمج المعزول
-              if [ "$IS_FIRST" -eq 1 ]; then
-                # الدفعة الأولى تُنشر كاملة مع علامة القطع للتأكيد
-                ffmpeg -nostdin -hide_banner -loglevel error -y \\
-                  -i /tmp/chunk.ts -c copy -map 0:v:0? -map 0:a:0? \\
-                  -f hls -hls_time 3 -hls_list_size 12 \\
-                  -hls_flags append_list+omit_endlist+discont_start+independent_segments \\
-                  -hls_segment_filename "live_stream/seg_%Y%m%d%H%M%S.png" -strftime 1 live_stream/index.m3u8
-                IS_FIRST=0
-              else
-                # الدفعات اللاحقة تُقلم بثلاث ثوانٍ لإزالة اللقطة المكررة من السيرفر
-                ffmpeg -nostdin -hide_banner -loglevel error -y \\
-                  -ss 3 -i /tmp/chunk.ts -c copy -map 0:v:0? -map 0:a:0? \\
-                  -f hls -hls_time 3 -hls_list_size 12 \\
-                  -hls_flags append_list+omit_endlist+discont_start+independent_segments \\
-                  -hls_segment_filename "live_stream/seg_%Y%m%d%H%M%S.png" -strftime 1 live_stream/index.m3u8
-              fi
-              
               sleep 0.2
             done
           ) &
@@ -636,11 +616,11 @@ jobs:
               break
             fi
             
-            ls -1t live_stream/seg_*.png 2>/dev/null | tail -n +13 | xargs -r rm -f
+            ls -1t live_stream/seg_*.png 2>/dev/null | tail -n +15 | xargs -r rm -f
             
             git add -A live_stream/ || true
             if ! git diff --staged --quiet; then
-              git commit -m "Batch harvested sync" || true
+              git commit -m "Live stream sync" || true
               git push origin main || true
             fi
           done
@@ -648,7 +628,7 @@ jobs:
                 
                 await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, {
                     method: "PUT", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
-                    body: JSON.stringify({ message: "Init Store and Forward Engine", content: encodeBase64(workflowContent) })
+                    body: JSON.stringify({ message: "Init Native Sync Engine", content: encodeBase64(workflowContent) })
                 });
 
                 await db.ref('workers/' + username + '_' + randomId).set({
@@ -657,12 +637,12 @@ jobs:
                 
                 document.getElementById("githubToken").value = '';
                 await refreshWorkersTelemetry();
-                alert(`✅ تم زرع محرك الحصاد الذكي بنجاح في: ${repoName}`);
+                alert(`✅ تم زرع المحرك بنجاح في: ${repoName}`);
 
             } catch (error) {
                 alert("❌ خطأ أثناء الزرع: " + error.message);
             } finally {
-                btn.innerText = "+ زرع محرك الحصاد";
+                btn.innerText = "+ زرع محرك المزامنة";
                 btn.disabled = false;
             }
         }
