@@ -587,8 +587,7 @@ jobs:
               S_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
               if [ "$S_STATUS" == "stopped" ]; then break; fi
 
-              # تمت إزالة أوامر -reconnect التي تسببت في خطأ التوقيت والتجميد!
-              # الميزة الجديدة: إضافة discont_start لإعلام المشغل بوجود قطع زمني ليتابع التشغيل بمرونة.
+              # تعديل التسمية إلى التسلسل الرقمي المستمر لمنع التصادم وتخريب الخريطة
               
               ffmpeg -nostdin -hide_banner -loglevel warning "\${HEADER_ARGS[@]}" \\
                 -timeout 5000000 \\
@@ -596,7 +595,7 @@ jobs:
                 -map 0:v:0? -map 0:a:0? -c copy \\
                 -f hls -hls_time 3 -hls_list_size 6 \\
                 -hls_flags append_list+omit_endlist+discont_start+temp_file \\
-                -hls_segment_filename "live_stream/seg_%Y%m%d%H%M%S.png" -strftime 1 live_stream/index.m3u8
+                -hls_segment_filename "live_stream/seg_%06d.png" live_stream/index.m3u8
 
               sleep 0.2
             done
