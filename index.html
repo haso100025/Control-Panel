@@ -113,12 +113,12 @@
 
         <div class="carbon-card rounded-2xl p-4 md:p-6">
             <h2 class="text-base md:text-lg font-bold mb-4 text-cyan-400 flex items-center gap-2 border-b border-gray-800 pb-2">
-                <span>🚀</span> 1. المحرك القاهر (يعالج التقطيع والقفز والتزامن تلقائياً)
+                <span>🚀</span> 1. محرك تثبيت الإطارات الزمنية (يقضي على Non-monotonic DTS وتجمد الصورة)
             </h2>
             
             <div class="space-y-3 mb-4">
                 <div>
-                    <label class="text-xs font-bold text-gray-400 block mb-1">الرابط الأصلي للمصدر:</label>
+                    <label class="text-xs font-bold text-gray-400 block mb-1">الرابط الأصلي للمصدر (M3U8 أو TS):</label>
                     <input type="text" id="sourceLink" placeholder="https://example.com/live/stream.m3u8 أو .ts" class="w-full p-3.5 rounded-xl bg-black/70 border border-gray-700 text-emerald-400 focus:outline-none focus:border-cyan-500 font-mono text-xs md:text-sm text-left" dir="ltr">
                 </div>
                 
@@ -181,7 +181,7 @@
             <div class="flex flex-col sm:flex-row gap-2.5 mb-5 bg-black/40 p-3 rounded-xl border border-gray-800">
                 <input type="text" id="githubToken" placeholder="أدخل GitHub Token (صلاحيات repo + workflow)..." class="flex-1 p-3 rounded-xl bg-gray-950 border border-gray-700 text-purple-300 font-mono text-xs text-left" dir="ltr">
                 <button onclick="plantScript()" id="plantBtn" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-3 px-6 rounded-xl transition text-xs md:text-sm whitespace-nowrap">
-                    + زرع المحرك القاهر
+                    + زرع معالج التوقيت الفائق
                 </button>
             </div>
 
@@ -325,13 +325,12 @@
             if (Hls.isSupported()) {
                 if (window.hlsInstance) window.hlsInstance.destroy();
                 
-                // إعدادات المشغل لمنع القفز والتسريع (Fast Forward) وحل مشاكل الـ m3u8
                 const hls = new Hls({
                     liveSyncDurationCount: 3,
-                    liveMaxLatencyDurationCount: 7,
+                    liveMaxLatencyDurationCount: 6,
                     maxBufferLength: 30,
                     enableWorker: true,
-                    lowLatencyMode: false, // تعطيل اللاتنسي المنخفض الذي يسبب ركض الفيديو
+                    lowLatencyMode: false,
                     manifestLoadingMaxRetry: Infinity,
                     manifestLoadingRetryDelay: 1000,
                     levelLoadingMaxRetry: Infinity,
@@ -429,7 +428,7 @@
                 setTimeout(() => {
                     if (cf) playVideo(cf);
                     refreshWorkersTelemetry();
-                }, 5000);
+                }, 6000);
 
                 alert("✅ تم إطلاق المحرك في جميع الحسابات!");
             } catch (e) {
@@ -537,6 +536,7 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
+                // المحرك المزود بـ libx264 ultrafast و aresample=async=1 للقضاء على Non-monotonic DTS نهائياً
                 const workflowContent = `name: Smart FFmpeg Engine
 on:
   workflow_dispatch:
@@ -575,7 +575,7 @@ jobs:
           if [ -n "$UA" ] && [ "$UA" != "null" ]; then
             HEADER_ARGS+=(-user_agent "$UA")
           else
-            HEADER_ARGS+=(-user_agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+            HEADER_ARGS+=(-user_agent "VLC/3.0.18 LibVLC/3.0.18")
           fi
           
           CRLF=$(printf '\\r\\n')
@@ -584,19 +584,22 @@ jobs:
           if [ -n "$COOKIE" ] && [ "$COOKIE" != "null" ]; then custom_headers="\${custom_headers}Cookie: \${COOKIE}\${CRLF}"; fi
           if [ -n "$custom_headers" ]; then HEADER_ARGS+=(-headers "$custom_headers"); fi
 
-          # الكود الهندسي القاهر: يولد توقيتات جديدة ويمنع القفز والتراجع، ومزود بمساحة كافية لامتصاص الصدمات 
           (
             while true; do
               S_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
               if [ "$S_STATUS" == "stopped" ]; then break; fi
 
-              ffmpeg -nostdin -hide_banner -loglevel warning "\${HEADER_ARGS[@]}" \\
-                -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2 -rw_timeout 8000000 \\
+              # إعادة توليد التوقيت الزمني بسرعة فائقة (ultrafast) لمنع خطأ Non-monotonic DTS ومنع تجميد الصورة أو سبق الصوت
+              ffmpeg -nostdin -hide_banner -loglevel error "\${HEADER_ARGS[@]}" \\
+                -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2 -rw_timeout 10000000 \\
                 -fflags +genpts+discardcorrupt+igndts \\
                 -i "$SOURCE" \\
-                -map 0:v:0? -map 0:a:0? -c copy -max_muxing_queue_size 9999 \\
+                -map 0:v:0? -map 0:a:0? \\
+                -c:v libx264 -preset ultrafast -tune zerolatency -g 60 -sc_threshold 0 \\
+                -c:a aac -b:a 128k -ar 44100 -af "aresample=async=1:min_hard_comp=0.100000:first_pts=0" \\
+                -max_muxing_queue_size 9999 \\
                 -f hls -hls_time 3 -hls_list_size 6 \\
-                -hls_flags append_list+delete_segments+omit_endlist+discont_start+temp_file \\
+                -hls_flags append_list+delete_segments+omit_endlist+discont_start+temp_file+independent_segments \\
                 -avoid_negative_ts make_zero -strftime 1 \\
                 -hls_segment_filename "live_stream/seg_%Y%m%d%H%M%S.png" live_stream/index.m3u8
 
@@ -630,7 +633,7 @@ jobs:
                 
                 await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, {
                     method: "PUT", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
-                    body: JSON.stringify({ message: "Init Unified Engine", content: encodeBase64(workflowContent) })
+                    body: JSON.stringify({ message: "Init Time-Sync Engine", content: encodeBase64(workflowContent) })
                 });
 
                 await db.ref('workers/' + username + '_' + randomId).set({
@@ -639,12 +642,12 @@ jobs:
                 
                 document.getElementById("githubToken").value = '';
                 await refreshWorkersTelemetry();
-                alert(`✅ تم زرع المحرك القاهر بنجاح في: ${repoName}`);
+                alert(`✅ تم زرع معالج التوقيت الفائق بنجاح في: ${repoName}`);
 
             } catch (error) {
                 alert("❌ خطأ أثناء الزرع: " + error.message);
             } finally {
-                btn.innerText = "+ زرع المحرك القاهر";
+                btn.innerText = "+ زرع معالج التوقيت الفائق";
                 btn.disabled = false;
             }
         }
