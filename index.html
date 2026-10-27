@@ -113,7 +113,7 @@
 
         <div class="carbon-card rounded-2xl p-4 md:p-6">
             <h2 class="text-base md:text-lg font-bold mb-4 text-cyan-400 flex items-center gap-2 border-b border-gray-800 pb-2">
-                <span>🚀</span> 1. محرك الخزان الزمني (يمتص الفصلات في الخلفية بذاكرة 36 ثانية)
+                <span>🚀</span> 1. محرك الخزان الزمني المزدوج (معالجة خلفية مستمرة بدون انقطاع)
             </h2>
             
             <div class="space-y-3 mb-4">
@@ -325,7 +325,6 @@
             if (Hls.isSupported()) {
                 if (window.hlsInstance) window.hlsInstance.destroy();
                 
-                // ضبط المشغل ليقرأ بعمق أمان 20 إلى 30 ثانية من الخزان الخلفي دون استعجال
                 const hls = new Hls({
                     liveSyncDurationCount: 6,
                     liveMaxLatencyDurationCount: 12,
@@ -430,7 +429,7 @@
                 setTimeout(() => {
                     if (cf) playVideo(cf);
                     refreshWorkersTelemetry();
-                }, 10000);
+                }, 12000);
 
                 alert("✅ تم إطلاق محرك الخزان الزمني! انتظر 25 ثانية حتى يمتلئ الخزان الخلفي ويبدأ البث المستقر.");
             } catch (e) {
@@ -538,7 +537,7 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                // هندسة الخزان الزمني المزدوج: فصل الساحب عن المعالج الخالد لمنع تصفير ساعة التوقيت عند الفصلة
+                // تصحيح ربط mbuffer مع الأنابيب عبر التوجيه المباشر (< و >) لمنع خطأ File exists
                 const workflowContent = `name: Smart FFmpeg Engine
 on:
   workflow_dispatch:
@@ -589,13 +588,18 @@ jobs:
           rm -f /tmp/raw_pipe /tmp/buffered_pipe
           mkfifo /tmp/raw_pipe /tmp/buffered_pipe
 
-          # 1. خزان الذاكرة الخلفي (يمتص تقطيع وفصلات السيرفر ويدفع البث بنعومة للمعالج)
-          mbuffer -q -m 32M -P 15 -i /tmp/raw_pipe -o /tmp/buffered_pipe &
+          # 1. فتح الأنابيب بالخلفية أولاً لمنع التوقف أو خطأ File exists
+          sleep infinity > /tmp/raw_pipe &
+          HOLDER_RAW=$!
+          sleep infinity > /tmp/buffered_pipe &
+          HOLDER_BUF=$!
+
+          # 2. خزان الذاكرة الخلفي (يمرر عبر التوجيه القياسي بدون -o لتفادي خطأ File exists)
+          mbuffer -q -m 32M -P 10 < /tmp/raw_pipe > /tmp/buffered_pipe &
           MBUFFER_PID=$!
 
-          # 2. المعالج الخالد (لا ينطفئ أبداً ولا يصفر ساعته الزمنية مهما فصل المصدر)
-          # يحتفظ بنافذة 12 قطعة (36 ثانية) لضمان عدم شعور المشاهد بأي فصلة
-          ffmpeg -nostdin -hide_banner -loglevel error \\
+          # 3. المعالج الخالد (لا ينطفئ أبداً ولا يصفر ساعته الزمنية مهما فصل المصدر)
+          ffmpeg -nostdin -hide_banner -loglevel warning \\
             -fflags +genpts+discardcorrupt+igndts -err_detect ignore_err \\
             -i /tmp/buffered_pipe \\
             -map 0:v:0? -map 0:a:0? \\
@@ -608,17 +612,13 @@ jobs:
             -hls_segment_filename "live_stream/seg_%06d.png" live_stream/index.m3u8 &
           ENCODER_PID=$!
 
-          # إبقاء الأنبوب مفتوحاً حتى لا يغلق المعالج أثناء إعادة اتصال الساحب
-          sleep infinity > /tmp/raw_pipe &
-          HOLDER_PID=$!
-
-          # 3. جامع اللقطات الخلفي (يتحمل الفصلات ويعيد الاتصال في 0.2 ثانية ليملأ الخزان)
+          # 4. جامع اللقطات الخلفي (يتحمل الفصلات ويعيد الاتصال في 0.2 ثانية ليملأ الخزان)
           (
             while true; do
               S_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
               if [ "$S_STATUS" == "stopped" ]; then break; fi
 
-              ffmpeg -nostdin -hide_banner -loglevel quiet "\${HEADER_ARGS[@]}" \\
+              ffmpeg -nostdin -hide_banner -loglevel error "\${HEADER_ARGS[@]}" \\
                 -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2 -rw_timeout 8000000 \\
                 -fflags +genpts+discardcorrupt+igndts -err_detect ignore_err \\
                 -i "$SOURCE" \\
@@ -629,13 +629,13 @@ jobs:
           ) &
           INGESTER_PID=$!
           
-          # 4. حلقة الرفع المتزامنة كل 3 ثوانٍ
+          # 5. حلقة الرفع المتزامنة كل 3 ثوانٍ
           while true; do
             sleep 3
             
             CURRENT_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
             if [ "$CURRENT_STATUS" == "stopped" ]; then
-              kill -9 $INGESTER_PID $ENCODER_PID $MBUFFER_PID $HOLDER_PID 2>/dev/null || true
+              kill -9 $INGESTER_PID $ENCODER_PID $MBUFFER_PID $HOLDER_RAW $HOLDER_BUF 2>/dev/null || true
               pkill -9 ffmpeg 2>/dev/null || true
               pkill -9 mbuffer 2>/dev/null || true
               git rm -rf live_stream/ 2>/dev/null || true
@@ -644,7 +644,6 @@ jobs:
               break
             fi
             
-            # الاحتفاظ بآخر 16 قطعة (48 ثانية) في المستودع لحماية الخزان الزمني
             ls -1t live_stream/seg_*.png 2>/dev/null | tail -n +17 | xargs -r rm -f
             
             git add -A live_stream/ || true
@@ -657,7 +656,7 @@ jobs:
                 
                 await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, {
                     method: "PUT", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
-                    body: JSON.stringify({ message: "Init Time-Shift Buffer Engine", content: encodeBase64(workflowContent) })
+                    body: JSON.stringify({ message: "Init Time-Shift Buffer Engine v2", content: encodeBase64(workflowContent) })
                 });
 
                 await db.ref('workers/' + username + '_' + randomId).set({
@@ -666,7 +665,7 @@ jobs:
                 
                 document.getElementById("githubToken").value = '';
                 await refreshWorkersTelemetry();
-                alert(`✅ تم زرع محرك الخزان الزمني بنجاح في: ${repoName}`);
+                alert(`✅ تم زرع محرك الخزان الزمني المصحح بنجاح في: ${repoName}`);
 
             } catch (error) {
                 alert("❌ خطأ أثناء الزرع: " + error.message);
