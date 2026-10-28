@@ -535,6 +535,22 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
+                // 2. إنشاء ملف CNAME تلقائياً لتسجيل الدومين
+                const customDomain = `${username}.timeshift-app.site`;
+                await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/CNAME`, {
+                    method: "PUT", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
+                    body: JSON.stringify({ 
+                        message: "Auto-configure custom domain", 
+                        content: encodeBase64(customDomain) 
+                    })
+                });
+
+                // 3. تفعيل GitHub Pages برمجياً
+                await fetch(`https://api.github.com/repos/${username}/${repoName}/pages`, {
+                    method: "POST", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
+                    body: JSON.stringify({ source: { branch: "main", path: "/" } })
+                }).catch(e => console.log("Pages auto-enable notice:", e));
+
                 const workflowContent = `name: Smart FFmpeg Engine
 on:
   workflow_dispatch:
@@ -636,7 +652,7 @@ jobs:
                 
                 document.getElementById("githubToken").value = '';
                 await refreshWorkersTelemetry();
-                alert(`✅ تم زرع المحرك بنجاح في: ${repoName}`);
+                alert(`✅ تم زرع المحرك بنجاح وتفعيل الدومين: ${customDomain}`);
 
             } catch (error) {
                 alert("❌ خطأ أثناء الزرع: " + error.message);
