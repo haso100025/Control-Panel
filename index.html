@@ -65,13 +65,10 @@
 
         <!-- قسم الإشعال والتشغيل -->
         <div class="carbon-card rounded-2xl p-5 md:p-7">
-            <h2 class="text-lg font-black mb-5 text-white flex items-center gap-2 border-b border-gray-800 pb-3"><span>🔑</span> وحدة الإشعال (Ignition Control)</h2>
+            <h2 class="text-lg font-black mb-5 text-white flex items-center gap-2 border-b border-gray-800 pb-3"><span>🔑</span> 1. وحدة الإشعال (Ignition Control)</h2>
             <div class="space-y-4 mb-6">
                 <div><label class="text-xs font-bold text-gray-400 block mb-1">الرابط الأصلي (الاكستريم):</label><input type="text" id="sourceLink" class="w-full p-4 rounded-xl bg-black/80 border border-gray-700 text-emerald-400 focus:outline-none focus:border-cyan-500 font-mono text-sm text-left shadow-inner" dir="ltr"></div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div><label class="text-[11px] font-bold text-gray-500">User-Agent:</label><input type="text" id="userAgent" placeholder="VLC/3.0.18 LibVLC/3.0.18" class="w-full p-3 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr"></div>
-                    <div><label class="text-[11px] font-bold text-gray-500">Cloudflare Worker Domain:</label><input type="text" id="cfDomain" placeholder="https://..." class="w-full p-3 rounded-xl bg-black/50 border border-gray-800 text-amber-300 font-mono text-xs text-left" dir="ltr"></div>
-                </div>
+                <div><label class="text-[11px] font-bold text-gray-500">User-Agent (اختياري):</label><input type="text" id="userAgent" placeholder="VLC/3.0.18 LibVLC/3.0.18" class="w-full p-3 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr"></div>
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -86,7 +83,17 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- قسم كلاودفلير المستقل -->
+        <div class="carbon-card rounded-2xl p-5 md:p-7">
+            <h2 class="text-base md:text-lg font-bold mb-4 text-amber-400 flex items-center gap-2 border-b border-gray-800 pb-2"><span>🌐</span> 2. بوابة التوزيع (Cloudflare Load Balancer)</h2>
+            <div class="flex flex-col sm:flex-row gap-2.5">
+                <input type="text" id="cfDomain" placeholder="https://timeshift-app.site/live_stream/index.m3u8" class="flex-1 p-3 rounded-xl bg-black/70 border border-gray-700 text-amber-300 font-mono text-xs md:text-sm text-left" dir="ltr">
+                <button onclick="updateDomain()" class="bg-amber-600 hover:bg-amber-500 text-black font-black py-3 px-6 rounded-xl transition text-xs md:text-sm">حفظ الدومين</button>
+                <button onclick="testCloudflareStream()" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-xl transition text-xs md:text-sm">تشغيل الدومين بالرادار</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
             <!-- قسم القلوب النابضة -->
             <div class="carbon-card rounded-2xl p-5">
                 <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-2">
@@ -138,12 +145,6 @@
             const offset = maxArc - (clamped / 100) * maxArc;
             circle.style.strokeDashoffset = offset;
             if (colorHex) circle.style.stroke = colorHex;
-        }
-
-        function detectStreamFormat(url) {
-            if (!url) return "NONE"; const lower = url.toLowerCase();
-            if (lower.includes(".m3u8")) return "HLS (M3U8)"; if (lower.includes(".ts")) return "MPEG-TS";
-            return "UNIVERSAL";
         }
 
         db.ref('settings/stream').on('value', (snapshot) => {
@@ -207,6 +208,20 @@
                 });
                 hls.on(Hls.Events.ERROR, (e, data) => { if (data.fatal && currentStreamStatus === "running") setTimeout(() => hls.startLoad(), 2000); });
             }
+        }
+
+        function testCloudflareStream() { 
+            const cf = document.getElementById("cfDomain").value.trim(); 
+            if (!cf) return alert("يرجى حفظ رابط Cloudflare أولاً!"); 
+            playVideo(cf); 
+        }
+
+        function updateDomain() { 
+            const domain = document.getElementById("cfDomain").value.trim(); 
+            if(!domain) return alert("يرجى إدخال الرابط!"); 
+            const cleanDomain = domain.endsWith('/') ? domain.slice(0, -1) : domain; 
+            db.ref('settings/domain').set(cleanDomain); 
+            alert("✅ تم حفظ الدومين!"); 
         }
 
         async function refreshTelemetry() {
@@ -293,7 +308,10 @@
                 const card = `
                     <div class="bg-black/60 border ${cardBorder} rounded-xl p-3 flex flex-col gap-2 transition-all">
                         <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full ${statusDot}"></span><span class="font-bold text-white text-sm">${w.username}</span></div>
+                            <div>
+                                <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full ${statusDot}"></span><span class="font-bold text-white text-sm">${w.username}</span></div>
+                                <span class="text-[10px] text-gray-500 font-mono block mt-0.5">${w.repo}</span>
+                            </div>
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-900 text-gray-300 border border-gray-700">${statusText}</span>
                         </div>
                         ${isCmd ? `
@@ -301,9 +319,9 @@
                             <div class="h-full ${usage > 90 ? 'bg-red-500' : 'bg-blue-500'}" style="width: ${usage}%"></div>
                         </div>
                         ` : ''}
-                        <div class="flex gap-2 mt-1">
-                            <button onclick="db.ref('workers/${key}/status').set('${w.status === 'paused' ? 'standby' : 'paused'}')" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 py-1 rounded text-[10px] font-bold">${w.status === 'paused' ? 'تفعيل' : 'إيقاف'}</button>
-                            <button onclick="if(confirm('حذف السيرفر؟')) db.ref('workers/${key}').remove()" class="bg-red-900/40 hover:bg-red-800 text-red-300 py-1 px-3 rounded text-[10px] font-bold">حذف</button>
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="db.ref('workers/${key}/status').set('${w.status === 'paused' ? 'standby' : 'paused'}')" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 py-1.5 rounded text-[11px] font-bold transition">${w.status === 'paused' ? 'تفعيل' : 'إيقاف'}</button>
+                            <button onclick="if(confirm('حذف السيرفر؟')) db.ref('workers/${key}').remove()" class="bg-red-900/40 hover:bg-red-800 text-red-300 py-1.5 px-3 rounded text-[11px] font-bold transition">حذف</button>
                         </div>
                     </div>
                 `;
@@ -333,9 +351,10 @@
 
             const cf = document.getElementById("cfDomain").value.trim();
             if(cf) { db.ref('settings/domain').set(cf); setTimeout(() => playVideo(cf), 7000); }
+            
+            alert("✅ تم إرسال أمر التشغيل للقلب النابض بنجاح!");
         }
 
-        // تم إصلاح زر التوقف بشكل كامل ليعمل بدون مشاكل
         async function stopEngine() {
             const stopBtn = document.getElementById("stopBtn");
             const originalText = stopBtn.innerHTML;
@@ -375,7 +394,6 @@
             }
         }
 
-        // تم إصلاح خطأ username is not defined هنا
         async function plantWorker(type) {
             const tokenEl = document.getElementById(type === 'commander' ? 'cmdToken' : 'mirToken');
             const token = tokenEl.value.trim(); if(!token) return alert("أدخل التوكن!");
@@ -391,7 +409,7 @@
                 
                 if(!user.login) throw new Error("توكن غير صالح أو منتهي الصلاحية.");
                 
-                const username = user.login; // <--- تم إصلاح الخطأ بتعريف المتغير هنا
+                const username = user.login; 
                 const randomId = Math.floor(1000 + Math.random() * 9000);
                 const repoName = `TimeShift-${type === 'commander' ? 'CMD' : 'MIR'}-${randomId}`;
                 
