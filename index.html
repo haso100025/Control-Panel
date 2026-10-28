@@ -10,35 +10,16 @@
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Orbitron:wght@500;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: #07090e;
-            background-image: 
-                radial-gradient(circle at 50% 0%, #1e293b 0%, transparent 60%),
-                repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 2px, transparent 2px, transparent 4px);
-            color: #f8fafc;
-        }
+        body { font-family: 'Cairo', sans-serif; background-color: #07090e; background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, transparent 60%), repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 2px, transparent 2px, transparent 4px); color: #f8fafc; }
         .digital-font { font-family: 'Orbitron', monospace; }
-        .carbon-card {
-            background: linear-gradient(145deg, #0f141f, #090c14);
-            border: 1px solid #1e293b;
-            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-        }
-        .gauge-ring {
-            transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease;
-            transform: rotate(135deg);
-            transform-origin: 50% 50%;
-        }
-        .gauge-bg {
-            transform: rotate(135deg);
-            transform-origin: 50% 50%;
-        }
+        .carbon-card { background: linear-gradient(145deg, #0f141f, #090c14); border: 1px solid #1e293b; box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.05); }
+        .gauge-ring { transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease; transform: rotate(135deg); transform-origin: 50% 50%; }
+        .gauge-bg { transform: rotate(135deg); transform-origin: 50% 50%; }
     </style>
 </head>
 <body class="p-3 md:p-6 pb-20">
 
     <div class="max-w-5xl mx-auto space-y-5">
-        
         <div class="carbon-card rounded-2xl p-4 flex flex-wrap justify-between items-center gap-3 border-b-2 border-cyan-500/40">
             <div class="flex items-center gap-3">
                 <div id="statusDot" class="w-4 h-4 rounded-full bg-red-500 animate-pulse"></div>
@@ -48,120 +29,54 @@
                 </div>
             </div>
             <div class="flex items-center gap-4 bg-black/50 px-4 py-2 rounded-xl border border-gray-800">
-                <div class="text-center">
-                    <span class="text-[10px] text-gray-400 block">وقت التشغيل الفعلي</span>
-                    <span id="uptimeCounter" class="digital-font text-sm md:text-base font-bold text-cyan-400">00:00:00</span>
-                </div>
+                <div class="text-center"><span class="text-[10px] text-gray-400 block">وقت التشغيل الفعلي</span><span id="uptimeCounter" class="digital-font text-sm md:text-base font-bold text-cyan-400">00:00:00</span></div>
                 <div class="h-6 w-[1px] bg-gray-800"></div>
-                <div class="text-center">
-                    <span class="text-[10px] text-gray-400 block">صيغة المصدر</span>
-                    <span id="streamFormatBadge" class="digital-font text-xs font-bold px-2 py-0.5 rounded bg-gray-800 text-gray-300">NONE</span>
-                </div>
+                <div class="text-center"><span class="text-[10px] text-gray-400 block">صيغة المصدر</span><span id="streamFormatBadge" class="digital-font text-xs font-bold px-2 py-0.5 rounded bg-gray-800 text-gray-300">NONE</span></div>
             </div>
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div class="carbon-card rounded-2xl p-3 flex flex-col items-center justify-center relative">
-                <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120">
-                    <circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/>
-                    <circle id="gaugeWorkers" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#06b6d4" stroke-width="10" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/>
-                </svg>
-                <div class="absolute inset-0 flex flex-col items-center justify-center mt-2">
-                    <span id="valWorkers" class="digital-font text-2xl font-extrabold text-white">0/0</span>
-                    <span class="text-[10px] text-cyan-400 font-bold">LIVE RPM</span>
-                </div>
-                <span class="text-[11px] text-gray-400 -mt-2">يبث الآن / الإجمالي</span>
+                <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeWorkers" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#06b6d4" stroke-width="10" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center mt-2"><span id="valWorkers" class="digital-font text-2xl font-extrabold text-white">0/0</span><span class="text-[10px] text-cyan-400 font-bold">LIVE RPM</span></div><span class="text-[11px] text-gray-400 -mt-2">يبث الآن / الإجمالي</span>
             </div>
-
             <div class="carbon-card rounded-2xl p-3 flex flex-col items-center justify-center relative">
-                <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120">
-                    <circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/>
-                    <circle id="gaugeSpeed" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#10b981" stroke-width="10" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/>
-                </svg>
-                <div class="absolute inset-0 flex flex-col items-center justify-center mt-2">
-                    <span id="valSpeed" class="digital-font text-2xl font-extrabold text-white">0.0</span>
-                    <span class="text-[10px] text-emerald-400 font-bold">Mbps السرعة</span>
-                </div>
-                <span class="text-[11px] text-gray-400 -mt-2">سرعة سحب القطع</span>
+                <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeSpeed" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#10b981" stroke-width="10" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center mt-2"><span id="valSpeed" class="digital-font text-2xl font-extrabold text-white">0.0</span><span class="text-[10px] text-emerald-400 font-bold">Mbps السرعة</span></div><span class="text-[11px] text-gray-400 -mt-2">سرعة سحب القطع</span>
             </div>
-
             <div class="carbon-card rounded-2xl p-3 flex flex-col items-center justify-center relative">
-                <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120">
-                    <circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/>
-                    <circle id="gaugeQuota" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#a855f7" stroke-width="10" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/>
-                </svg>
-                <div class="absolute inset-0 flex flex-col items-center justify-center mt-2">
-                    <span id="valQuota" class="digital-font text-xl font-extrabold text-white">0%</span>
-                    <span id="subQuota" class="digital-font text-[9px] text-purple-300">0/0</span>
-                </div>
-                <span class="text-[11px] text-gray-400 -mt-2">رصيد API الحقيقي</span>
+                <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeQuota" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#a855f7" stroke-width="10" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center mt-2"><span id="valQuota" class="digital-font text-xl font-extrabold text-white">0%</span><span id="subQuota" class="digital-font text-[9px] text-purple-300">0/0</span></div><span class="text-[11px] text-gray-400 -mt-2">رصيد API الحقيقي</span>
             </div>
-
             <div class="carbon-card rounded-2xl p-3 flex flex-col items-center justify-center relative">
-                <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120">
-                    <circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/>
-                    <circle id="gaugeHealth" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#f59e0b" stroke-width="10" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/>
-                </svg>
-                <div class="absolute inset-0 flex flex-col items-center justify-center mt-2">
-                    <span id="valHealth" class="digital-font text-2xl font-extrabold text-white">0.0s</span>
-                    <span class="text-[10px] text-amber-400 font-bold">BUFFER SYNC</span>
-                </div>
-                <span class="text-[11px] text-gray-400 -mt-2">مخزون أمان المشغل</span>
+                <svg class="w-28 h-28 md:w-32 md:h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="10" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeHealth" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#f59e0b" stroke-width="10" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center mt-2"><span id="valHealth" class="digital-font text-2xl font-extrabold text-white">0.0s</span><span class="text-[10px] text-amber-400 font-bold">BUFFER SYNC</span></div><span class="text-[11px] text-gray-400 -mt-2">مخزون أمان المشغل</span>
             </div>
         </div>
 
         <div class="carbon-card rounded-2xl p-4 md:p-6">
-            <h2 class="text-base md:text-lg font-bold mb-4 text-cyan-400 flex items-center gap-2 border-b border-gray-800 pb-2">
-                <span>🚀</span> 1. المحرك المستقل الذكي (GitHub Native Engine)
-            </h2>
-            
+            <h2 class="text-base md:text-lg font-bold mb-4 text-cyan-400 flex items-center gap-2 border-b border-gray-800 pb-2"><span>🚀</span> 1. المحرك المستقل الذكي (GitHub Native Engine)</h2>
             <div class="space-y-3 mb-4">
-                <div>
-                    <label class="text-xs font-bold text-gray-400 block mb-1">الرابط الأصلي للمصدر:</label>
-                    <input type="text" id="sourceLink" placeholder="https://example.com/live/stream.m3u8 أو .ts" class="w-full p-3.5 rounded-xl bg-black/70 border border-gray-700 text-emerald-400 focus:outline-none focus:border-cyan-500 font-mono text-xs md:text-sm text-left" dir="ltr">
-                </div>
-                
+                <div><label class="text-xs font-bold text-gray-400 block mb-1">الرابط الأصلي للمصدر:</label><input type="text" id="sourceLink" class="w-full p-3.5 rounded-xl bg-black/70 border border-gray-700 text-emerald-400 focus:outline-none focus:border-cyan-500 font-mono text-xs md:text-sm text-left" dir="ltr"></div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-                    <div>
-                        <label class="text-[11px] font-bold text-gray-500">User-Agent (اختياري):</label>
-                        <input type="text" id="userAgent" placeholder="VLC/3.0.18" class="w-full p-2.5 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-bold text-gray-500">Referer (اختياري):</label>
-                        <input type="text" id="referer" placeholder="https://referer.com" class="w-full p-2.5 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-bold text-gray-500">Cookie (اختياري):</label>
-                        <input type="text" id="cookie" placeholder="token=xyz..." class="w-full p-2.5 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr">
-                    </div>
+                    <div><label class="text-[11px] font-bold text-gray-500">User-Agent (اختياري):</label><input type="text" id="userAgent" class="w-full p-2.5 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr"></div>
+                    <div><label class="text-[11px] font-bold text-gray-500">Referer (اختياري):</label><input type="text" id="referer" class="w-full p-2.5 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr"></div>
+                    <div><label class="text-[11px] font-bold text-gray-500">Cookie (اختياري):</label><input type="text" id="cookie" class="w-full p-2.5 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr"></div>
                 </div>
             </div>
-
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-                <button id="startBtn" onclick="startSmartBroadcast()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3.5 px-4 rounded-xl transition flex justify-center items-center gap-2 text-sm">
-                    <span>⚡</span> تشغيل البث
-                </button>
-                <button id="stopBtn" onclick="stopBroadcastAndWipe()" class="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white font-black py-3.5 px-4 rounded-xl transition flex justify-center items-center gap-2 text-sm">
-                    <span>🛑</span> إيقاف ومسح الأثر فوراً
-                </button>
-                <button onclick="clearLink()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3.5 px-4 rounded-xl transition border border-gray-700 flex justify-center items-center gap-2 text-sm">
-                    <span>🗑️</span> تفريغ الحقول
-                </button>
+                <button id="startBtn" onclick="startSmartBroadcast()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3.5 px-4 rounded-xl transition flex justify-center items-center gap-2 text-sm"><span>⚡</span> تشغيل البث</button>
+                <button id="stopBtn" onclick="stopBroadcastAndWipe()" class="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white font-black py-3.5 px-4 rounded-xl transition flex justify-center items-center gap-2 text-sm"><span>🛑</span> إيقاف ومسح الأثر فوراً</button>
+                <button onclick="clearLink()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3.5 px-4 rounded-xl transition border border-gray-700 flex justify-center items-center gap-2 text-sm"><span>🗑️</span> تفريغ الحقول</button>
             </div>
-            
             <div class="w-full bg-black rounded-xl overflow-hidden border border-gray-800 relative">
-                <div class="absolute top-2 right-2 flex items-center gap-2 bg-black/80 px-2.5 py-1 rounded-lg border border-gray-800 z-10">
-                    <span id="playerRadarDot" class="w-2 h-2 rounded-full bg-gray-500"></span>
-                    <span id="playerRadarText" class="text-[10px] text-gray-300 font-bold">رادار المشغل: متوقف</span>
-                </div>
+                <div class="absolute top-2 right-2 flex items-center gap-2 bg-black/80 px-2.5 py-1 rounded-lg border border-gray-800 z-10"><span id="playerRadarDot" class="w-2 h-2 rounded-full bg-gray-500"></span><span id="playerRadarText" class="text-[10px] text-gray-300 font-bold">رادار المشغل: متوقف</span></div>
                 <video id="previewPlayer" controls muted playsinline class="w-full h-52 md:h-80 bg-black object-contain"></video>
             </div>
         </div>
 
         <div class="carbon-card rounded-2xl p-4 md:p-6">
-            <h2 class="text-base md:text-lg font-bold mb-3 text-amber-400 flex items-center gap-2">
-                <span>🌐</span> 2. بوابة التوزيع (Cloudflare Load Balancer)
-            </h2>
+            <h2 class="text-base md:text-lg font-bold mb-3 text-amber-400 flex items-center gap-2"><span>🌐</span> 2. بوابة التوزيع (Cloudflare Load Balancer)</h2>
             <div class="flex flex-col sm:flex-row gap-2.5">
                 <input type="text" id="cfDomain" placeholder="https://timeshift-app.site/live_stream/index.m3u8" class="flex-1 p-3 rounded-xl bg-black/70 border border-gray-700 text-amber-300 font-mono text-xs md:text-sm text-left" dir="ltr">
                 <button onclick="updateDomain()" class="bg-amber-600 hover:bg-amber-500 text-black font-black py-3 px-6 rounded-xl transition text-xs md:text-sm">حفظ الدومين</button>
@@ -171,22 +86,15 @@
 
         <div class="carbon-card rounded-2xl p-4 md:p-6">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-base md:text-lg font-bold text-purple-400 flex items-center gap-2">
-                    <span>🤖</span> 3. أسطول العمال (GitHub Sub-Accounts)
-                </h2>
+                <h2 class="text-base md:text-lg font-bold text-purple-400 flex items-center gap-2"><span>🤖</span> 3. أسطول العمال (GitHub Sub-Accounts)</h2>
                 <button onclick="refreshWorkersTelemetry()" class="text-xs bg-gray-800 hover:bg-gray-700 text-cyan-400 px-3 py-1.5 rounded-lg border border-gray-700">🔄 فحص حي للعدادات</button>
             </div>
-            
             <div class="flex flex-col sm:flex-row gap-2.5 mb-5 bg-black/40 p-3 rounded-xl border border-gray-800">
                 <input type="text" id="githubToken" placeholder="أدخل GitHub Token (صلاحيات repo + workflow)..." class="flex-1 p-3 rounded-xl bg-gray-950 border border-gray-700 text-purple-300 font-mono text-xs text-left" dir="ltr">
-                <button onclick="plantScript()" id="plantBtn" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-3 px-6 rounded-xl transition text-xs md:text-sm whitespace-nowrap">
-                    + زرع محرك المزامنة
-                </button>
+                <button onclick="plantScript()" id="plantBtn" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-3 px-6 rounded-xl transition text-xs md:text-sm whitespace-nowrap">+ زرع محرك المزامنة</button>
             </div>
-
             <div id="workersList" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
         </div>
-
     </div>
 
     <script>
@@ -199,342 +107,95 @@
             messagingSenderId: "937631435290",
             appId: "1:937631435290:web:127c41f413b2d34d6a1fa3"
         };
-
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let workersMemory = {};
-        let liveWorkerStates = {}; 
-        let streamStartTime = null;
-        let currentStreamStatus = "stopped";
-        let lastFragTime = 0;
+        let workersMemory = {}; let liveWorkerStates = {}; let streamStartTime = null; let currentStreamStatus = "stopped"; let lastFragTime = 0;
 
         function setGaugeValue(gaugeId, percent, colorHex) {
             const circle = document.getElementById(gaugeId);
             if (!circle) return;
-            const maxArc = 226;
-            const clamped = Math.max(0, Math.min(100, percent));
+            const maxArc = 226; const clamped = Math.max(0, Math.min(100, percent));
             const offset = maxArc - (clamped / 100) * maxArc;
             circle.style.strokeDashoffset = offset;
             if (colorHex) circle.style.stroke = colorHex;
         }
 
         function detectStreamFormat(url) {
-            if (!url) return "NONE";
-            const lower = url.toLowerCase();
-            if (lower.includes(".m3u8")) return "HLS (M3U8)";
-            if (lower.includes(".ts")) return "MPEG-TS";
-            if (lower.includes(".mpd")) return "DASH (MPD)";
-            if (lower.includes(".flv")) return "FLV STREAM";
+            if (!url) return "NONE"; const lower = url.toLowerCase();
+            if (lower.includes(".m3u8")) return "HLS (M3U8)"; if (lower.includes(".ts")) return "MPEG-TS";
             return "UNIVERSAL";
         }
 
         db.ref('settings/stream').on('value', (snapshot) => {
             const data = snapshot.val();
-            const dot = document.getElementById("statusDot");
-            const statusTxt = document.getElementById("systemStatusText");
-            const fmtBadge = document.getElementById("streamFormatBadge");
-
+            const dot = document.getElementById("statusDot"); const statusTxt = document.getElementById("systemStatusText"); const fmtBadge = document.getElementById("streamFormatBadge");
             if (data) {
-                document.getElementById("sourceLink").value = data.source || "";
-                document.getElementById("userAgent").value = data.userAgent || "";
-                document.getElementById("referer").value = data.referer || "";
-                document.getElementById("cookie").value = data.cookie || "";
+                document.getElementById("sourceLink").value = data.source || ""; document.getElementById("userAgent").value = data.userAgent || ""; document.getElementById("referer").value = data.referer || ""; document.getElementById("cookie").value = data.cookie || "";
                 fmtBadge.innerText = detectStreamFormat(data.source);
-
                 currentStreamStatus = data.status || "stopped";
                 if (currentStreamStatus === "running") {
-                    dot.className = "w-4 h-4 rounded-full bg-emerald-400 animate-ping";
-                    statusTxt.innerText = "المحركات تعمل بكفاءة (SYNC ENGINE RUNNING)";
-                    statusTxt.className = "text-xs text-emerald-400 font-bold";
-                    streamStartTime = data.startedAt || Date.now();
+                    dot.className = "w-4 h-4 rounded-full bg-emerald-400 animate-ping"; statusTxt.innerText = "المحركات تعمل بكفاءة (SYNC ENGINE RUNNING)"; statusTxt.className = "text-xs text-emerald-400 font-bold"; streamStartTime = data.startedAt || Date.now();
                 } else {
-                    dot.className = "w-4 h-4 rounded-full bg-red-500";
-                    statusTxt.innerText = "تم إيقاف البث ومسح الأثر (STOPPED)";
-                    statusTxt.className = "text-xs text-red-400";
-                    streamStartTime = null;
-                    setGaugeValue("gaugeSpeed", 0);
-                    document.getElementById("valSpeed").innerText = "0.0";
-                    setGaugeValue("gaugeHealth", 0);
-                    document.getElementById("valHealth").innerText = "0.0s";
+                    dot.className = "w-4 h-4 rounded-full bg-red-500"; statusTxt.innerText = "تم إيقاف البث ومسح الأثر (STOPPED)"; statusTxt.className = "text-xs text-red-400"; streamStartTime = null;
+                    setGaugeValue("gaugeSpeed", 0); document.getElementById("valSpeed").innerText = "0.0"; setGaugeValue("gaugeHealth", 0); document.getElementById("valHealth").innerText = "0.0s";
                 }
-            } else {
-                currentStreamStatus = "stopped";
-                streamStartTime = null;
-                fmtBadge.innerText = "NONE";
-            }
+            } else { currentStreamStatus = "stopped"; streamStartTime = null; fmtBadge.innerText = "NONE"; }
             refreshWorkersTelemetry();
         });
 
-        db.ref('settings/domain').on('value', (snapshot) => {
-            document.getElementById("cfDomain").value = snapshot.val() || "";
-        });
+        db.ref('settings/domain').on('value', (snapshot) => { document.getElementById("cfDomain").value = snapshot.val() || ""; });
 
         setInterval(() => {
             const uptimeEl = document.getElementById("uptimeCounter");
             if (currentStreamStatus === "running" && streamStartTime) {
                 const diff = Math.max(0, Math.floor((Date.now() - streamStartTime) / 1000));
-                const hrs = String(Math.floor(diff / 3600)).padStart(2, '0');
-                const mins = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
-                const secs = String(diff % 60).padStart(2, '0');
-                uptimeEl.innerText = `${hrs}:${mins}:${secs}`;
-            } else {
-                uptimeEl.innerText = "00:00:00";
-            }
-
-            if (Date.now() - lastFragTime > 6000) {
-                document.getElementById("valSpeed").innerText = "0.0";
-                setGaugeValue("gaugeSpeed", 0, "#10b981");
-            }
-
-            const video = document.getElementById('previewPlayer');
-            const radarDot = document.getElementById('playerRadarDot');
-            const radarTxt = document.getElementById('playerRadarText');
-
-            if (video && !video.paused && video.readyState >= 2) {
-                let bufferLen = 0;
-                for (let i = 0; i < video.buffered.length; i++) {
-                    if (video.currentTime >= video.buffered.start(i) && video.currentTime <= video.buffered.end(i)) {
-                        bufferLen = video.buffered.end(i) - video.currentTime;
-                        break;
-                    }
-                }
-                document.getElementById("valHealth").innerText = bufferLen.toFixed(1) + "s";
-                const healthPercent = Math.min(100, (bufferLen / 15) * 100);
-                setGaugeValue("gaugeHealth", healthPercent, bufferLen > 3 ? "#10b981" : "#f59e0b");
-
-                radarDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping";
-                radarTxt.innerText = "رادار المشغل: متصل ويعرض البث";
-            } else {
-                document.getElementById("valHealth").innerText = "0.0s";
-                setGaugeValue("gaugeHealth", 0, "#f59e0b");
-                radarDot.className = "w-2 h-2 rounded-full bg-gray-500";
-                radarTxt.innerText = "رادار المشغل: خامل";
-            }
-        }, 1000);
-
-        setInterval(() => {
-            refreshWorkersTelemetry();
-        }, 6000);
-
-        function playVideo(url) {
-            const video = document.getElementById('previewPlayer');
-            if (!url) return;
-
-            if (Hls.isSupported()) {
-                if (window.hlsInstance) window.hlsInstance.destroy();
-                
-                const hls = new Hls({
-                    liveSyncDurationCount: 3,
-                    liveMaxLatencyDurationCount: 7,
-                    maxBufferLength: 20,
-                    enableWorker: true,
-                    lowLatencyMode: false,
-                    manifestLoadingMaxRetry: Infinity,
-                    manifestLoadingRetryDelay: 1000,
-                    levelLoadingMaxRetry: Infinity,
-                    levelLoadingRetryDelay: 1000,
-                    fragLoadingMaxRetry: Infinity,
-                    fragLoadingRetryDelay: 1000
-                });
-                
-                window.hlsInstance = hls;
-                hls.loadSource(url);
-                hls.attachMedia(video);
-
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    video.play().catch(() => {});
-                });
-
-                hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
-                    lastFragTime = Date.now();
-                    const stats = data.frag.stats;
-                    const durationMs = stats.loading.end - stats.loading.start;
-                    const bytes = stats.total || stats.loaded || 0;
-                    if (durationMs > 0 && bytes > 0) {
-                        const mbps = ((bytes * 8) / (durationMs / 1000)) / 1000000;
-                        const cleanMbps = Math.min(30, Math.max(0.2, mbps));
-                        document.getElementById("valSpeed").innerText = cleanMbps.toFixed(1);
-                        setGaugeValue("gaugeSpeed", Math.min(100, (cleanMbps / 12) * 100), "#10b981");
-                    }
-                });
-
-                hls.on(Hls.Events.ERROR, (event, data) => {
-                    if (data.fatal && currentStreamStatus === "running") {
-                        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-                            setTimeout(() => hls.startLoad(), 1000);
-                        } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-                            hls.recoverMediaError();
-                        } else {
-                            setTimeout(() => playVideo(url), 1500);
-                        }
-                    }
-                });
-            } else {
-                video.src = url;
-                video.play().catch(() => {});
-            }
-        }
-
-        function testCloudflareStream() {
-            const cf = document.getElementById("cfDomain").value.trim();
-            if (!cf) return alert("يرجى حفظ رابط Cloudflare أولاً!");
-            playVideo(cf);
-        }
-
-        async function startSmartBroadcast() {
-            const link = document.getElementById("sourceLink").value.trim();
-            const ua = document.getElementById("userAgent").value.trim();
-            const ref = document.getElementById("referer").value.trim();
-            const cookie = document.getElementById("cookie").value.trim();
-            
-            if(!link) return alert("يرجى إدخال الرابط الأصلي!");
-            
-            const startBtn = document.getElementById("startBtn");
-            startBtn.disabled = true;
-            startBtn.innerText = "⏳ جاري إطلاق المحركات...";
-
-            try {
-                streamStartTime = Date.now();
-                await db.ref('settings/stream').set({
-                    source: link,
-                    userAgent: ua,
-                    referer: ref,
-                    cookie: cookie,
-                    status: "running",
-                    startedAt: streamStartTime
-                });
-                
-                const workersRef = await db.ref('workers').once('value');
-                const workers = workersRef.val();
-                if (workers) {
-                    const promises = [];
-                    for (let key in workers) {
-                        if (workers[key].status === 'active') {
-                            promises.push(
-                                fetch(`https://api.github.com/repos/${workers[key].username}/${workers[key].repo}/actions/workflows/engine.yml/dispatches`, {
-                                    method: "POST",
-                                    headers: { "Authorization": `token ${workers[key].token}`, "Accept": "application/vnd.github.v3+json" },
-                                    body: JSON.stringify({ ref: "main" })
-                                }).catch(() => {})
-                            );
-                        }
-                    }
+                const hrs = String(Math.floor(diff / 3600)).padStart(2, '0'); const mins = String(Math.floor((diff % 3600) / 60)).padStart(2, '0'); const secs = String(diff % 60).padStart(2, '0');
+                uptimeEl.innerText = `${hrs}:${mins}:${secs}`; } else { uptimeEl.innerText = "00:00:00"; } if (Date.now() - lastFragTime > 6000) { document.getElementById("valSpeed").innerText = "0.0"; setGaugeValue("gaugeSpeed", 0, "#10b981"); } const video = document.getElementById('previewPlayer'); const radarDot = document.getElementById('playerRadarDot'); const radarTxt = document.getElementById('playerRadarText'); if (video && !video.paused && video.readyState >= 2) { let bufferLen = 0; for (let i = 0; i < video.buffered.length; i++) { if (video.currentTime >= video.buffered.start(i) && video.currentTime <= video.buffered.end(i)) { bufferLen = video.buffered.end(i) - video.currentTime; break; } } document.getElementById("valHealth").innerText = bufferLen.toFixed(1) + "s"; setGaugeValue("gaugeHealth", Math.min(100, (bufferLen / 15) * 100), bufferLen > 3 ? "#10b981" : "#f59e0b"); radarDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping"; radarTxt.innerText = "رادار المشغل: متصل ويعرض البث"; } else { document.getElementById("valHealth").innerText = "0.0s"; setGaugeValue("gaugeHealth", 0, "#f59e0b"); radarDot.className = "w-2 h-2 rounded-full bg-gray-500"; radarTxt.innerText = "رادار المشغل: خامل"; } }, 1000);  setInterval(() => { refreshWorkersTelemetry(); }, 6000);  function playVideo(url) { const video = document.getElementById('previewPlayer'); if (!url) return; if (Hls.isSupported()) { if (window.hlsInstance) window.hlsInstance.destroy(); const hls = new Hls({ liveSyncDurationCount: 3, liveMaxLatencyDurationCount: 7, maxBufferLength: 20, enableWorker: true, lowLatencyMode: false }); window.hlsInstance = hls; hls.loadSource(url); hls.attachMedia(video); hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); }); hls.on(Hls.Events.FRAG_LOADED, (event, data) => { lastFragTime = Date.now(); const stats = data.frag.stats; const durationMs = stats.loading.end - stats.loading.start; const bytes = stats.total \vert{}\vert{} stats.loaded \vert{}\vert{} 0; if (durationMs > 0 && bytes > 0) { const mbps = ((bytes * 8) / (durationMs / 1000)) / 1000000; const cleanMbps = Math.min(30, Math.max(0.2, mbps)); document.getElementById("valSpeed").innerText = cleanMbps.toFixed(1); setGaugeValue("gaugeSpeed", Math.min(100, (cleanMbps / 12) * 100), "#10b981"); } }); hls.on(Hls.Events.ERROR, (event, data) => { if (data.fatal && currentStreamStatus === "running") { if (data.type === Hls.ErrorTypes.NETWORK_ERROR) { setTimeout(() => hls.startLoad(), 1000); } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { hls.recoverMediaError(); } else { setTimeout(() => playVideo(url), 1500); } } }); } else { video.src = url; video.play().catch(() => {}); } }  function testCloudflareStream() { const cf = document.getElementById("cfDomain").value.trim(); if (!cf) return alert("يرجى حفظ رابط Cloudflare أولاً!"); playVideo(cf); }  async function startSmartBroadcast() { const link = document.getElementById("sourceLink").value.trim(); const ua = document.getElementById("userAgent").value.trim(); const ref = document.getElementById("referer").value.trim(); const cookie = document.getElementById("cookie").value.trim(); if(!link) return alert("يرجى إدخال الرابط الأصلي!"); const startBtn = document.getElementById("startBtn"); startBtn.disabled = true; startBtn.innerText = "⏳ جاري إطلاق المحركات..."; try { streamStartTime = Date.now(); await db.ref('settings/stream').set({ source: link, userAgent: ua, referer: ref, cookie: cookie, status: "running", startedAt: streamStartTime }); const workersRef = await db.ref('workers').once('value'); const workers = workersRef.val(); if (workers) { const promises = []; for (let key in workers) { if (workers[key].status === 'active') { promises.push(fetch(`https://api.github.com/repos/${workers[key].username}/${workers[key].repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${workers[key].token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }).catch(() => {})); } }
                     await Promise.all(promises);
                 }
-
-                const cf = document.getElementById("cfDomain").value.trim();
-                setTimeout(() => {
-                    if (cf) playVideo(cf);
-                    refreshWorkersTelemetry();
-                }, 5000);
-
-                alert("✅ تم إطلاق المحركات في جميع الحسابات!");
-            } catch (e) {
-                alert("خطأ: " + e.message);
-            } finally {
-                startBtn.disabled = false;
-                startBtn.innerHTML = "<span>⚡</span> تشغيل البث";
-            }
+                const cf = document.getElementById("cfDomain").value.trim(); setTimeout(() => { if (cf) playVideo(cf); refreshWorkersTelemetry(); }, 5000);
+                alert("✅ تم إطلاق المحركات!");
+            } catch (e) { alert("خطأ: " + e.message); } finally { startBtn.disabled = false; startBtn.innerHTML = "<span>⚡</span> تشغيل البث"; }
         }
 
         async function stopBroadcastAndWipe() {
-            const stopBtn = document.getElementById("stopBtn");
-            const originalText = stopBtn.innerHTML;
-            stopBtn.innerHTML = "<span>⏳</span> جاري الإعدام ومسح الأثر...";
-            stopBtn.disabled = true;
-
+            const stopBtn = document.getElementById("stopBtn"); const originalText = stopBtn.innerHTML; stopBtn.innerHTML = "<span>⏳</span> جاري الإعدام ومسح الأثر..."; stopBtn.disabled = true;
             try {
-                await db.ref('settings/stream/status').set("stopped");
-                streamStartTime = null;
-
-                const video = document.getElementById('previewPlayer');
-                video.pause();
-                video.src = "";
-                if (window.hlsInstance) window.hlsInstance.destroy();
-                
-                const workersRef = await db.ref('workers').once('value');
-                const workers = workersRef.val();
-                
+                await db.ref('settings/stream/status').set("stopped"); streamStartTime = null;
+                const video = document.getElementById('previewPlayer'); video.pause(); video.src = ""; if (window.hlsInstance) window.hlsInstance.destroy();
+                const workersRef = await db.ref('workers').once('value'); const workers = workersRef.val();
                 if (workers) {
                     const wipePromises = Object.keys(workers).map(async (key) => {
-                        const worker = workers[key];
-                        const headers = { "Authorization": `token ${worker.token}`, "Accept": "application/vnd.github.v3+json" };
-                        const baseUrl = `https://api.github.com/repos/${worker.username}/${worker.repo}`;
-
-                        try {
-                            const runsRes = await fetch(`${baseUrl}/actions/runs?per_page=30`, { headers });
-                            const runsData = await runsRes.json();
-
+                        const worker = workers[key]; const headers = { "Authorization": `token ${worker.token}`, "Accept": "application/vnd.github.v3+json" }; const baseUrl = `https://api.github.com/repos/${worker.username}/${worker.repo}`; try { const runsRes = await fetch(`${baseUrl}/actions/runs?per_page=30`, { headers }); const runsData = await runsRes.json();
                             if (runsData && runsData.workflow_runs) {
                                 for (const run of runsData.workflow_runs) {
-                                    if (run.status === "in_progress" || run.status === "queued" || run.status === "waiting") {
-                                        await fetch(`${baseUrl}/actions/runs/${run.id}/cancel`, { method: "POST", headers }).catch(() => {});
-                                    }
+                                    if (run.status === "in_progress" || run.status === "queued" || run.status === "waiting") { await fetch(`${baseUrl}/actions/runs/${run.id}/cancel`, { method: "POST", headers }).catch(() => {}); }
                                     await fetch(`${baseUrl}/actions/runs/${run.id}`, { method: "DELETE", headers }).catch(() => {});
                                 }
                             }
-
-                            const m3u8Res = await fetch(`${baseUrl}/contents/live_stream/index.m3u8`, { headers });
-                            if (m3u8Res.ok) {
-                                const m3u8File = await m3u8Res.json();
-                                await fetch(`${baseUrl}/contents/live_stream/index.m3u8`, {
-                                    method: "DELETE", headers, body: JSON.stringify({ message: "Wipe stream trace", sha: m3u8File.sha })
-                                }).catch(() => {});
-                            }
+                            const m3u8Res = await fetch(`${baseUrl}/contents/live_stream/index.m3u8`, { headers }); if (m3u8Res.ok) { const m3u8File = await m3u8Res.json(); await fetch(`${baseUrl}/contents/live_stream/index.m3u8`, { method: "DELETE", headers, body: JSON.stringify({ message: "Wipe stream trace", sha: m3u8File.sha }) }).catch(() => {}); }
                         } catch (err) {}
                     });
-
                     await Promise.all(wipePromises);
                 }
-
-                await refreshWorkersTelemetry();
-                alert("🛑 تم إيقاف البث فوراً ومسح جميع الحركات والملفات!");
-            } catch (error) {
-                alert("حدث خطأ أثناء الإيقاف: " + error.message);
-            } finally {
-                stopBtn.innerHTML = originalText;
-                stopBtn.disabled = false;
-            }
+                await refreshWorkersTelemetry(); alert("🛑 تم إيقاف البث ومسح الأثر!");
+            } catch (error) { alert("خطأ: " + error.message); } finally { stopBtn.innerHTML = originalText; stopBtn.disabled = false; }
         }
 
         function clearLink() { db.ref('settings/stream').remove(); }
-
-        function updateDomain() {
-            const domain = document.getElementById("cfDomain").value.trim();
-            if(!domain) return alert("يرجى إدخال الرابط!");
-            const cleanDomain = domain.endsWith('/') ? domain.slice(0, -1) : domain;
-            db.ref('settings/domain').set(cleanDomain);
-            alert("✅ تم حفظ الدومين!");
-        }
-
+        function updateDomain() { const domain = document.getElementById("cfDomain").value.trim(); if(!domain) return alert("يرجى إدخال الرابط!"); const cleanDomain = domain.endsWith('/') ? domain.slice(0, -1) : domain; db.ref('settings/domain').set(cleanDomain); alert("✅ تم حفظ الدومين!"); }
         function encodeBase64(str) { return btoa(unescape(encodeURIComponent(str))); }
 
         async function plantScript() {
             const btn = document.getElementById("plantBtn");
             try {
-                const token = document.getElementById("githubToken").value.trim();
-                if(!token) return alert("يرجى إدخال Token!");
-                
-                btn.innerText = "⏳ جاري الزرع...";
-                btn.disabled = true;
-
-                const userRes = await fetch("https://api.github.com/user", { headers: { "Authorization": `token ${token}` } });
-                if (!userRes.ok) throw new Error("التوكن غير صالح أو ناقص الصلاحيات.");
-                const userData = await userRes.json();
-                const username = userData.login;
-
-                const randomId = Math.floor(1000 + Math.random() * 9000);
-                const repoName = "TimeShift-Worker-" + randomId;
-                
-                await fetch("https://api.github.com/user/repos", {
-                    method: "POST",
-                    headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
-                    body: JSON.stringify({ name: repoName, private: false, auto_init: true })
-                });
-
+                const token = document.getElementById("githubToken").value.trim(); if(!token) return alert("يرجى إدخال Token!");
+                btn.innerText = "⏳ جاري الزرع..."; btn.disabled = true;
+                const userRes = await fetch("https://api.github.com/user", { headers: { "Authorization": `token ${token}` } }); if (!userRes.ok) throw new Error("توكن غير صالح."); const userData = await userRes.json(); const username = userData.login; const randomId = Math.floor(1000 + Math.random() * 9000); const repoName = "TimeShift-Worker-" + randomId;  await fetch("https://api.github.com/user/repos", { method: "POST", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ name: repoName, private: false, auto_init: true }) });
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
+                // الكود مع أوامر إعادة الاتصال التلقائي الصامتة لمعالجة المصادر التي تفصل
                 const workflowContent = `name: Smart FFmpeg Engine
 on:
   workflow_dispatch:
@@ -546,12 +207,10 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
-
       - name: Install Stable FFmpeg
         run: |
           sudo apt-get update -qq || true
           sudo apt-get install -yq jq ffmpeg
-
       - name: Process Native Stream
         run: |
           git config --global user.name "TimeShift Worker"
@@ -561,7 +220,6 @@ jobs:
           
           STREAM_DATA=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream.json)
           STATUS=$(echo "$STREAM_DATA" | jq -r '.status')
-          
           if [ "$STATUS" != "running" ]; then exit 0; fi
           
           SOURCE=$(echo "$STREAM_DATA" | jq -r '.source')
@@ -570,11 +228,7 @@ jobs:
           COOKIE=$(echo "$STREAM_DATA" | jq -r '.cookie')
           
           HEADER_ARGS=()
-          if [ -n "$UA" ] && [ "$UA" != "null" ]; then
-            HEADER_ARGS+=(-user_agent "$UA")
-          else
-            HEADER_ARGS+=(-user_agent "VLC/3.0.18 LibVLC/3.0.18")
-          fi
+          if [ -n "$UA" ] && [ "$UA" != "null" ]; then HEADER_ARGS+=(-user_agent "$UA"); else HEADER_ARGS+=(-user_agent "VLC/3.0.18 LibVLC/3.0.18"); fi
           
           CRLF=$(printf '\\r\\n')
           custom_headers=""
@@ -588,11 +242,9 @@ jobs:
               if [ "$S_STATUS" == "stopped" ]; then break; fi
               
               ffmpeg -nostdin -hide_banner -loglevel warning "\${HEADER_ARGS[@]}" \\
-                -timeout 5000000 \\
-                -i "$SOURCE" \\
-                -map 0:v:0? -map 0:a:0? -c copy \\
-                -f hls -hls_time 3 -hls_list_size 6 \\
-                -hls_flags append_list+omit_endlist+discont_start+temp_file \\
+                -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 10 \\
+                -timeout 5000000 -i "$SOURCE" -map 0:v:0? -map 0:a:0? -c copy \\
+                -f hls -hls_time 3 -hls_list_size 6 -hls_flags append_list+omit_endlist+discont_start+temp_file \\
                 -hls_segment_filename "live_stream/seg_%06d.png" live_stream/index.m3u8
 
               sleep 0.2
@@ -602,154 +254,9 @@ jobs:
           
           while true; do
             sleep 3
-            
             CURRENT_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
             if [ "$CURRENT_STATUS" == "stopped" ]; then
               kill -9 $RUNNER_PID 2>/dev/null || true
               pkill -9 ffmpeg 2>/dev/null || true
               git rm -rf live_stream/ 2>/dev/null || true
-              git commit -m "Wipe stream on stop" || true
-              git push origin main || true
-              break
-            fi
-            
-            ls -1t live_stream/seg_*.png 2>/dev/null | tail -n +15 | xargs -r rm -f
-            
-            git add -A live_stream/ || true
-            if ! git diff --staged --quiet; then
-              git commit -m "Live stream sync" || true
-              git push origin main || true
-            fi
-          done
-`;
-                
-                await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, {
-                    method: "PUT", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
-                    body: JSON.stringify({ message: "Init Native Sync Engine", content: encodeBase64(workflowContent) })
-                });
-
-                await db.ref('workers/' + username + '_' + randomId).set({
-                    token: token, status: 'active', trafficUsage: 0, repo: repoName, username: username
-                });
-                
-                document.getElementById("githubToken").value = '';
-                await refreshWorkersTelemetry();
-                alert(`✅ تم زرع المحرك بنجاح تام وبدون طوابير في: ${repoName}`);
-
-            } catch (error) {
-                alert("❌ خطأ أثناء الزرع: " + error.message);
-            } finally {
-                btn.innerText = "+ زرع محرك المزامنة";
-                btn.disabled = false;
-            }
-        }
-
-        async function refreshWorkersTelemetry() {
-            const keys = Object.keys(workersMemory);
-            if (keys.length === 0) {
-                setGaugeValue("gaugeWorkers", 0); document.getElementById("valWorkers").innerText = "0/0";
-                setGaugeValue("gaugeQuota", 0); document.getElementById("valQuota").innerText = "0%"; document.getElementById("subQuota").innerText = "0/0";
-                return;
-            }
-
-            let actuallyRunningCount = 0; let totalRemainingCalls = 0; let totalLimitCalls = 0;
-
-            await Promise.all(keys.map(async (key) => {
-                const w = workersMemory[key];
-                const headers = { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" };
-                try {
-                    const runsRes = await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers });
-                    if (runsRes.ok) {
-                        const runsData = await runsRes.json();
-                        const isBroadcasting = (runsData.total_count && runsData.total_count > 0);
-                        liveWorkerStates[key] = isBroadcasting;
-                        if (isBroadcasting && w.status === 'active') actuallyRunningCount++;
-                    }
-
-                    const rateRes = await fetch(`https://api.github.com/rate_limit?t=${Date.now()}`, { headers });
-                    if (rateRes.ok) {
-                        const rateData = await rateRes.json();
-                        const limit = rateData.rate.limit || 5000;
-                        const remaining = rateData.rate.remaining || 0;
-                        totalLimitCalls += limit; totalRemainingCalls += remaining;
-                        const usedPct = Math.round(((limit - remaining) / limit) * 100);
-                        db.ref(`workers/${key}/trafficUsage`).set(usedPct);
-                    }
-                } catch (e) {}
-            }));
-
-            const rpmPercent = (actuallyRunningCount / keys.length) * 100;
-            document.getElementById("valWorkers").innerText = `${actuallyRunningCount}/${keys.length}`;
-            setGaugeValue("gaugeWorkers", rpmPercent, actuallyRunningCount > 0 ? "#06b6d4" : "#64748b");
-
-            if (totalLimitCalls > 0) {
-                const remainPct = Math.round((totalRemainingCalls / totalLimitCalls) * 100);
-                document.getElementById("valQuota").innerText = `${remainPct}%`;
-                document.getElementById("subQuota").innerText = `${totalRemainingCalls}/${totalLimitCalls}`;
-                setGaugeValue("gaugeQuota", remainPct, remainPct > 25 ? "#a855f7" : "#ef4444");
-            }
-            renderWorkerCards();
-        }
-
-        function renderWorkerCards() {
-            const container = document.getElementById('workersList');
-            container.innerHTML = '';
-            const keys = Object.keys(workersMemory);
-
-            keys.forEach((workerId) => {
-                const worker = workersMemory[workerId];
-                const usage = worker.trafficUsage || 0;
-                const isPaused = worker.status !== 'active';
-                const isBroadcastingNow = liveWorkerStates[workerId] === true;
-
-                const card = `
-                    <div class="bg-black/60 border ${isPaused ? 'border-amber-500/40' : (isBroadcastingNow ? 'border-emerald-500/50' : 'border-gray-800')} rounded-xl p-3.5 flex flex-col justify-between gap-3">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2.5 h-2.5 rounded-full ${isPaused ? 'bg-amber-500' : (isBroadcastingNow ? 'bg-emerald-400 animate-ping' : 'bg-cyan-500')}"></span>
-                                    <span class="font-bold text-white text-sm font-mono">${worker.username}</span>
-                                </div>
-                                <span class="text-[11px] text-gray-500 font-mono block mt-0.5">${worker.repo}</span>
-                            </div>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isPaused ? 'bg-amber-500/20 text-amber-400' : (isBroadcastingNow ? 'bg-emerald-500/20 text-emerald-400' : 'bg-gray-800 text-gray-400')}">
-                                ${isPaused ? 'موقوف مؤقتاً' : (isBroadcastingNow ? '🔥 يبث الآن' : 'جاهز بالانتظار')}
-                            </span>
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-[11px] mb-1">
-                                <span class="text-gray-400">استهلاك طلبات GitHub API</span>
-                                <span class="digital-font font-bold ${usage > 80 ? 'text-red-400' : 'text-cyan-400'}">${usage}%</span>
-                            </div>
-                            <div class="w-full bg-gray-900 rounded-full h-2 overflow-hidden border border-gray-800">
-                                <div class="h-full ${usage > 80 ? 'bg-red-500' : 'bg-gradient-to-r from-cyan-500 to-emerald-500'}" style="width: ${usage}%"></div>
-                            </div>
-                        </div>
-                        <div class="flex gap-2 pt-1 border-t border-gray-800/80">
-                            <button onclick="toggleWorkerStatus('${workerId}', '${worker.status}')" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-200 py-1.5 px-3 rounded-lg text-xs font-bold transition">
-                                ${isPaused ? '▶️ تفعيل' : '⏸️ إيقاف مؤقت'}
-                            </button>
-                            <button onclick="deleteWorker('${workerId}')" class="bg-red-950/60 hover:bg-red-900 text-red-300 border border-red-800/50 py-1.5 px-3 rounded-lg text-xs font-bold transition">
-                                🗑️ حذف
-                            </button>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += card;
-            });
-        }
-
-        db.ref('workers').on('value', (snapshot) => {
-            workersMemory = snapshot.val() || {};
-            renderWorkerCards(); refreshWorkersTelemetry();
-        });
-
-        function toggleWorkerStatus(workerId, currentStatus) {
-            db.ref('workers/' + workerId + '/status').set(currentStatus === 'active' ? 'paused' : 'active');
-        }
-        function deleteWorker(workerId) {
-            if(confirm("هل أنت متأكد من إزالة هذا العامل؟")) db.ref('workers/' + workerId).remove();
-        }
-    </script>
-</body>
-</html>
+              git commit -m "
