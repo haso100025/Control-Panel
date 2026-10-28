@@ -95,7 +95,7 @@
                 </div>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="cmdToken" placeholder="GitHub Token..." class="flex-1 p-3 rounded-lg bg-gray-950 border border-gray-800 text-red-300 font-mono text-xs text-left" dir="ltr">
-                    <button onclick="plantWorker('commander')" class="bg-red-700 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg text-xs transition">زرع قلب</button>
+                    <button onclick="plantWorker('commander')" class="bg-red-700 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg text-xs transition whitespace-nowrap">زرع قلب</button>
                 </div>
                 <div id="commandersList" class="space-y-3"></div>
             </div>
@@ -108,7 +108,7 @@
                 </div>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="mirToken" placeholder="GitHub Token..." class="flex-1 p-3 rounded-lg bg-gray-950 border border-gray-800 text-cyan-300 font-mono text-xs text-left" dir="ltr">
-                    <button onclick="plantWorker('mirror')" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg text-xs transition">إضافة مرآة</button>
+                    <button onclick="plantWorker('mirror')" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg text-xs transition whitespace-nowrap">إضافة مرآة</button>
                 </div>
                 <div id="mirrorsList" class="space-y-3"></div>
             </div>
@@ -129,7 +129,7 @@
         const db = firebase.database();
 
         let workersMemory = {}; let streamStartTime = null; let currentStreamStatus = "stopped"; let lastFragTime = 0;
-        let activeCommanderId = null; // من هو القلب النابض الذي يعمل حالياً؟
+        let activeCommanderId = null;
 
         function setGaugeValue(gaugeId, percent, colorHex) {
             const circle = document.getElementById(gaugeId);
@@ -140,7 +140,12 @@
             if (colorHex) circle.style.stroke = colorHex;
         }
 
-        // الاستماع لإعدادات البث
+        function detectStreamFormat(url) {
+            if (!url) return "NONE"; const lower = url.toLowerCase();
+            if (lower.includes(".m3u8")) return "HLS (M3U8)"; if (lower.includes(".ts")) return "MPEG-TS";
+            return "UNIVERSAL";
+        }
+
         db.ref('settings/stream').on('value', (snapshot) => {
             const data = snapshot.val();
             const dot = document.getElementById("statusDot"); const statusTxt = document.getElementById("systemStatusText");
@@ -150,7 +155,7 @@
                 currentStreamStatus = data.status || "stopped";
                 if (currentStreamStatus === "running") {
                     dot.className = "w-5 h-5 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-pulse"; 
-                    statusTxt.innerText = "المحرك يعمل - البث متصل"; statusTxt.className = "text-xs text-emerald-400 font-bold mt-1"; 
+                    statusTxt.innerText = "المحرك يعمل - البث متصل ويوزع للمرايا"; statusTxt.className = "text-xs text-emerald-400 font-bold mt-1"; 
                     streamStartTime = data.startedAt || Date.now();
                 } else {
                     dot.className = "w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)]"; 
@@ -165,7 +170,6 @@
 
         db.ref('settings/domain').on('value', (snap) => { document.getElementById("cfDomain").value = snap.val() || ""; });
 
-        // تحديث العدادات الحية (الوقت والرادار)
         setInterval(() => {
             const uptimeEl = document.getElementById("uptimeCounter");
             if (currentStreamStatus === "running" && streamStartTime) {
@@ -188,7 +192,7 @@
             }
         }, 1000);
 
-        setInterval(refreshTelemetry, 8000); // فحص حقيقي كل 8 ثواني
+        setInterval(refreshTelemetry, 8000);
 
         function playVideo(url) {
             const video = document.getElementById('previewPlayer'); if (!url) return;
@@ -205,7 +209,6 @@
             }
         }
 
-        // --- نظام الغيار الآلي وفحص العدادات الحقيقي ---
         async function refreshTelemetry() {
             const keys = Object.keys(workersMemory);
             if (keys.length === 0) return;
@@ -220,7 +223,7 @@
                 if (w.type === 'mirror') {
                     totalMirrors++;
                     if (w.status === 'active') activeMirrors++;
-                    continue; // المرايا لا تحتاج فحص API معقد لأنها مخازن فقط
+                    continue;
                 }
 
                 if (w.type === 'commander') {
@@ -230,11 +233,9 @@
                         activeCommanderId = key;
                         const headers = { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" };
                         try {
-                            // فحص هل يعمل المحرك في جيتهاب فعلاً؟
                             const runsRes = await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers });
                             if (runsRes.ok) { const runsData = await runsRes.json(); isCurrentCommanderPushing = (runsData.total_count > 0); }
                             
-                            // فحص رصيد API لمنع الحظر
                             const rateRes = await fetch(`https://api.github.com/rate_limit`, { headers });
                             if (rateRes.ok) { 
                                 const rateData = await rateRes.json(); 
@@ -242,12 +243,11 @@
                                 currentCmdApiUsage = Math.round(((limit - remaining) / limit) * 100);
                                 db.ref(`workers/${key}/apiUsage`).set(currentCmdApiUsage);
                             }
-                        } catch (e) { console.log("Error checking commander:", e); }
+                        } catch (e) {}
                     }
                 }
             }
 
-            // تحديث عدادات لوحة القيادة
             document.getElementById("valMirrors").innerText = `${activeMirrors}/${totalMirrors}`;
             setGaugeValue("gaugeMirrors", totalMirrors > 0 ? (activeMirrors / totalMirrors) * 100 : 0, activeMirrors > 0 ? "#06b6d4" : "#475569");
             
@@ -256,21 +256,14 @@
 
             document.getElementById("activeCmdBadge").innerText = activeCommanderId ? workersMemory[activeCommanderId].username : "متوقف";
 
-            // --- الغيار الآلي (Auto-Failover) ---
             if (currentStreamStatus === "running") {
                 if (!activeCommanderId || (!isCurrentCommanderPushing && streamStartTime && (Date.now() - streamStartTime > 15000)) || currentCmdApiUsage > 95) {
-                    console.log("Auto-Failover Triggered!");
-                    if (activeCommanderId) {
-                        db.ref(`workers/${activeCommanderId}/status`).set('standby'); // تنزيله للاحتياط
-                    }
-                    // اختيار قلب جديد
+                    if (activeCommanderId) { db.ref(`workers/${activeCommanderId}/status`).set('standby'); }
                     const nextCmd = availableCommanders.find(c => c !== activeCommanderId);
                     if (nextCmd) {
                         const nw = workersMemory[nextCmd];
                         db.ref(`workers/${nextCmd}/status`).set('active');
-                        fetch(`https://api.github.com/repos/${nw.username}/${nw.repo}/actions/workflows/engine.yml/dispatches`, { 
-                            method: "POST", headers: { "Authorization": `token ${nw.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) 
-                        }).catch(()=>{});
+                        fetch(`https://api.github.com/repos/${nw.username}/${nw.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${nw.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }).catch(()=>{});
                     }
                 }
             }
@@ -329,7 +322,6 @@
 
             await db.ref('settings/stream').set({ source: link, userAgent: ua, status: "running", startedAt: Date.now() });
             
-            // اختيار أول قلب جاهز وإشعاله
             const firstCmdKey = Object.keys(workersMemory).find(k => workersMemory[k].type === 'commander' && workersMemory[k].status !== 'paused');
             if (firstCmdKey) {
                 db.ref(`workers/${firstCmdKey}/status`).set('active');
@@ -337,46 +329,76 @@
                 fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }).catch(()=>{});
             }
             
-            // تفعيل كل المرايا الجاهزة
             Object.keys(workersMemory).forEach(k => { if(workersMemory[k].type === 'mirror' && workersMemory[k].status !== 'paused') db.ref(`workers/${k}/status`).set('active'); });
 
             const cf = document.getElementById("cfDomain").value.trim();
             if(cf) { db.ref('settings/domain').set(cf); setTimeout(() => playVideo(cf), 7000); }
         }
 
+        // تم إصلاح زر التوقف بشكل كامل ليعمل بدون مشاكل
         async function stopEngine() {
-            await db.ref('settings/stream/status').set("stopped");
-            const video = document.getElementById('previewPlayer'); video.pause(); video.src = "";
+            const stopBtn = document.getElementById("stopBtn");
+            const originalText = stopBtn.innerHTML;
+            stopBtn.innerHTML = "<span>⏳</span> جاري الإيقاف ومسح الأثر..."; 
+            stopBtn.disabled = true;
             
-            Object.keys(workersMemory).forEach(async (key) => {
-                const w = workersMemory[key];
-                if (w.status === 'active') db.ref(`workers/${key}/status`).set('standby');
-                const headers = { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" };
-                if (w.type === 'commander') {
-                    try {
-                        const runs = await (await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs`, { headers })).json();
-                        runs.workflow_runs?.forEach(run => {
-                            if (run.status === "in_progress") fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs/${run.id}/cancel`, { method: "POST", headers }).catch(()=>{});
-                        });
-                    } catch(e){}
-                }
-            });
+            try {
+                await db.ref('settings/stream/status').set("stopped");
+                const video = document.getElementById('previewPlayer'); video.pause(); video.src = "";
+                
+                const promises = Object.keys(workersMemory).map(async (key) => {
+                    const w = workersMemory[key];
+                    if (w.status === 'active') await db.ref(`workers/${key}/status`).set('standby');
+                    
+                    if (w.type === 'commander') {
+                        const headers = { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" };
+                        try {
+                            const runs = await (await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs`, { headers })).json();
+                            if(runs && runs.workflow_runs) {
+                                for(const run of runs.workflow_runs) {
+                                    if (run.status === "in_progress" || run.status === "queued") {
+                                        await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs/${run.id}/cancel`, { method: "POST", headers }).catch(()=>{});
+                                    }
+                                }
+                            }
+                        } catch(e){}
+                    }
+                });
+                
+                await Promise.all(promises);
+                alert("🛑 تم إيقاف المحرك وإرجاع الجميع لوضع الاستعداد بنجاح!");
+            } catch (error) {
+                alert("خطأ أثناء الإيقاف: " + error.message);
+            } finally {
+                stopBtn.innerHTML = originalText; 
+                stopBtn.disabled = false;
+            }
         }
 
+        // تم إصلاح خطأ username is not defined هنا
         async function plantWorker(type) {
             const tokenEl = document.getElementById(type === 'commander' ? 'cmdToken' : 'mirToken');
             const token = tokenEl.value.trim(); if(!token) return alert("أدخل التوكن!");
             
+            const btn = tokenEl.nextElementSibling; 
+            const origText = btn.innerText;
+            btn.innerText = "⏳ جاري الزرع..."; 
+            btn.disabled = true;
+            
             try {
-                const user = await (await fetch("https://api.github.com/user", { headers: { "Authorization": `token ${token}` } })).json();
-                if(!user.login) throw new Error("توكن غير صالح");
-                const repoName = `TimeShift-${type === 'commander' ? 'CMD' : 'MIR'}-${Math.floor(1000+Math.random()*9000)}`;
+                const userRes = await fetch("https://api.github.com/user", { headers: { "Authorization": `token ${token}` } });
+                const user = await userRes.json();
+                
+                if(!user.login) throw new Error("توكن غير صالح أو منتهي الصلاحية.");
+                
+                const username = user.login; // <--- تم إصلاح الخطأ بتعريف المتغير هنا
+                const randomId = Math.floor(1000 + Math.random() * 9000);
+                const repoName = `TimeShift-${type === 'commander' ? 'CMD' : 'MIR'}-${randomId}`;
                 
                 await fetch("https://api.github.com/user/repos", { method: "POST", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ name: repoName, private: false, auto_init: true }) });
                 
                 if (type === 'commander') {
                     await new Promise(r => setTimeout(r, 2000));
-                    // تم إصلاح كود الرفع واستخدام توكنات المرايا المباشرة لاختراق حظر جيتهاب 403
                     const wf = `name: Engine
 on: workflow_dispatch
 permissions: { contents: write }
@@ -402,13 +424,12 @@ jobs:
               L_SEG=\$(grep -o 'seg_[0-9]*\\.png' live_stream/index.m3u8 2>/dev/null | grep -o '[0-9]*' | sort -n | tail -1)
               SN=\$(( \$(echo \$L_SEG | sed 's/^0*//' | grep . || echo -1) + 1 ))
               
-              # تم إزالة أوامر إعادة الاتصال العنيفة لمنع حظر الاكستريم 429
               ffmpeg -nostdin -hide_banner -loglevel warning -user_agent "\$UA" \\
                 -timeout 10000000 -i "\$SRC" -c copy -start_number \$SN \\
                 -f hls -hls_time 3 -hls_list_size 6 -hls_flags append_list+omit_endlist+discont_start+temp_file \\
                 -hls_segment_filename "live_stream/seg_%06d.png" live_stream/index.m3u8
               
-              sleep 5 # استراحة إجبارية عند فصل السيرفر لحماية الـ IP
+              sleep 5 
             done
           ) &
           PID=$!
@@ -421,7 +442,6 @@ jobs:
             if ! git diff --staged --quiet; then
               git commit -m "sync" || true
               
-              # جلب المرايا النشطة والرفع العنيف باستخدام توكناتهم المباشرة لتجنب 403
               curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/workers.json | \\
               jq -r 'to_entries[] | select(.value.type=="mirror" and .value.status=="active") | "https://" + .value.token + "@github.com/" + .value.username + "/" + .value.repo + ".git"' > mirrors.txt
               
@@ -435,8 +455,13 @@ jobs:
                 
                 await db.ref('workers/' + username + '_' + randomId).set({ token: token, status: 'standby', type: type, apiUsage: 0, repo: repoName, username: username });
                 tokenEl.value = '';
-                alert(`تم زرع ${type === 'commander' ? 'القلب' : 'المرآة'} بنجاح!`);
-            } catch (e) { alert("خطأ: " + e.message); }
+                alert(`✅ تم زرع ${type === 'commander' ? 'القلب النابض' : 'المرآة'} بنجاح!`);
+            } catch (e) { 
+                alert("❌ حدث خطأ: " + e.message); 
+            } finally {
+                btn.innerText = origText; 
+                btn.disabled = false;
+            }
         }
     </script>
 </body>
