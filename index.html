@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>قمرة القيادة V12 - TimeShift GT</title>
+    <title>قمرة القيادة V13 - TimeShift GT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -22,12 +22,13 @@
 
     <div class="max-w-6xl mx-auto space-y-6">
         
+        <!-- شاشة المعلومات العلوية -->
         <div class="carbon-card rounded-2xl p-4 flex flex-wrap justify-between items-center gap-4 border-b-2 border-cyan-500/50 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
             <div class="flex items-center gap-3 z-10">
                 <div id="statusDot" class="w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)] animate-pulse"></div>
                 <div>
-                    <h1 class="text-xl md:text-3xl font-black tracking-wider text-white">TIMESHIFT <span class="text-cyan-400 digital-font neon-text">V12-FINAL</span></h1>
+                    <h1 class="text-xl md:text-3xl font-black tracking-wider text-white">TIMESHIFT <span class="text-cyan-400 digital-font neon-text">V13-FINAL</span></h1>
                     <p id="systemStatusText" class="text-xs text-gray-400 font-bold mt-1">المحرك متوقف - النظام في وضع الخمول</p>
                 </div>
             </div>
@@ -38,6 +39,7 @@
             </div>
         </div>
 
+        <!-- العدادات الحية -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="carbon-card rounded-2xl p-4 flex flex-col items-center justify-center relative group">
                 <svg class="w-32 h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#111827" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeCmd" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#ef4444" stroke-width="12" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
@@ -61,6 +63,7 @@
             </div>
         </div>
 
+        <!-- الإشعال والرادار -->
         <div class="carbon-card rounded-2xl p-5 md:p-7">
             <h2 class="text-lg font-black mb-5 text-white flex items-center gap-2 border-b border-gray-800 pb-3"><span>🔑</span> 1. وحدة الإشعال (Ignition Control)</h2>
             <div class="space-y-4 mb-6">
@@ -79,6 +82,7 @@
             </div>
         </div>
 
+        <!-- كلاودفلير -->
         <div class="carbon-card rounded-2xl p-5 md:p-7">
             <h2 class="text-base md:text-lg font-bold mb-4 text-amber-400 flex items-center gap-2 border-b border-gray-800 pb-2"><span>🌐</span> 2. بوابة التوزيع (Cloudflare Load Balancer)</h2>
             <div class="flex flex-col sm:flex-row gap-2.5">
@@ -88,6 +92,7 @@
             </div>
         </div>
 
+        <!-- أسطول المحركات (القلوب والمرايا) -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
             <div class="carbon-card rounded-2xl p-5">
                 <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-2">
@@ -96,9 +101,11 @@
                 </div>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="cmdToken" placeholder="GitHub Token..." class="flex-1 p-3 rounded-lg bg-gray-950 border border-gray-800 text-red-300 font-mono text-xs text-left" dir="ltr">
-                    <button onclick="plantWorker('commander')" class="bg-red-700 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg text-xs transition whitespace-nowrap shadow-md">زرع قلب</button>
+                    <button onclick="plantWorker('commander', this)" class="bg-red-700 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg text-xs transition whitespace-nowrap shadow-md">زرع قلب</button>
                 </div>
-                <div id="commandersList" class="space-y-3"></div>
+                <div id="commandersList" class="space-y-3">
+                    <p class="text-xs text-gray-500 text-center py-2">لا يوجد قلوب نابضة. يرجى زرع حساب أولاً.</p>
+                </div>
             </div>
 
             <div class="carbon-card rounded-2xl p-5">
@@ -108,9 +115,11 @@
                 </div>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="mirToken" placeholder="GitHub Token..." class="flex-1 p-3 rounded-lg bg-gray-950 border border-gray-800 text-cyan-300 font-mono text-xs text-left" dir="ltr">
-                    <button onclick="plantWorker('mirror')" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg text-xs transition whitespace-nowrap shadow-md">إضافة مرآة</button>
+                    <button onclick="plantWorker('mirror', this)" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg text-xs transition whitespace-nowrap shadow-md">إضافة مرآة</button>
                 </div>
-                <div id="mirrorsList" class="space-y-3"></div>
+                <div id="mirrorsList" class="space-y-3">
+                    <p class="text-xs text-gray-500 text-center py-2">لا يوجد مرايا. يرجى إضافة مرآة لتوزيع الضغط.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -150,7 +159,7 @@
                 currentStreamStatus = data.status || "stopped";
                 if (currentStreamStatus === "running") {
                     dot.className = "w-5 h-5 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-pulse"; 
-                    statusTxt.innerText = "المحرك يعمل - البث متصل (Ghost Push Active)"; statusTxt.className = "text-xs text-emerald-400 font-bold mt-1"; 
+                    statusTxt.innerText = "المحرك يعمل - البث متصل (مدعوم بـ jsDelivr)"; statusTxt.className = "text-xs text-emerald-400 font-bold mt-1"; 
                     streamStartTime = data.startedAt || Date.now();
                 } else {
                     dot.className = "w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)]"; 
@@ -207,81 +216,16 @@
         function testCloudflareStream() { const cf = document.getElementById("cfDomain").value.trim(); if (!cf) return alert("يرجى حفظ رابط Cloudflare أولاً!"); playVideo(cf); }
         function updateDomain() { const domain = document.getElementById("cfDomain").value.trim(); if(!domain) return alert("يرجى إدخال الرابط!"); const cleanDomain = domain.endsWith('/') ? domain.slice(0, -1) : domain; db.ref('settings/domain').set(cleanDomain); alert("✅ تم حفظ الدومين!"); }
 
-        async function refreshTelemetry() {
-            if (isActionBusy) return;
-            const keys = Object.keys(workersMemory || {});
-            
-            if (keys.length === 0) {
-                document.getElementById("valMirrors").innerText = "0/0"; setGaugeValue("gaugeMirrors", 0, "#475569");
-                document.getElementById("valCmd").innerText = "0%"; setGaugeValue("gaugeCmd", 0, "#3b82f6");
-                document.getElementById("activeCmdBadge").innerText = "لا يوجد";
-                renderUI(); return;
-            }
-
-            let activeMirrors = 0; let totalMirrors = 0;
-            let availableCommanders = [];
-            let isCurrentCommanderPushing = false;
-            let currentCmdApiUsage = 0;
-
-            for (const key of keys) {
-                const w = workersMemory[key];
-                if (!w) continue;
-                
-                if (w.type === 'mirror') {
-                    totalMirrors++;
-                    if (w.status === 'active') activeMirrors++;
-                    continue;
-                }
-
-                if (w.type === 'commander') {
-                    if (w.status !== 'failed' && w.status !== 'paused' && w.status !== 'nuked') availableCommanders.push(key);
-                    if (w.status === 'active') {
-                        activeCommanderId = key;
-                        const headers = { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" };
-                        try {
-                            const runsRes = await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers });
-                            if (runsRes.ok) { const runsData = await runsRes.json(); isCurrentCommanderPushing = (runsData.total_count > 0); w.isWorking = isCurrentCommanderPushing; }
-                            
-                            const rateRes = await fetch(`https://api.github.com/rate_limit`, { headers });
-                            if (rateRes.ok) { 
-                                const rateData = await rateRes.json(); 
-                                const limit = rateData.rate.limit || 5000; const remaining = rateData.rate.remaining || 0; 
-                                currentCmdApiUsage = Math.round(((limit - remaining) / limit) * 100);
-                                db.ref(`workers/${key}/apiUsage`).set(currentCmdApiUsage);
-                            }
-                        } catch (e) {}
-                    }
-                }
-            }
-
-            document.getElementById("valMirrors").innerText = `${activeMirrors}/${totalMirrors}`;
-            setGaugeValue("gaugeMirrors", totalMirrors > 0 ? (activeMirrors / totalMirrors) * 100 : 0, activeMirrors > 0 ? "#06b6d4" : "#475569");
-            document.getElementById("valCmd").innerText = `${currentCmdApiUsage}%`;
-            setGaugeValue("gaugeCmd", currentCmdApiUsage, currentCmdApiUsage > 90 ? "#ef4444" : (currentCmdApiUsage > 70 ? "#f59e0b" : "#3b82f6"));
-            document.getElementById("activeCmdBadge").innerText = activeCommanderId ? workersMemory[activeCommanderId].username : "متوقف";
-
-            if (currentStreamStatus === "running" && !isActionBusy) {
-                if (!activeCommanderId || (!isCurrentCommanderPushing && streamStartTime && (Date.now() - streamStartTime > 25000)) || currentCmdApiUsage > 95) {
-                    isActionBusy = true;
-                    if (activeCommanderId) { await db.ref(`workers/${activeCommanderId}/status`).set('standby'); }
-                    const nextCmd = availableCommanders.find(c => c !== activeCommanderId);
-                    if (nextCmd) {
-                        const nw = workersMemory[nextCmd];
-                        await db.ref(`workers/${nextCmd}/status`).set('active');
-                        await fetch(`https://api.github.com/repos/${nw.username}/${nw.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${nw.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }).catch(()=>{});
-                    }
-                    setTimeout(() => { isActionBusy = false; }, 5000);
-                }
-            }
-            renderUI();
-        }
-
+        // تم تحصين وظيفة العرض (renderUI) لتعمل بشكل مستقل وفوري 
         function renderUI() {
             try {
-                const cmdContainer = document.getElementById('commandersList'); const mirContainer = document.getElementById('mirrorsList');
+                const cmdContainer = document.getElementById('commandersList'); 
+                const mirContainer = document.getElementById('mirrorsList');
                 if (!cmdContainer || !mirContainer) return;
                 
-                cmdContainer.innerHTML = ''; mirContainer.innerHTML = '';
+                cmdContainer.innerHTML = ''; 
+                mirContainer.innerHTML = '';
+                
                 const keys = Object.keys(workersMemory || {});
                 let hasCmd = false; let hasMir = false;
 
@@ -298,7 +242,7 @@
                     let statusDot, statusText, cardBorder;
                     if (w.status === 'active') {
                         statusDot = isReallyWorking ? (isCmd ? 'bg-red-500 animate-pulse' : 'bg-cyan-500 animate-pulse') : 'bg-yellow-500';
-                        statusText = isReallyWorking ? (isCmd ? '🔥 يسحب البث الآن' : '🪞 جاهزة للتوزيع') : '⏳ يجهز للعمل...';
+                        statusText = isReallyWorking ? (isCmd ? '🔥 يسحب البث الآن' : '🪞 تسحب وتوزع') : '⏳ يجهز للعمل...';
                         cardBorder = isCmd ? 'border-red-500/50' : 'border-cyan-500/50';
                     } else if (w.status === 'standby') {
                         statusDot = 'bg-gray-500'; statusText = '💤 خامل (احتياط)'; cardBorder = 'border-gray-800';
@@ -337,7 +281,91 @@
                 if(!hasCmd) cmdContainer.innerHTML = '<p class="text-xs text-gray-500 text-center py-2">لا يوجد قلوب نابضة. قم بزرع حساب لسحب البث.</p>';
                 if(!hasMir) mirContainer.innerHTML = '<p class="text-xs text-gray-500 text-center py-2">لا يوجد مرايا. أضف حساباً لتوزيع الضغط.</p>';
 
-            } catch (err) {}
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        db.ref('workers').on('value', (snap) => { workersMemory = snap.val() || {}; renderUI(); refreshTelemetry(); });
+
+        async function refreshTelemetry() {
+            if (isActionBusy) return;
+            const keys = Object.keys(workersMemory || {});
+            
+            if (keys.length === 0) {
+                document.getElementById("valMirrors").innerText = "0/0"; setGaugeValue("gaugeMirrors", 0, "#475569");
+                document.getElementById("valCmd").innerText = "0%"; setGaugeValue("gaugeCmd", 0, "#3b82f6");
+                document.getElementById("activeCmdBadge").innerText = "لا يوجد";
+                return;
+            }
+
+            let activeMirrors = 0; let totalMirrors = 0;
+            let availableCommanders = [];
+            let isCurrentCommanderPushing = false;
+            let currentCmdApiUsage = 0;
+
+            for (const key of keys) {
+                const w = workersMemory[key];
+                if (!w) continue;
+                
+                if (w.type === 'mirror') {
+                    totalMirrors++;
+                    if (w.status === 'active') activeMirrors++;
+                    
+                    if (w.status === 'active' && currentStreamStatus === "running") {
+                        const headers = { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" };
+                        try {
+                            const runsRes = await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers });
+                            if (runsRes.ok) { const runsData = await runsRes.json(); w.isWorking = (runsData.total_count > 0); }
+                        } catch (e) { w.isWorking = false; }
+                    } else { w.isWorking = false; }
+                    continue;
+                }
+
+                if (w.type === 'commander') {
+                    if (w.status !== 'failed' && w.status !== 'paused' && w.status !== 'nuked') availableCommanders.push(key);
+                    
+                    if (w.status === 'active') {
+                        activeCommanderId = key;
+                        const headers = { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" };
+                        try {
+                            const runsRes = await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers });
+                            if (runsRes.ok) { const runsData = await runsRes.json(); isCurrentCommanderPushing = (runsData.total_count > 0); w.isWorking = isCurrentCommanderPushing; }
+                            
+                            const rateRes = await fetch(`https://api.github.com/rate_limit`, { headers });
+                            if (rateRes.ok) { 
+                                const rateData = await rateRes.json(); 
+                                const limit = rateData.rate.limit || 5000; const remaining = rateData.rate.remaining || 0; 
+                                currentCmdApiUsage = Math.round(((limit - remaining) / limit) * 100);
+                                db.ref(`workers/${key}/apiUsage`).set(currentCmdApiUsage);
+                            }
+                        } catch (e) {}
+                    }
+                }
+            }
+
+            document.getElementById("valMirrors").innerText = `${activeMirrors}/${totalMirrors}`;
+            setGaugeValue("gaugeMirrors", totalMirrors > 0 ? (activeMirrors / totalMirrors) * 100 : 0, activeMirrors > 0 ? "#06b6d4" : "#475569");
+            
+            document.getElementById("valCmd").innerText = `${currentCmdApiUsage}%`;
+            setGaugeValue("gaugeCmd", currentCmdApiUsage, currentCmdApiUsage > 90 ? "#ef4444" : (currentCmdApiUsage > 70 ? "#f59e0b" : "#3b82f6"));
+
+            document.getElementById("activeCmdBadge").innerText = activeCommanderId ? workersMemory[activeCommanderId].username : "متوقف";
+
+            if (currentStreamStatus === "running" && !isActionBusy) {
+                if (!activeCommanderId || (!isCurrentCommanderPushing && streamStartTime && (Date.now() - streamStartTime > 25000)) || currentCmdApiUsage > 95) {
+                    isActionBusy = true;
+                    if (activeCommanderId) { await db.ref(`workers/${activeCommanderId}/status`).set('standby'); }
+                    const nextCmd = availableCommanders.find(c => c !== activeCommanderId);
+                    if (nextCmd) {
+                        const nw = workersMemory[nextCmd];
+                        await db.ref(`workers/${nextCmd}/status`).set('active');
+                        await fetch(`https://api.github.com/repos/${nw.username}/${nw.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${nw.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }).catch(()=>{});
+                    }
+                    setTimeout(() => { isActionBusy = false; }, 5000);
+                }
+            }
+            renderUI();
         }
 
         async function startEngine() {
@@ -377,7 +405,10 @@
                 
                 for (const k of Object.keys(workersMemory)) {
                     if(workersMemory[k].type === 'mirror' && workersMemory[k].status !== 'paused' && workersMemory[k].status !== 'nuked') {
+                        const w = workersMemory[k];
+                        await clearOldRuns(w);
                         await db.ref(`workers/${k}/status`).set('active');
+                        await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }).catch(()=>{});
                     }
                 }
 
@@ -426,7 +457,7 @@
                 stopBtn.innerHTML = originalText; 
                 stopBtn.disabled = false;
                 isActionBusy = false;
-                refreshTelemetry();
+                renderUI();
             }
         }
 
@@ -435,33 +466,50 @@
             const tokenEl = document.getElementById(w.type === 'commander' ? 'cmdToken' : 'mirToken');
             tokenEl.value = w.token; 
             db.ref(`workers/${key}`).remove(); 
-            plantWorker(w.type);
+            // الانتظار قليلاً لضمان حذف القديم قبل الزرع الجديد
+            setTimeout(() => { document.querySelector(w.type === 'commander' ? '#cmdToken + button' : '#mirToken + button').click(); }, 500);
         }
 
-        async function plantWorker(type) {
+        // تم تحصين وظيفة الزرع لاكتشاف أي خطأ من جيتهاب وعرضه للمستخدم مباشرة
+        async function plantWorker(type, btnElement) {
             const tokenEl = document.getElementById(type === 'commander' ? 'cmdToken' : 'mirToken');
-            const token = tokenEl.value.trim(); if(!token) return alert("أدخل التوكن!");
+            const token = tokenEl.value.trim(); 
+            if(!token) return alert("❌ يرجى إدخال التوكن أولاً!");
             
-            const btn = tokenEl.nextElementSibling; 
+            const btn = btnElement; 
             const origText = btn.innerText;
-            btn.innerText = "⏳ جاري الزرع..."; 
+            btn.innerText = "⏳ جاري الفحص..."; 
             btn.disabled = true;
             
             try {
+                // 1. فحص صحة التوكن واسم المستخدم
                 const userRes = await fetch("https://api.github.com/user", { headers: { "Authorization": `token ${token}` } });
+                if (!userRes.ok) throw new Error("التوكن الذي أدخلته غير صالح، تأكد من نسخه بشكل صحيح وتفعيل صلاحيات (repo, workflow).");
                 const user = await userRes.json();
-                if(!user.login) throw new Error("توكن غير صالح أو منتهي الصلاحية.");
                 
                 const username = user.login; 
                 const randomId = Math.floor(1000 + Math.random() * 9000);
                 const repoName = `TimeShift-${type === 'commander' ? 'CMD' : 'MIR'}-${randomId}`;
                 
-                await fetch("https://api.github.com/user/repos", { method: "POST", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ name: repoName, private: false, auto_init: true }) });
-                await new Promise(r => setTimeout(r, 3000));
+                btn.innerText = "⏳ إنشاء مستودع..."; 
+                // 2. إنشاء المستودع في جيتهاب
+                const repoRes = await fetch("https://api.github.com/user/repos", { 
+                    method: "POST", 
+                    headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" }, 
+                    body: JSON.stringify({ name: repoName, private: false, auto_init: true }) 
+                });
                 
+                if (!repoRes.ok) {
+                    const errData = await repoRes.json();
+                    throw new Error("جيتهاب رفض إنشاء المستودع (قد يكون بسبب قيود مؤقتة): " + (errData.message || ""));
+                }
+
+                await new Promise(r => setTimeout(r, 3000)); // إعطاء جيتهاب وقتاً لتهيئة المستودع الجديد
+                
+                btn.innerText = "⏳ حقن الكود..."; 
                 let wfContent = "";
                 if (type === 'commander') {
-                    // السحر هنا: تكتيك الرفع الشبحي (Orphan Branch Ghost Commit) لمسح التاريخ ومنع التضارب
+                    // القلب النابض: يقطع، يمسح التاريخ (Ghost Commit)، يرفع لنفسه، ثم يرفع للمرايا بقوة إجبارية متزامنة
                     wfContent = `name: Engine
 on: workflow_dispatch
 concurrency: 
@@ -472,25 +520,13 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - run: sudo apt-get update -qq && sudo apt-get install -yq jq ffmpeg
       - run: |
-          git config --global user.name "V12 Ghost"
-          git config --global user.email "v12@timeshift.local"
-          mkdir -p live_stream .github/workflows
+          git config --global user.name "V13 Ghost"
+          git config --global user.email "v13@timeshift.local"
+          rm -rf live_stream && mkdir -p live_stream
           
-          # الحفاظ على ملف التشغيل لتجنب حذفه عند الرفع
-          cat << 'EOF' > .github/workflows/engine.yml
-          name: Engine
-          on: workflow_dispatch
-          concurrency: 
-            group: engine-group
-            cancel-in-progress: true
-          jobs:
-            run:
-              runs-on: ubuntu-latest
-              steps: [ { run: "echo 'Placeholder'" } ]
-          EOF
-
           DATA=\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream.json)
           if [ "\$(echo "\$DATA" | jq -r '.status')" != "running" ]; then exit 0; fi
           SRC=\$(echo "\$DATA" | jq -r '.source')
@@ -518,16 +554,16 @@ jobs:
             if [ "\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')" == "stopped" ]; then kill -9 \$PID 2>/dev/null; break; fi
             ls -1t live_stream/seg_*.png 2>/dev/null | tail -n +15 | xargs -r rm -f
             
-            # الرفع الشبحي: تدمير الذاكرة وإنشاء التزام واحد جديد بالملفات الحالية فقط
+            # الرفع الشبحي لقتل التضارب
             rm -rf .git
             git init -b main
             git add live_stream/ .github/
             git commit -m "Live Sync Ghost Commit"
             
-            # الرفع بقوة إجبارية لنفس حساب القلب النابض
+            # الرفع للقلب النابض
             git push --force "https://${token}@github.com/${username}/${repoName}.git" main &
             
-            # الرفع العنيف للمرايا بدون تصادم
+            # الرفع الجريء للمرايا
             curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/workers.json | \\
             jq -r 'to_entries[] | select(.value.type=="mirror" and .value.status=="active") | "https://" + .value.token + "@github.com/" + .value.username + "/" + .value.repo + ".git"' > mirrors.txt
             
@@ -546,15 +582,27 @@ jobs:
 `;
                 }
 
-                await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, { method: "PUT", headers: { "Authorization": `token ${token}` }, body: JSON.stringify({ message: "init", content: btoa(unescape(encodeURIComponent(wfContent))) }) });
+                // 3. رفع سكريبت المحرك إلى المستودع
+                const putRes = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, { 
+                    method: "PUT", 
+                    headers: { "Authorization": `token ${token}` }, 
+                    body: JSON.stringify({ message: "init", content: btoa(unescape(encodeURIComponent(wfContent))) }) 
+                });
+                
+                if (!putRes.ok) throw new Error("فشل في زرع كود المحرك داخل المستودع.");
+
+                btn.innerText = "⏳ جاري الحفظ...";
+                // 4. الحفظ في فايربيس
                 await db.ref('workers/' + username + '_' + randomId).set({ token: token, status: 'standby', type: type, apiUsage: 0, repo: repoName, username: username });
+                
                 tokenEl.value = '';
                 alert(`✅ تم الزرع بنجاح كـ ${type === 'commander' ? 'قلب نابض شبحي' : 'مرآة توزيع'}!`);
             } catch (e) { 
-                alert("❌ حدث خطأ: " + e.message); 
+                alert("❌ فشل الزرع: " + e.message); 
             } finally {
                 btn.innerText = origText; 
                 btn.disabled = false;
+                renderUI(); // إجبار تحديث اللوحة لرؤية النتيجة فوراً
             }
         }
     </script>
