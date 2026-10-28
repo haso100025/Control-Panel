@@ -355,7 +355,6 @@
             try {
                 await db.ref('settings/stream').set({ source: link, userAgent: ua, status: "running", startedAt: Date.now() });
                 
-                // إلغاء أي محركات قديمة عالقة لضمان عدم تكدسها (يحل مشكلة الصورة 15)
                 const clearOldRuns = async (w) => {
                     const headers = { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" };
                     try {
@@ -366,16 +365,15 @@
                     } catch(e) {}
                 };
 
-                // تشغيل القلب الأول الجاهز
                 const firstCmdKey = Object.keys(workersMemory).find(k => workersMemory[k].type === 'commander' && workersMemory[k].status !== 'paused');
                 if (firstCmdKey) {
                     const w = workersMemory[firstCmdKey];
                     await clearOldRuns(w);
                     await db.ref(`workers/${firstCmdKey}/status`).set('active');
+                    // إضافة المعلمة لمنع التكرار (رغم وجود concurrency في الملف)
                     await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) });
                 }
                 
-                // تفعيل وتشغيل جميع المرايا (ستسحب من القلب)
                 for (const k of Object.keys(workersMemory)) {
                     if(workersMemory[k].type === 'mirror' && workersMemory[k].status !== 'paused') {
                         const w = workersMemory[k];
@@ -464,9 +462,11 @@
                 
                 let wfContent = "";
                 if (type === 'commander') {
-                    // القلب النابض: يسحب من الاكستريم ويرفع في حسابه فقط
                     wfContent = `name: Engine
 on: workflow_dispatch
+concurrency: 
+  group: engine-group
+  cancel-in-progress: true
 permissions: { contents: write }
 jobs:
   run:
@@ -505,13 +505,16 @@ jobs:
             if [ "\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')" == "stopped" ]; then kill -9 \$PID 2>/dev/null; break; fi
             ls -1t live_stream/seg_*.png 2>/dev/null | tail -n +15 | xargs -r rm -f
             git add -A live_stream/ || true
-            if ! git diff --staged --quiet; then git commit -m "sync" && git push origin main || true; fi
+            # الدفع بقوة قاهرة (Force Push) لمنع أخطاء التضارب تماماً
+            if ! git diff --staged --quiet; then git commit -m "sync" && git push --force origin main || true; fi
           done
 `;
                 } else {
-                    // المرايا (Pull System): لا تتصل بالاكستريم، تسحب الملفات من القلب المفتوح وترفعها لمستودعها
                     wfContent = `name: Engine
 on: workflow_dispatch
+concurrency: 
+  group: engine-group
+  cancel-in-progress: true
 permissions: { contents: write }
 jobs:
   run:
@@ -528,11 +531,9 @@ jobs:
             sleep 3
             if [ "\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')" == "stopped" ]; then break; fi
             
-            # العثور على القلب النابض الذي يعمل حالياً
             CMD_JSON=\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/workers.json | jq -r 'to_entries[] | select(.value.type=="commander" and .value.status=="active") | .value.username + "/" + .value.repo' | head -n 1)
             
             if [ -n "\$CMD_JSON" ]; then
-              # سحب الملفات بأمان من القلب بدون مشاكل 403
               wget -q -O live_stream/index.m3u8 "https://raw.githubusercontent.com/\$CMD_JSON/main/live_stream/index.m3u8" || true
               if [ -s live_stream/index.m3u8 ]; then
                 grep -o 'seg_[0-9]*\\.png' live_stream/index.m3u8 | while read -r SEG; do
@@ -545,7 +546,7 @@ jobs:
             
             ls -1t live_stream/seg_*.png 2>/dev/null | tail -n +15 | xargs -r rm -f
             git add -A live_stream/ || true
-            if ! git diff --staged --quiet; then git commit -m "sync mirror" && git push origin main || true; fi
+            if ! git diff --staged --quiet; then git commit -m "sync mirror" && git push --force origin main || true; fi
           done
 `;
                 }
