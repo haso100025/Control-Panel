@@ -163,7 +163,7 @@
                 <span>🌐</span> 2. بوابة التوزيع (Cloudflare Load Balancer)
             </h2>
             <div class="flex flex-col sm:flex-row gap-2.5">
-                <input type="text" id="cfDomain" placeholder="https://your-worker.workers.dev" class="flex-1 p-3 rounded-xl bg-black/70 border border-gray-700 text-amber-300 font-mono text-xs md:text-sm text-left" dir="ltr">
+                <input type="text" id="cfDomain" placeholder="https://timeshift-app.site/live_stream/index.m3u8" class="flex-1 p-3 rounded-xl bg-black/70 border border-gray-700 text-amber-300 font-mono text-xs md:text-sm text-left" dir="ltr">
                 <button onclick="updateDomain()" class="bg-amber-600 hover:bg-amber-500 text-black font-black py-3 px-6 rounded-xl transition text-xs md:text-sm">حفظ الدومين</button>
                 <button onclick="testCloudflareStream()" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-xl transition text-xs md:text-sm">تشغيل الدومين بالرادار</button>
             </div>
@@ -535,22 +535,6 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                // 2. إنشاء ملف CNAME تلقائياً لتسجيل الدومين
-                const customDomain = `${username}.timeshift-app.site`;
-                await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/CNAME`, {
-                    method: "PUT", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
-                    body: JSON.stringify({ 
-                        message: "Auto-configure custom domain", 
-                        content: encodeBase64(customDomain) 
-                    })
-                });
-
-                // 3. تفعيل GitHub Pages برمجياً
-                await fetch(`https://api.github.com/repos/${username}/${repoName}/pages`, {
-                    method: "POST", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
-                    body: JSON.stringify({ source: { branch: "main", path: "/" } })
-                }).catch(e => console.log("Pages auto-enable notice:", e));
-
                 const workflowContent = `name: Smart FFmpeg Engine
 on:
   workflow_dispatch:
@@ -602,8 +586,6 @@ jobs:
             while true; do
               S_STATUS=$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')
               if [ "$S_STATUS" == "stopped" ]; then break; fi
-
-              # تعديل التسمية إلى التسلسل الرقمي المستمر لمنع التصادم وتخريب الخريطة
               
               ffmpeg -nostdin -hide_banner -loglevel warning "\${HEADER_ARGS[@]}" \\
                 -timeout 5000000 \\
@@ -652,7 +634,7 @@ jobs:
                 
                 document.getElementById("githubToken").value = '';
                 await refreshWorkersTelemetry();
-                alert(`✅ تم زرع المحرك بنجاح وتفعيل الدومين: ${customDomain}`);
+                alert(`✅ تم زرع المحرك بنجاح تام وبدون طوابير في: ${repoName}`);
 
             } catch (error) {
                 alert("❌ خطأ أثناء الزرع: " + error.message);
