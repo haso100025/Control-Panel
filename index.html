@@ -151,7 +151,52 @@
             if (currentStreamStatus === "running" && streamStartTime) {
                 const diff = Math.max(0, Math.floor((Date.now() - streamStartTime) / 1000));
                 const hrs = String(Math.floor(diff / 3600)).padStart(2, '0'); const mins = String(Math.floor((diff % 3600) / 60)).padStart(2, '0'); const secs = String(diff % 60).padStart(2, '0');
-                uptimeEl.innerText = `${hrs}:${mins}:${secs}`; } else { uptimeEl.innerText = "00:00:00"; } if (Date.now() - lastFragTime > 6000) { document.getElementById("valSpeed").innerText = "0.0"; setGaugeValue("gaugeSpeed", 0, "#10b981"); } const video = document.getElementById('previewPlayer'); const radarDot = document.getElementById('playerRadarDot'); const radarTxt = document.getElementById('playerRadarText'); if (video && !video.paused && video.readyState >= 2) { let bufferLen = 0; for (let i = 0; i < video.buffered.length; i++) { if (video.currentTime >= video.buffered.start(i) && video.currentTime <= video.buffered.end(i)) { bufferLen = video.buffered.end(i) - video.currentTime; break; } } document.getElementById("valHealth").innerText = bufferLen.toFixed(1) + "s"; setGaugeValue("gaugeHealth", Math.min(100, (bufferLen / 15) * 100), bufferLen > 3 ? "#10b981" : "#f59e0b"); radarDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping"; radarTxt.innerText = "رادار المشغل: متصل ويعرض البث"; } else { document.getElementById("valHealth").innerText = "0.0s"; setGaugeValue("gaugeHealth", 0, "#f59e0b"); radarDot.className = "w-2 h-2 rounded-full bg-gray-500"; radarTxt.innerText = "رادار المشغل: خامل"; } }, 1000);  setInterval(() => { refreshWorkersTelemetry(); }, 6000);  function playVideo(url) { const video = document.getElementById('previewPlayer'); if (!url) return; if (Hls.isSupported()) { if (window.hlsInstance) window.hlsInstance.destroy(); const hls = new Hls({ liveSyncDurationCount: 3, liveMaxLatencyDurationCount: 7, maxBufferLength: 20, enableWorker: true, lowLatencyMode: false }); window.hlsInstance = hls; hls.loadSource(url); hls.attachMedia(video); hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); }); hls.on(Hls.Events.FRAG_LOADED, (event, data) => { lastFragTime = Date.now(); const stats = data.frag.stats; const durationMs = stats.loading.end - stats.loading.start; const bytes = stats.total \vert{}\vert{} stats.loaded \vert{}\vert{} 0; if (durationMs > 0 && bytes > 0) { const mbps = ((bytes * 8) / (durationMs / 1000)) / 1000000; const cleanMbps = Math.min(30, Math.max(0.2, mbps)); document.getElementById("valSpeed").innerText = cleanMbps.toFixed(1); setGaugeValue("gaugeSpeed", Math.min(100, (cleanMbps / 12) * 100), "#10b981"); } }); hls.on(Hls.Events.ERROR, (event, data) => { if (data.fatal && currentStreamStatus === "running") { if (data.type === Hls.ErrorTypes.NETWORK_ERROR) { setTimeout(() => hls.startLoad(), 1000); } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { hls.recoverMediaError(); } else { setTimeout(() => playVideo(url), 1500); } } }); } else { video.src = url; video.play().catch(() => {}); } }  function testCloudflareStream() { const cf = document.getElementById("cfDomain").value.trim(); if (!cf) return alert("يرجى حفظ رابط Cloudflare أولاً!"); playVideo(cf); }  async function startSmartBroadcast() { const link = document.getElementById("sourceLink").value.trim(); const ua = document.getElementById("userAgent").value.trim(); const ref = document.getElementById("referer").value.trim(); const cookie = document.getElementById("cookie").value.trim(); if(!link) return alert("يرجى إدخال الرابط الأصلي!"); const startBtn = document.getElementById("startBtn"); startBtn.disabled = true; startBtn.innerText = "⏳ جاري إطلاق المحركات..."; try { streamStartTime = Date.now(); await db.ref('settings/stream').set({ source: link, userAgent: ua, referer: ref, cookie: cookie, status: "running", startedAt: streamStartTime }); const workersRef = await db.ref('workers').once('value'); const workers = workersRef.val(); if (workers) { const promises = []; for (let key in workers) { if (workers[key].status === 'active') { promises.push(fetch(`https://api.github.com/repos/${workers[key].username}/${workers[key].repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${workers[key].token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }).catch(() => {})); } }
+                uptimeEl.innerText = `${hrs}:${mins}:${secs}`;
+            } else { uptimeEl.innerText = "00:00:00"; }
+            if (Date.now() - lastFragTime > 6000) { document.getElementById("valSpeed").innerText = "0.0"; setGaugeValue("gaugeSpeed", 0, "#10b981"); }
+            const video = document.getElementById('previewPlayer'); const radarDot = document.getElementById('playerRadarDot'); const radarTxt = document.getElementById('playerRadarText');
+            if (video && !video.paused && video.readyState >= 2) {
+                let bufferLen = 0;
+                for (let i = 0; i < video.buffered.length; i++) { if (video.currentTime >= video.buffered.start(i) && video.currentTime <= video.buffered.end(i)) { bufferLen = video.buffered.end(i) - video.currentTime; break; } }
+                document.getElementById("valHealth").innerText = bufferLen.toFixed(1) + "s"; setGaugeValue("gaugeHealth", Math.min(100, (bufferLen / 15) * 100), bufferLen > 3 ? "#10b981" : "#f59e0b");
+                radarDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping"; radarTxt.innerText = "رادار المشغل: متصل ويعرض البث";
+            } else { document.getElementById("valHealth").innerText = "0.0s"; setGaugeValue("gaugeHealth", 0, "#f59e0b"); radarDot.className = "w-2 h-2 rounded-full bg-gray-500"; radarTxt.innerText = "رادار المشغل: خامل"; }
+        }, 1000);
+
+        setInterval(() => { refreshWorkersTelemetry(); }, 6000);
+
+        function playVideo(url) {
+            const video = document.getElementById('previewPlayer'); if (!url) return;
+            if (Hls.isSupported()) {
+                if (window.hlsInstance) window.hlsInstance.destroy();
+                const hls = new Hls({ liveSyncDurationCount: 3, liveMaxLatencyDurationCount: 7, maxBufferLength: 20, enableWorker: true, lowLatencyMode: false });
+                window.hlsInstance = hls; hls.loadSource(url); hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
+                hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
+                    lastFragTime = Date.now(); const stats = data.frag.stats; const durationMs = stats.loading.end - stats.loading.start; const bytes = stats.total || stats.loaded || 0;
+                    if (durationMs > 0 && bytes > 0) { const mbps = ((bytes * 8) / (durationMs / 1000)) / 1000000; const cleanMbps = Math.min(30, Math.max(0.2, mbps)); document.getElementById("valSpeed").innerText = cleanMbps.toFixed(1); setGaugeValue("gaugeSpeed", Math.min(100, (cleanMbps / 12) * 100), "#10b981"); }
+                });
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal && currentStreamStatus === "running") {
+                        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) { setTimeout(() => hls.startLoad(), 1000); } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { hls.recoverMediaError(); } else { setTimeout(() => playVideo(url), 1500); }
+                    }
+                });
+            } else { video.src = url; video.play().catch(() => {}); }
+        }
+
+        function testCloudflareStream() { const cf = document.getElementById("cfDomain").value.trim(); if (!cf) return alert("يرجى حفظ رابط Cloudflare أولاً!"); playVideo(cf); }
+
+        async function startSmartBroadcast() {
+            const link = document.getElementById("sourceLink").value.trim(); const ua = document.getElementById("userAgent").value.trim(); const ref = document.getElementById("referer").value.trim(); const cookie = document.getElementById("cookie").value.trim();
+            if(!link) return alert("يرجى إدخال الرابط الأصلي!");
+            const startBtn = document.getElementById("startBtn"); startBtn.disabled = true; startBtn.innerText = "⏳ جاري إطلاق المحركات...";
+            try {
+                streamStartTime = Date.now();
+                await db.ref('settings/stream').set({ source: link, userAgent: ua, referer: ref, cookie: cookie, status: "running", startedAt: streamStartTime });
+                const workersRef = await db.ref('workers').once('value'); const workers = workersRef.val();
+                if (workers) {
+                    const promises = [];
+                    for (let key in workers) { if (workers[key].status === 'active') { promises.push(fetch(`https://api.github.com/repos/${workers[key].username}/${workers[key].repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${workers[key].token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }).catch(() => {})); } }
                     await Promise.all(promises);
                 }
                 const cf = document.getElementById("cfDomain").value.trim(); setTimeout(() => { if (cf) playVideo(cf); refreshWorkersTelemetry(); }, 5000);
@@ -167,14 +212,17 @@
                 const workersRef = await db.ref('workers').once('value'); const workers = workersRef.val();
                 if (workers) {
                     const wipePromises = Object.keys(workers).map(async (key) => {
-                        const worker = workers[key]; const headers = { "Authorization": `token ${worker.token}`, "Accept": "application/vnd.github.v3+json" }; const baseUrl = `https://api.github.com/repos/${worker.username}/${worker.repo}`; try { const runsRes = await fetch(`${baseUrl}/actions/runs?per_page=30`, { headers }); const runsData = await runsRes.json();
+                        const worker = workers[key]; const headers = { "Authorization": `token ${worker.token}`, "Accept": "application/vnd.github.v3+json" }; const baseUrl = `https://api.github.com/repos/${worker.username}/${worker.repo}`;
+                        try {
+                            const runsRes = await fetch(`${baseUrl}/actions/runs?per_page=30`, { headers }); const runsData = await runsRes.json();
                             if (runsData && runsData.workflow_runs) {
                                 for (const run of runsData.workflow_runs) {
                                     if (run.status === "in_progress" || run.status === "queued" || run.status === "waiting") { await fetch(`${baseUrl}/actions/runs/${run.id}/cancel`, { method: "POST", headers }).catch(() => {}); }
                                     await fetch(`${baseUrl}/actions/runs/${run.id}`, { method: "DELETE", headers }).catch(() => {});
                                 }
                             }
-                            const m3u8Res = await fetch(`${baseUrl}/contents/live_stream/index.m3u8`, { headers }); if (m3u8Res.ok) { const m3u8File = await m3u8Res.json(); await fetch(`${baseUrl}/contents/live_stream/index.m3u8`, { method: "DELETE", headers, body: JSON.stringify({ message: "Wipe stream trace", sha: m3u8File.sha }) }).catch(() => {}); }
+                            const m3u8Res = await fetch(`${baseUrl}/contents/live_stream/index.m3u8`, { headers });
+                            if (m3u8Res.ok) { const m3u8File = await m3u8Res.json(); await fetch(`${baseUrl}/contents/live_stream/index.m3u8`, { method: "DELETE", headers, body: JSON.stringify({ message: "Wipe stream trace", sha: m3u8File.sha }) }).catch(() => {}); }
                         } catch (err) {}
                     });
                     await Promise.all(wipePromises);
@@ -192,7 +240,11 @@
             try {
                 const token = document.getElementById("githubToken").value.trim(); if(!token) return alert("يرجى إدخال Token!");
                 btn.innerText = "⏳ جاري الزرع..."; btn.disabled = true;
-                const userRes = await fetch("https://api.github.com/user", { headers: { "Authorization": `token ${token}` } }); if (!userRes.ok) throw new Error("توكن غير صالح."); const userData = await userRes.json(); const username = userData.login; const randomId = Math.floor(1000 + Math.random() * 9000); const repoName = "TimeShift-Worker-" + randomId;  await fetch("https://api.github.com/user/repos", { method: "POST", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ name: repoName, private: false, auto_init: true }) });
+                const userRes = await fetch("https://api.github.com/user", { headers: { "Authorization": `token ${token}` } }); if (!userRes.ok) throw new Error("توكن غير صالح.");
+                const userData = await userRes.json(); const username = userData.login;
+                const randomId = Math.floor(1000 + Math.random() * 9000); const repoName = "TimeShift-Worker-" + randomId;
+                
+                await fetch("https://api.github.com/user/repos", { method: "POST", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ name: repoName, private: false, auto_init: true }) });
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
                 // الكود مع أوامر إعادة الاتصال التلقائي الصامتة لمعالجة المصادر التي تفصل
@@ -259,4 +311,71 @@ jobs:
               kill -9 $RUNNER_PID 2>/dev/null || true
               pkill -9 ffmpeg 2>/dev/null || true
               git rm -rf live_stream/ 2>/dev/null || true
-              git commit -m "
+              git commit -m "Wipe stream on stop" || true
+              git push origin main || true
+              break
+            fi
+            
+            ls -1t live_stream/seg_*.png 2>/dev/null | tail -n +15 | xargs -r rm -f
+            git add -A live_stream/ || true
+            if ! git diff --staged --quiet; then
+              git commit -m "Live stream sync" || true
+              git push origin main || true
+            fi
+          done
+`;
+                
+                await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, { method: "PUT", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ message: "Init Native Sync Engine", content: encodeBase64(workflowContent) }) });
+                await db.ref('workers/' + username + '_' + randomId).set({ token: token, status: 'active', trafficUsage: 0, repo: repoName, username: username });
+                document.getElementById("githubToken").value = ''; await refreshWorkersTelemetry(); alert(`✅ تم الزرع بنجاح مع حماية انقطاع البث في: ${repoName}`);
+            } catch (error) { alert("❌ خطأ: " + error.message); } finally { btn.innerText = "+ زرع محرك المزامنة"; btn.disabled = false; }
+        }
+
+        async function refreshWorkersTelemetry() {
+            const keys = Object.keys(workersMemory);
+            if (keys.length === 0) { setGaugeValue("gaugeWorkers", 0); document.getElementById("valWorkers").innerText = "0/0"; setGaugeValue("gaugeQuota", 0); document.getElementById("valQuota").innerText = "0%"; document.getElementById("subQuota").innerText = "0/0"; return; }
+            let actuallyRunningCount = 0; let totalRemainingCalls = 0; let totalLimitCalls = 0;
+            await Promise.all(keys.map(async (key) => {
+                const w = workersMemory[key]; const headers = { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" };
+                try {
+                    const runsRes = await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers });
+                    if (runsRes.ok) { const runsData = await runsRes.json(); const isBroadcasting = (runsData.total_count && runsData.total_count > 0); liveWorkerStates[key] = isBroadcasting; if (isBroadcasting && w.status === 'active') actuallyRunningCount++; }
+                    const rateRes = await fetch(`https://api.github.com/rate_limit?t=${Date.now()}`, { headers });
+                    if (rateRes.ok) { const rateData = await rateRes.json(); const limit = rateData.rate.limit || 5000; const remaining = rateData.rate.remaining || 0; totalLimitCalls += limit; totalRemainingCalls += remaining; const usedPct = Math.round(((limit - remaining) / limit) * 100); db.ref(`workers/${key}/trafficUsage`).set(usedPct); }
+                } catch (e) {}
+            }));
+            const rpmPercent = (actuallyRunningCount / keys.length) * 100; document.getElementById("valWorkers").innerText = `${actuallyRunningCount}/${keys.length}`; setGaugeValue("gaugeWorkers", rpmPercent, actuallyRunningCount > 0 ? "#06b6d4" : "#64748b");
+            if (totalLimitCalls > 0) { const remainPct = Math.round((totalRemainingCalls / totalLimitCalls) * 100); document.getElementById("valQuota").innerText = `${remainPct}%`; document.getElementById("subQuota").innerText = `${totalRemainingCalls}/${totalLimitCalls}`; setGaugeValue("gaugeQuota", remainPct, remainPct > 25 ? "#a855f7" : "#ef4444"); }
+            renderWorkerCards();
+        }
+
+        function renderWorkerCards() {
+            const container = document.getElementById('workersList'); container.innerHTML = ''; const keys = Object.keys(workersMemory);
+            keys.forEach((workerId) => {
+                const worker = workersMemory[workerId]; const usage = worker.trafficUsage || 0; const isPaused = worker.status !== 'active'; const isBroadcastingNow = liveWorkerStates[workerId] === true;
+                const card = `
+                    <div class="bg-black/60 border ${isPaused ? 'border-amber-500/40' : (isBroadcastingNow ? 'border-emerald-500/50' : 'border-gray-800')} rounded-xl p-3.5 flex flex-col justify-between gap-3">
+                        <div class="flex justify-between items-start">
+                            <div><div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full ${isPaused ? 'bg-amber-500' : (isBroadcastingNow ? 'bg-emerald-400 animate-ping' : 'bg-cyan-500')}"></span><span class="font-bold text-white text-sm font-mono">${worker.username}</span></div><span class="text-[11px] text-gray-500 font-mono block mt-0.5">${worker.repo}</span></div>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isPaused ? 'bg-amber-500/20 text-amber-400' : (isBroadcastingNow ? 'bg-emerald-500/20 text-emerald-400' : 'bg-gray-800 text-gray-400')}">${isPaused ? 'موقوف مؤقتاً' : (isBroadcastingNow ? '🔥 يبث الآن' : 'جاهز بالانتظار')}</span>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[11px] mb-1"><span class="text-gray-400">استهلاك طلبات GitHub API</span><span class="digital-font font-bold ${usage > 80 ? 'text-red-400' : 'text-cyan-400'}">${usage}%</span></div>
+                            <div class="w-full bg-gray-900 rounded-full h-2 overflow-hidden border border-gray-800"><div class="h-full ${usage > 80 ? 'bg-red-500' : 'bg-gradient-to-r from-cyan-500 to-emerald-500'}" style="width: ${usage}%"></div></div>
+                        </div>
+                        <div class="flex gap-2 pt-1 border-t border-gray-800/80">
+                            <button onclick="toggleWorkerStatus('${workerId}', '${worker.status}')" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-200 py-1.5 px-3 rounded-lg text-xs font-bold transition">${isPaused ? '▶️ تفعيل' : '⏸️ إيقاف مؤقت'}</button>
+                            <button onclick="deleteWorker('${workerId}')" class="bg-red-950/60 hover:bg-red-900 text-red-300 border border-red-800/50 py-1.5 px-3 rounded-lg text-xs font-bold transition">🗑️ حذف</button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        db.ref('workers').on('value', (snapshot) => { workersMemory = snapshot.val() || {}; renderWorkerCards(); refreshWorkersTelemetry(); });
+        function toggleWorkerStatus(workerId, currentStatus) { db.ref('workers/' + workerId + '/status').set(currentStatus === 'active' ? 'paused' : 'active'); }
+        function deleteWorker(workerId) { if(confirm("هل أنت متأكد من إزالة هذا العامل؟")) db.ref('workers/' + workerId).remove(); }
+    </script>
+</body>
+</html>
