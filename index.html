@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>قمرة القيادة V13 - P2P Engine</title>
+    <title>قمرة القيادة V14 - Smart P2P Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.12"></script>
-    <!-- مكتبات P2P اللامركزية الجديدة -->
     <script src="https://cdn.jsdelivr.net/npm/p2p-media-loader-core@0.6.2/build/p2p-media-loader-core.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/p2p-media-loader-hlsjs@0.6.2/build/p2p-media-loader-hlsjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Orbitron:wght@500;800&display=swap" rel="stylesheet">
@@ -24,14 +23,12 @@
 <body class="p-3 md:p-6 pb-20">
 
     <div class="max-w-6xl mx-auto space-y-6">
-        
-        <!-- شاشة المعلومات العلوية -->
-        <div class="carbon-card rounded-2xl p-4 flex flex-wrap justify-between items-center gap-4 border-b-2 border-cyan-500/50 relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
+        <div class="carbon-card rounded-2xl p-4 flex flex-wrap justify-between items-center gap-4 border-b-2 border-emerald-500/50 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50"></div>
             <div class="flex items-center gap-3 z-10">
                 <div id="statusDot" class="w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)] animate-pulse"></div>
                 <div>
-                    <h1 class="text-xl md:text-3xl font-black tracking-wider text-white">TIMESHIFT <span class="text-cyan-400 digital-font neon-text">V13-P2P</span></h1>
+                    <h1 class="text-xl md:text-3xl font-black tracking-wider text-white">TIMESHIFT <span class="text-emerald-400 digital-font neon-text">V14-SMART</span></h1>
                     <p id="systemStatusText" class="text-xs text-gray-400 font-bold mt-1">المحرك متوقف - النظام في وضع الخمول</p>
                 </div>
             </div>
@@ -42,7 +39,6 @@
             </div>
         </div>
 
-        <!-- العدادات الحية -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="carbon-card rounded-2xl p-4 flex flex-col items-center justify-center relative group">
                 <svg class="w-32 h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#111827" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeCmd" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#ef4444" stroke-width="12" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
@@ -66,11 +62,10 @@
             </div>
         </div>
 
-        <!-- الإشعال والرادار -->
         <div class="carbon-card rounded-2xl p-5 md:p-7">
             <h2 class="text-lg font-black mb-5 text-white flex items-center gap-2 border-b border-gray-800 pb-3"><span>🔑</span> 1. وحدة الإشعال (Ignition Control)</h2>
             <div class="space-y-4 mb-6">
-                <div><label class="text-xs font-bold text-gray-400 block mb-1">الرابط الأصلي (الاكستريم الرسمي):</label><input type="text" id="sourceLink" class="w-full p-4 rounded-xl bg-black/80 border border-gray-700 text-emerald-400 focus:outline-none focus:border-cyan-500 font-mono text-sm text-left shadow-inner" dir="ltr"></div>
+                <div><label class="text-xs font-bold text-gray-400 block mb-1">الرابط الأصلي (الاكستريم الرسمي / اللوكال):</label><input type="text" id="sourceLink" class="w-full p-4 rounded-xl bg-black/80 border border-gray-700 text-emerald-400 focus:outline-none focus:border-cyan-500 font-mono text-sm text-left shadow-inner" dir="ltr"></div>
                 <div><label class="text-[11px] font-bold text-gray-500">User-Agent (اختياري):</label><input type="text" id="userAgent" placeholder="VLC/3.0.18 LibVLC/3.0.18" class="w-full p-3 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr"></div>
             </div>
             
@@ -85,7 +80,6 @@
             </div>
         </div>
 
-        <!-- كلاودفلير -->
         <div class="carbon-card rounded-2xl p-5 md:p-7">
             <h2 class="text-base md:text-lg font-bold mb-4 text-amber-400 flex items-center gap-2 border-b border-gray-800 pb-2"><span>🌐</span> 2. بوابة التوزيع (Cloudflare Load Balancer)</h2>
             <div class="flex flex-col sm:flex-row gap-2.5">
@@ -95,9 +89,7 @@
             </div>
         </div>
 
-        <!-- أسطول المحركات (القلوب والمرايا) -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-            
             <div class="carbon-card rounded-2xl p-5">
                 <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-2">
                     <h2 class="text-lg font-black text-red-400 flex items-center gap-2"><span>❤️</span> القلوب النابضة (Commanders)</h2>
@@ -107,9 +99,7 @@
                     <input type="text" id="cmdToken" placeholder="GitHub Token..." class="flex-1 p-3 rounded-lg bg-gray-950 border border-gray-800 text-red-300 font-mono text-xs text-left" dir="ltr">
                     <button onclick="plantWorker('commander', this)" class="bg-red-700 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg text-xs transition whitespace-nowrap shadow-md">زرع قلب</button>
                 </div>
-                <div id="commandersList" class="space-y-3">
-                    <p class="text-xs text-gray-500 text-center py-2">جاري تحميل البيانات...</p>
-                </div>
+                <div id="commandersList" class="space-y-3"><p class="text-xs text-gray-500 text-center py-2">جاري تحميل البيانات...</p></div>
             </div>
 
             <div class="carbon-card rounded-2xl p-5">
@@ -121,11 +111,8 @@
                     <input type="text" id="mirToken" placeholder="GitHub Token..." class="flex-1 p-3 rounded-lg bg-gray-950 border border-gray-800 text-cyan-300 font-mono text-xs text-left" dir="ltr">
                     <button onclick="plantWorker('mirror', this)" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg text-xs transition whitespace-nowrap shadow-md">إضافة مرآة</button>
                 </div>
-                <div id="mirrorsList" class="space-y-3">
-                    <p class="text-xs text-gray-500 text-center py-2">جاري تحميل البيانات...</p>
-                </div>
+                <div id="mirrorsList" class="space-y-3"><p class="text-xs text-gray-500 text-center py-2">جاري تحميل البيانات...</p></div>
             </div>
-            
         </div>
     </div>
 
@@ -140,47 +127,31 @@
         const db = firebase.database();
 
         let workersMemory = {}; let streamStartTime = null; let currentStreamStatus = "stopped"; let lastFragTime = 0;
-        let activeCommanderId = null;
-        let isActionBusy = false;
+        let activeCommanderId = null; let isActionBusy = false;
 
         function setGaugeValue(gaugeId, percent, colorHex) {
-            const circle = document.getElementById(gaugeId);
-            if (!circle) return;
-            const maxArc = 226; const clamped = Math.max(0, Math.min(100, percent));
-            const offset = maxArc - (clamped / 100) * maxArc;
-            circle.style.strokeDashoffset = offset;
-            if (colorHex) circle.style.stroke = colorHex;
+            const circle = document.getElementById(gaugeId); if (!circle) return;
+            const offset = 226 - (Math.max(0, Math.min(100, percent)) / 100) * 226;
+            circle.style.strokeDashoffset = offset; if (colorHex) circle.style.stroke = colorHex;
         }
 
         db.ref('settings/stream').on('value', (snapshot) => {
-            const data = snapshot.val();
-            const dot = document.getElementById("statusDot"); const statusTxt = document.getElementById("systemStatusText");
+            const data = snapshot.val(); const dot = document.getElementById("statusDot"); const statusTxt = document.getElementById("systemStatusText");
             if (data) {
-                document.getElementById("sourceLink").value = data.source || ""; 
-                document.getElementById("userAgent").value = data.userAgent || "";
+                document.getElementById("sourceLink").value = data.source || ""; document.getElementById("userAgent").value = data.userAgent || "";
                 currentStreamStatus = data.status || "stopped";
                 if (currentStreamStatus === "running") {
-                    dot.className = "w-5 h-5 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-pulse"; 
-                    statusTxt.innerText = "المحرك يعمل - البث متصل ويوزع للمرايا"; statusTxt.className = "text-xs text-emerald-400 font-bold mt-1"; 
-                    streamStartTime = data.startedAt || Date.now();
+                    dot.className = "w-5 h-5 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-pulse"; statusTxt.innerText = "المحرك يعمل - البث متصل"; statusTxt.className = "text-xs text-emerald-400 font-bold mt-1"; streamStartTime = data.startedAt || Date.now();
                 } else {
-                    dot.className = "w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)]"; 
-                    statusTxt.innerText = "المحرك متوقف - النظام في وضع الخمول"; statusTxt.className = "text-xs text-gray-400 font-bold mt-1"; 
-                    streamStartTime = null;
-                    setGaugeValue("gaugeSpeed", 0); document.getElementById("valSpeed").innerText = "0.0"; 
-                    setGaugeValue("gaugeHealth", 0); document.getElementById("valHealth").innerText = "0.0s";
+                    dot.className = "w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)]"; statusTxt.innerText = "المحرك متوقف"; statusTxt.className = "text-xs text-gray-400 font-bold mt-1"; streamStartTime = null; setGaugeValue("gaugeSpeed", 0); document.getElementById("valSpeed").innerText = "0.0"; setGaugeValue("gaugeHealth", 0); document.getElementById("valHealth").innerText = "0.0s";
                 }
-            }
-            refreshTelemetry();
+            } refreshTelemetry();
         });
 
         db.ref('settings/domain').on('value', (snap) => { document.getElementById("cfDomain").value = snap.val() || ""; });
 
         setInterval(() => {
-            if (window.p2pEngine) {
-                const peers = window.p2pEngine.getSettings().swarmId ? Object.keys(window.p2pEngine.on('peerConnect', ()=>{})).length || Math.floor(Math.random() * 5) : 0;
-            }
-            
+            if (window.p2pEngine) { const peers = window.p2pEngine.getSettings().swarmId ? Object.keys(window.p2pEngine.on('peerConnect', ()=>{})).length || Math.floor(Math.random() * 5) : 0; }
             const video = document.getElementById('previewPlayer'); const radarDot = document.getElementById('playerRadarDot'); const radarTxt = document.getElementById('playerRadarText');
             if (video && !video.paused && video.readyState >= 2) {
                 let bufferLen = 0;
@@ -188,8 +159,7 @@
                 document.getElementById("valHealth").innerText = bufferLen.toFixed(1) + "s"; setGaugeValue("gaugeHealth", Math.min(100, (bufferLen / 15) * 100), bufferLen > 3 ? "#10b981" : "#f59e0b");
                 radarDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"; radarTxt.innerText = "الرادار: متصل (P2P فعال)"; radarTxt.className = "text-xs text-emerald-400 font-bold";
             } else { 
-                document.getElementById("valHealth").innerText = "0.0s"; setGaugeValue("gaugeHealth", 0, "#f59e0b"); 
-                radarDot.className = "w-2.5 h-2.5 rounded-full bg-gray-500"; radarTxt.innerText = "الرادار: خامل"; radarTxt.className = "text-xs text-gray-400 font-bold";
+                document.getElementById("valHealth").innerText = "0.0s"; setGaugeValue("gaugeHealth", 0, "#f59e0b"); radarDot.className = "w-2.5 h-2.5 rounded-full bg-gray-500"; radarTxt.innerText = "الرادار: خامل"; radarTxt.className = "text-xs text-gray-400 font-bold";
             }
         }, 1000);
 
@@ -198,33 +168,13 @@
         function playVideo(url) {
             const video = document.getElementById('previewPlayer'); if (!url) return;
             if (Hls.isSupported() && p2pml.hlsjs.Engine.isSupported()) {
-                if (window.hlsInstance) window.hlsInstance.destroy();
-                if (window.p2pEngine) window.p2pEngine.destroy();
-
-                window.p2pEngine = new p2pml.hlsjs.Engine({
-                    segments: { swarmId: 'timeshift-live-swarm-v13', forwardSegmentCount: 20 }
-                });
-
-                window.p2pEngine.on('peerConnect', peer => {
-                    let count = parseInt(document.getElementById('p2pPeersCount').innerText) || 0;
-                    document.getElementById('p2pPeersCount').innerText = count + 1;
-                });
-
-                const hls = new Hls({
-                    liveSyncDurationCount: 3, 
-                    liveMaxLatencyDurationCount: 5,
-                    maxBufferLength: 30,
-                    loader: window.p2pEngine.createLoaderClass() 
-                });
-
-                p2pml.hlsjs.initHlsJsPlayer(hls);
-
-                window.hlsInstance = hls; hls.loadSource(url); hls.attachMedia(video);
+                if (window.hlsInstance) window.hlsInstance.destroy(); if (window.p2pEngine) window.p2pEngine.destroy();
+                window.p2pEngine = new p2pml.hlsjs.Engine({ segments: { swarmId: 'timeshift-live-swarm-v14', forwardSegmentCount: 20 } });
+                window.p2pEngine.on('peerConnect', peer => { let count = parseInt(document.getElementById('p2pPeersCount').innerText) || 0; document.getElementById('p2pPeersCount').innerText = count + 1; });
+                const hls = new Hls({ liveSyncDurationCount: 3, liveMaxLatencyDurationCount: 5, maxBufferLength: 30, loader: window.p2pEngine.createLoaderClass() });
+                p2pml.hlsjs.initHlsJsPlayer(hls); window.hlsInstance = hls; hls.loadSource(url); hls.attachMedia(video);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
-                hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
-                    lastFragTime = Date.now(); const stats = data.frag.stats; const durationMs = stats.loading.end - stats.loading.start; const bytes = stats.total || stats.loaded || 0;
-                    if (durationMs > 0 && bytes > 0) { const mbps = ((bytes * 8) / (durationMs / 1000)) / 1000000; const cleanMbps = Math.min(30, Math.max(0.1, mbps)); document.getElementById("valSpeed").innerText = cleanMbps.toFixed(1); setGaugeValue("gaugeSpeed", Math.min(100, (cleanMbps / 10) * 100), "#10b981"); }
-                });
+                hls.on(Hls.Events.FRAG_LOADED, (event, data) => { lastFragTime = Date.now(); const stats = data.frag.stats; const durationMs = stats.loading.end - stats.loading.start; const bytes = stats.total || stats.loaded || 0; if (durationMs > 0 && bytes > 0) { const mbps = ((bytes * 8) / (durationMs / 1000)) / 1000000; const cleanMbps = Math.min(30, Math.max(0.1, mbps)); document.getElementById("valSpeed").innerText = cleanMbps.toFixed(1); setGaugeValue("gaugeSpeed", Math.min(100, (cleanMbps / 10) * 100), "#10b981"); } });
                 hls.on(Hls.Events.ERROR, (e, data) => { if (data.fatal && currentStreamStatus === "running") setTimeout(() => hls.startLoad(), 2000); });
             }
         }
@@ -234,43 +184,22 @@
 
         function renderUI() {
             try {
-                const cmdContainer = document.getElementById('commandersList'); 
-                const mirContainer = document.getElementById('mirrorsList');
-                if (!cmdContainer || !mirContainer) return;
-                
-                cmdContainer.innerHTML = ''; mirContainer.innerHTML = '';
-                const keys = Object.keys(workersMemory || {});
-                let hasCmd = false; let hasMir = false;
-
+                const cmdContainer = document.getElementById('commandersList'); const mirContainer = document.getElementById('mirrorsList');
+                if (!cmdContainer || !mirContainer) return; cmdContainer.innerHTML = ''; mirContainer.innerHTML = '';
+                const keys = Object.keys(workersMemory || {}); let hasCmd = false; let hasMir = false;
                 keys.forEach(key => {
-                    const w = workersMemory[key];
-                    if (!w) return;
-                    const isCmd = w.type === 'commander';
-                    if (isCmd) hasCmd = true; else hasMir = true;
+                    const w = workersMemory[key]; if (!w) return;
+                    const isCmd = w.type === 'commander'; if (isCmd) hasCmd = true; else hasMir = true;
                     const usage = w.apiUsage || 0; const isReallyWorking = w.isWorking === true;
-                    
                     let statusDot, statusText, cardBorder;
                     if (w.status === 'active') { statusDot = isReallyWorking ? (isCmd ? 'bg-red-500 animate-pulse' : 'bg-cyan-500 animate-pulse') : 'bg-yellow-500'; statusText = isReallyWorking ? (isCmd ? '🔥 يسحب البث الآن' : '🪞 تسحب وتوزع') : '⏳ يجهز للعمل...'; cardBorder = isCmd ? 'border-red-500/50' : 'border-cyan-500/50'; } 
                     else if (w.status === 'standby') { statusDot = 'bg-gray-500'; statusText = '💤 خامل (احتياط)'; cardBorder = 'border-gray-800'; } 
                     else if (w.status === 'nuked') { statusDot = 'bg-purple-600'; statusText = '💥 تم التدمير (فارغ)'; cardBorder = 'border-purple-600/50'; } 
                     else { statusDot = 'bg-amber-500'; statusText = '⏸️ موقوف'; cardBorder = 'border-amber-500/50'; }
-
-                    const card = `
-                        <div class="bg-black/60 border ${cardBorder} rounded-xl p-3 flex flex-col gap-2 transition-all">
-                            <div class="flex justify-between items-center">
-                                <div><div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full ${statusDot}"></span><span class="font-bold text-white text-sm">${w.username}</span></div><span class="text-[10px] text-gray-500 font-mono block mt-0.5">${w.repo}</span></div>
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-900 text-gray-300 border border-gray-700">${statusText}</span>
-                            </div>
-                            ${isCmd ? `<div class="w-full bg-gray-900 rounded-full h-1.5 mt-1 overflow-hidden"><div class="h-full ${usage > 90 ? 'bg-red-500' : 'bg-blue-500'}" style="width: ${usage}%"></div></div>` : ''}
-                            <div class="flex gap-2 mt-2">
-                                ${w.status === 'nuked' ? `<button onclick="replantWorker('${key}')" class="flex-1 bg-purple-700 hover:bg-purple-600 text-white py-1.5 rounded text-[11px] font-bold transition shadow-[0_0_8px_rgba(126,34,206,0.6)]">🌱 إعادة الزرع</button>` : `<button onclick="db.ref('workers/${key}/status').set('${w.status === 'paused' ? 'standby' : 'paused'}')" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 py-1.5 rounded text-[11px] font-bold transition border border-gray-700">${w.status === 'paused' ? 'تفعيل' : 'إيقاف'}</button>` }
-                                <button onclick="if(confirm('حذف من اللوحة نهائياً؟')) db.ref('workers/${key}').remove()" class="bg-red-950/60 hover:bg-red-900 text-red-300 py-1.5 px-3 rounded text-[11px] font-bold transition border border-red-900/40">حذف</button>
-                            </div>
-                        </div>`;
+                    const card = `<div class="bg-black/60 border ${cardBorder} rounded-xl p-3 flex flex-col gap-2 transition-all"><div class="flex justify-between items-center"><div><div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full ${statusDot}"></span><span class="font-bold text-white text-sm">${w.username}</span></div><span class="text-[10px] text-gray-500 font-mono block mt-0.5">${w.repo}</span></div><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-900 text-gray-300 border border-gray-700">${statusText}</span></div>${isCmd ? `<div class="w-full bg-gray-900 rounded-full h-1.5 mt-1 overflow-hidden"><div class="h-full ${usage > 90 ? 'bg-red-500' : 'bg-blue-500'}" style="width: ${usage}%"></div></div>` : ''}<div class="flex gap-2 mt-2">${w.status === 'nuked' ? `<button onclick="replantWorker('${key}')" class="flex-1 bg-purple-700 hover:bg-purple-600 text-white py-1.5 rounded text-[11px] font-bold transition shadow-[0_0_8px_rgba(126,34,206,0.6)]">🌱 إعادة الزرع</button>` : `<button onclick="db.ref('workers/${key}/status').set('${w.status === 'paused' ? 'standby' : 'paused'}')" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 py-1.5 rounded text-[11px] font-bold transition border border-gray-700">${w.status === 'paused' ? 'تفعيل' : 'إيقاف'}</button>` }<button onclick="if(confirm('حذف من اللوحة نهائياً؟')) db.ref('workers/${key}').remove()" class="bg-red-950/60 hover:bg-red-900 text-red-300 py-1.5 px-3 rounded text-[11px] font-bold transition border border-red-900/40">حذف</button></div></div>`;
                     if (isCmd) cmdContainer.innerHTML += card; else mirContainer.innerHTML += card;
                 });
-                if(!hasCmd) cmdContainer.innerHTML = '<p class="text-xs text-gray-500 text-center py-2">لا يوجد قلوب نابضة.</p>';
-                if(!hasMir) mirContainer.innerHTML = '<p class="text-xs text-gray-500 text-center py-2">لا يوجد مرايا.</p>';
+                if(!hasCmd) cmdContainer.innerHTML = '<p class="text-xs text-gray-500 text-center py-2">لا يوجد قلوب نابضة.</p>'; if(!hasMir) mirContainer.innerHTML = '<p class="text-xs text-gray-500 text-center py-2">لا يوجد مرايا.</p>';
             } catch (err) {}
         }
 
@@ -279,126 +208,66 @@
         async function refreshTelemetry() {
             if (isActionBusy) return;
             const keys = Object.keys(workersMemory || {});
-            if (keys.length === 0) {
-                document.getElementById("valMirrors").innerText = "0/0"; setGaugeValue("gaugeMirrors", 0, "#475569");
-                document.getElementById("valCmd").innerText = "0%"; setGaugeValue("gaugeCmd", 0, "#3b82f6");
-                document.getElementById("activeCmdBadge").innerText = "لا يوجد"; return;
-            }
-
+            if (keys.length === 0) { document.getElementById("valMirrors").innerText = "0/0"; setGaugeValue("gaugeMirrors", 0, "#475569"); document.getElementById("valCmd").innerText = "0%"; setGaugeValue("gaugeCmd", 0, "#3b82f6"); document.getElementById("activeCmdBadge").innerText = "لا يوجد"; return; }
             let activeMirrors = 0; let totalMirrors = 0; let availableCommanders = []; let isCurrentCommanderPushing = false; let currentCmdApiUsage = 0;
-
             for (const key of keys) {
                 const w = workersMemory[key]; if (!w) continue;
                 if (w.type === 'mirror') {
                     totalMirrors++; if (w.status === 'active') activeMirrors++;
-                    if (w.status === 'active' && currentStreamStatus === "running") {
-                        try { const runsRes = await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" } });
-                            if (runsRes.ok) { const runsData = await runsRes.json(); w.isWorking = (runsData.total_count > 0); }
-                        } catch (e) { w.isWorking = false; }
-                    } else { w.isWorking = false; } continue;
+                    if (w.status === 'active' && currentStreamStatus === "running") { try { const runsRes = await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" } }); if (runsRes.ok) { const runsData = await runsRes.json(); w.isWorking = (runsData.total_count > 0); } } catch (e) { w.isWorking = false; } } else { w.isWorking = false; } continue;
                 }
                 if (w.type === 'commander') {
                     if (w.status !== 'failed' && w.status !== 'paused' && w.status !== 'nuked') availableCommanders.push(key);
-                    if (w.status === 'active') {
-                        activeCommanderId = key;
-                        try {
-                            const runsRes = await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" } });
-                            if (runsRes.ok) { const runsData = await runsRes.json(); isCurrentCommanderPushing = (runsData.total_count > 0); w.isWorking = isCurrentCommanderPushing; }
-                            const rateRes = await fetch(`https://api.github.com/rate_limit`, { headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" } });
-                            if (rateRes.ok) { const rateData = await rateRes.json(); const limit = rateData.rate.limit || 5000; const remaining = rateData.rate.remaining || 0; currentCmdApiUsage = Math.round(((limit - remaining) / limit) * 100); db.ref(`workers/${key}/apiUsage`).set(currentCmdApiUsage); }
-                        } catch (e) {}
-                    }
+                    if (w.status === 'active') { activeCommanderId = key; try { const runsRes = await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" } }); if (runsRes.ok) { const runsData = await runsRes.json(); isCurrentCommanderPushing = (runsData.total_count > 0); w.isWorking = isCurrentCommanderPushing; } const rateRes = await fetch(`https://api.github.com/rate_limit`, { headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" } }); if (rateRes.ok) { const rateData = await rateRes.json(); const limit = rateData.rate.limit || 5000; const remaining = rateData.rate.remaining || 0; currentCmdApiUsage = Math.round(((limit - remaining) / limit) * 100); db.ref(`workers/${key}/apiUsage`).set(currentCmdApiUsage); } } catch (e) {} }
                 }
             }
-            document.getElementById("valMirrors").innerText = `${activeMirrors}/${totalMirrors}`; setGaugeValue("gaugeMirrors", totalMirrors > 0 ? (activeMirrors / totalMirrors) * 100 : 0, activeMirrors > 0 ? "#06b6d4" : "#475569");
-            document.getElementById("valCmd").innerText = `${currentCmdApiUsage}%`; setGaugeValue("gaugeCmd", currentCmdApiUsage, currentCmdApiUsage > 90 ? "#ef4444" : (currentCmdApiUsage > 70 ? "#f59e0b" : "#3b82f6"));
-            document.getElementById("activeCmdBadge").innerText = activeCommanderId ? workersMemory[activeCommanderId].username : "متوقف";
-
+            document.getElementById("valMirrors").innerText = `${activeMirrors}/${totalMirrors}`; setGaugeValue("gaugeMirrors", totalMirrors > 0 ? (activeMirrors / totalMirrors) * 100 : 0, activeMirrors > 0 ? "#06b6d4" : "#475569"); document.getElementById("valCmd").innerText = `${currentCmdApiUsage}%`; setGaugeValue("gaugeCmd", currentCmdApiUsage, currentCmdApiUsage > 90 ? "#ef4444" : (currentCmdApiUsage > 70 ? "#f59e0b" : "#3b82f6")); document.getElementById("activeCmdBadge").innerText = activeCommanderId ? workersMemory[activeCommanderId].username : "متوقف";
+            
+            // تم إلغاء التبديل التلقائي السريع لمنع رسالة Cancelation، التبديل الآن يحدث فقط إذا تعطل الـ API تماماً (>98%)
             if (currentStreamStatus === "running" && !isActionBusy) {
-                if (!activeCommanderId || (!isCurrentCommanderPushing && streamStartTime && (Date.now() - streamStartTime > 25000)) || currentCmdApiUsage > 95) {
-                    isActionBusy = true;
-                    if (activeCommanderId) { await db.ref(`workers/${activeCommanderId}/status`).set('standby'); }
+                if (!activeCommanderId || currentCmdApiUsage > 98) {
+                    isActionBusy = true; if (activeCommanderId) { await db.ref(`workers/${activeCommanderId}/status`).set('standby'); }
                     const nextCmd = availableCommanders.find(c => c !== activeCommanderId);
-                    if (nextCmd) {
-                        const nw = workersMemory[nextCmd]; await db.ref(`workers/${nextCmd}/status`).set('active');
-                        await fetch(`https://api.github.com/repos/${nw.username}/${nw.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${nw.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }).catch(()=>{});
-                    }
+                    if (nextCmd) { const nw = workersMemory[nextCmd]; await db.ref(`workers/${nextCmd}/status`).set('active'); await fetch(`https://api.github.com/repos/${nw.username}/${nw.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${nw.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }).catch(()=>{}); }
                     setTimeout(() => { isActionBusy = false; }, 5000);
                 }
             } renderUI();
         }
 
         async function startEngine() {
-            if (isActionBusy) return;
-            const link = document.getElementById("sourceLink").value.trim(); const ua = document.getElementById("userAgent").value.trim();
-            if(!link) return alert("أدخل رابط المصدر!");
-            const cmds = Object.values(workersMemory).filter(w => w.type === 'commander' && w.status !== 'paused' && w.status !== 'nuked');
-            if(cmds.length === 0) return alert("قم بإضافة قلب نابض جاهز!");
+            if (isActionBusy) return; const link = document.getElementById("sourceLink").value.trim(); const ua = document.getElementById("userAgent").value.trim(); if(!link) return alert("أدخل رابط المصدر!"); const cmds = Object.values(workersMemory).filter(w => w.type === 'commander' && w.status !== 'paused' && w.status !== 'nuked'); if(cmds.length === 0) return alert("قم بإضافة قلب نابض جاهز!");
             isActionBusy = true; const startBtn = document.getElementById("startBtn"); const originalText = startBtn.innerHTML; startBtn.innerHTML = "<span>⏳</span> جاري إرسال أوامر الإقلاع..."; startBtn.disabled = true;
-
             try {
                 await db.ref('settings/stream').set({ source: link, userAgent: ua, status: "running", startedAt: Date.now() });
-                const clearOldRuns = async (w) => {
-                    try {
-                        const runs = await (await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" } })).json();
-                        for (const run of runs.workflow_runs || []) { await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs/${run.id}/cancel`, { method: "POST", headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" } }).catch(()=>{}); }
-                    } catch(e) {}
-                };
+                const clearOldRuns = async (w) => { try { const runs = await (await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" } })).json(); for (const run of runs.workflow_runs || []) { await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs/${run.id}/cancel`, { method: "POST", headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" } }).catch(()=>{}); } } catch(e) {} };
                 const firstCmdKey = Object.keys(workersMemory).find(k => workersMemory[k].type === 'commander' && workersMemory[k].status !== 'paused' && workersMemory[k].status !== 'nuked');
-                if (firstCmdKey) {
-                    const w = workersMemory[firstCmdKey]; await clearOldRuns(w); await db.ref(`workers/${firstCmdKey}/status`).set('active');
-                    await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) });
-                }
-                for (const k of Object.keys(workersMemory)) {
-                    if(workersMemory[k].type === 'mirror' && workersMemory[k].status !== 'paused' && workersMemory[k].status !== 'nuked') {
-                        const w = workersMemory[k]; await clearOldRuns(w); await db.ref(`workers/${k}/status`).set('active');
-                        await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }).catch(()=>{});
-                    }
-                }
-                const cf = document.getElementById("cfDomain").value.trim(); if(cf) { db.ref('settings/domain').set(cf); setTimeout(() => playVideo(cf), 7000); }
-                alert("✅ تم إرسال أمر التشغيل للقلب النابض والمرايا بنجاح!");
+                if (firstCmdKey) { const w = workersMemory[firstCmdKey]; await clearOldRuns(w); await db.ref(`workers/${firstCmdKey}/status`).set('active'); await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }); }
+                for (const k of Object.keys(workersMemory)) { if(workersMemory[k].type === 'mirror' && workersMemory[k].status !== 'paused' && workersMemory[k].status !== 'nuked') { const w = workersMemory[k]; await clearOldRuns(w); await db.ref(`workers/${k}/status`).set('active'); await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }).catch(()=>{}); } }
+                const cf = document.getElementById("cfDomain").value.trim(); if(cf) { db.ref('settings/domain').set(cf); setTimeout(() => playVideo(cf), 7000); } alert("✅ تم إرسال أمر التشغيل للقلب النابض والمرايا بنجاح!");
             } catch(e) { alert("خطأ أثناء التشغيل: " + e.message); } finally { startBtn.innerHTML = originalText; startBtn.disabled = false; setTimeout(() => { isActionBusy = false; }, 4000); }
         }
 
         async function stopEngine() {
             if(isActionBusy) return; if(!confirm("تحذير: سيتم إيقاف البث ومسح المستودعات بالكامل. هل أنت متأكد؟")) return;
             isActionBusy = true; const stopBtn = document.getElementById("stopBtn"); const originalText = stopBtn.innerHTML; stopBtn.innerHTML = "<span>☢️</span> جاري المسح الشامل..."; stopBtn.disabled = true;
-            try {
-                await db.ref('settings/stream/status').set("stopped"); const video = document.getElementById('previewPlayer'); video.pause(); video.src = "";
-                const promises = Object.keys(workersMemory).map(async (key) => {
-                    const w = workersMemory[key]; if(w.status === 'nuked') return;
-                    await fetch(`https://api.github.com/repos/${w.username}/${w.repo}`, { method: "DELETE", headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" } }).catch(()=>{});
-                    await db.ref(`workers/${key}/status`).set('nuked'); await db.ref(`workers/${key}/isWorking`).set(false);
-                });
-                await Promise.all(promises); alert("🛑 تم إيقاف المحركات وتدمير المستودعات بنجاح.");
-            } catch (error) { alert("خطأ: " + error.message); } finally { stopBtn.innerHTML = originalText; stopBtn.disabled = false; isActionBusy = false; renderUI(); }
+            try { await db.ref('settings/stream/status').set("stopped"); const video = document.getElementById('previewPlayer'); video.pause(); video.src = ""; const promises = Object.keys(workersMemory).map(async (key) => { const w = workersMemory[key]; if(w.status === 'nuked') return; await fetch(`https://api.github.com/repos/${w.username}/${w.repo}`, { method: "DELETE", headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" } }).catch(()=>{}); await db.ref(`workers/${key}/status`).set('nuked'); await db.ref(`workers/${key}/isWorking`).set(false); }); await Promise.all(promises); alert("🛑 تم إيقاف المحركات وتدمير المستودعات بنجاح."); } catch (error) { alert("خطأ: " + error.message); } finally { stopBtn.innerHTML = originalText; stopBtn.disabled = false; isActionBusy = false; renderUI(); }
         }
 
-        async function replantWorker(key) {
-            const w = workersMemory[key]; const tokenEl = document.getElementById(w.type === 'commander' ? 'cmdToken' : 'mirToken'); tokenEl.value = w.token; 
-            db.ref(`workers/${key}`).remove(); setTimeout(() => { document.querySelector(w.type === 'commander' ? '#cmdToken + button' : '#mirToken + button').click(); }, 500);
-        }
+        async function replantWorker(key) { const w = workersMemory[key]; const tokenEl = document.getElementById(w.type === 'commander' ? 'cmdToken' : 'mirToken'); tokenEl.value = w.token; db.ref(`workers/${key}`).remove(); setTimeout(() => { document.querySelector(w.type === 'commander' ? '#cmdToken + button' : '#mirToken + button').click(); }, 500); }
 
         async function plantWorker(type, btnElement) {
             const tokenEl = document.getElementById(type === 'commander' ? 'cmdToken' : 'mirToken'); const token = tokenEl.value.trim(); if(!token) return alert("❌ يرجى إدخال التوكن أولاً!");
             const btn = btnElement; const origText = btn.innerText; btn.innerText = "⏳ جاري الفحص..."; btn.disabled = true;
-            
             try {
-                const userRes = await fetch("https://api.github.com/user", { headers: { "Authorization": `token ${token}` } });
-                if (!userRes.ok) throw new Error("التوكن غير صالح.");
-                const user = await userRes.json(); const username = user.login; const randomId = Math.floor(1000 + Math.random() * 9000);
-                const repoName = `TimeShift-${type === 'commander' ? 'CMD' : 'MIR'}-${randomId}`;
+                const userRes = await fetch("https://api.github.com/user", { headers: { "Authorization": `token ${token}` } }); if (!userRes.ok) throw new Error("التوكن غير صالح.");
+                const user = await userRes.json(); const username = user.login; const randomId = Math.floor(1000 + Math.random() * 9000); const repoName = `TimeShift-${type === 'commander' ? 'CMD' : 'MIR'}-${randomId}`;
+                btn.innerText = "⏳ إنشاء مستودع..."; const repoRes = await fetch("https://api.github.com/user/repos", { method: "POST", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ name: repoName, private: false, auto_init: true }) });
+                if (!repoRes.ok) throw new Error("جيتهاب رفض إنشاء المستودع."); await new Promise(r => setTimeout(r, 3000)); btn.innerText = "⏳ حقن الكود..."; 
                 
-                btn.innerText = "⏳ إنشاء مستودع..."; 
-                const repoRes = await fetch("https://api.github.com/user/repos", { method: "POST", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ name: repoName, private: false, auto_init: true }) });
-                if (!repoRes.ok) throw new Error("جيتهاب رفض إنشاء المستودع.");
-                await new Promise(r => setTimeout(r, 3000)); 
-                
-                btn.innerText = "⏳ حقن الكود..."; 
                 let wfContent = "";
                 if (type === 'commander') {
-                    // التعديل الجديد: إزالة FFmpeg واستخدام أداة خفيفة لتحميل وتمرير الأجزاء المباشرة دون إعادة التكويد لتخفيف الحمل على السيرفر
-                    wfContent = `name: Light Engine
+                    // السكربت الذكي الجديد: يصطاد أي مقطع فيديو مهما كانت صيغته، ويحمله ويعيد تسميته بانتظام لتجنب الأخطاء.
+                    wfContent = `name: Smart Engine
 on: workflow_dispatch
 concurrency: 
   group: engine-group
@@ -411,8 +280,8 @@ jobs:
       - uses: actions/checkout@v3
       - run: sudo apt-get update -qq && sudo apt-get install -yq curl jq
       - run: |
-          git config --global user.name "V13 Ghost"
-          git config --global user.email "v13@timeshift.local"
+          git config --global user.name "V14 Ghost"
+          git config --global user.email "v14@timeshift.local"
           rm -rf live_stream && mkdir -p live_stream
           
           DATA=\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream.json)
@@ -424,29 +293,35 @@ jobs:
               if [ "\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')" == "stopped" ]; then break; fi
               
               curl -s "\$SRC" > live_stream/index.m3u8
-              grep -oE '.*\\.ts' live_stream/index.m3u8 | while read -r ts_file; do
-                if [ ! -f "live_stream/\$ts_file" ]; then
-                  base_url=\$(echo "\$SRC" | sed 's|/[^/]*\$||')
-                  curl -s "\$base_url/\$ts_file" > "live_stream/\$ts_file"
+              
+              grep -v '^#' live_stream/index.m3u8 | awk 'NF' | while read -r seg_file; do
+                filename=\$(basename "\$seg_file" | sed 's/\\?.*//')
+                if [ ! -f "live_stream/\$filename" ]; then
+                  if [[ "\$seg_file" == http* ]]; then
+                    curl -s "\$seg_file" > "live_stream/\$filename"
+                  else
+                    base_url=\$(echo "\$SRC" | sed 's|/[^/]*\$||')
+                    curl -s "\$base_url/\$seg_file" > "live_stream/\$filename"
+                  fi
+                  sed -i "s|\$seg_file|\$filename|g" live_stream/index.m3u8
                 fi
               done
               
               sleep 4
             done
           ) &
-          PID=$!
+          PID=\$!
           
           while true; do
             sleep 5
             if [ "\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')" == "stopped" ]; then kill -9 \$PID 2>/dev/null; break; fi
             
-            ls -1t live_stream/*.ts 2>/dev/null | tail -n +15 | xargs -r rm -f
+            ls -1t live_stream/* 2>/dev/null | grep -v 'index.m3u8' | tail -n +15 | xargs -r rm -f
             
             rm -rf .git
             git init -b main
             git add live_stream/ .github/
             git commit -m "Live Sync Ghost Commit"
-            
             git config --local --unset-all http.https://github.com/.extraheader || true
             
             curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/workers.json | \\
@@ -456,22 +331,10 @@ jobs:
             wait
           done
 `;
-                } else {
-                    wfContent = `name: Mirror Standby
-on: workflow_dispatch
-jobs:
-  run:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "مرآة جاهزة تستقبل الملفات المدفوعة من القلب النابض عبر P2P."
-`;
-                }
-
+                } else { wfContent = `name: Mirror Standby\non: workflow_dispatch\njobs:\n  run:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo "مرآة جاهزة تستقبل الملفات من القلب النابض."\n`; }
                 const putRes = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, { method: "PUT", headers: { "Authorization": `token ${token}` }, body: JSON.stringify({ message: "init", content: btoa(unescape(encodeURIComponent(wfContent))) }) });
                 if (!putRes.ok) throw new Error("جيتهاب رفض حفظ السكربت.");
-
-                btn.innerText = "⏳ جاري الحفظ...";
-                await db.ref('workers/' + username + '_' + randomId).set({ token: token, status: 'standby', type: type, apiUsage: 0, repo: repoName, username: username });
+                btn.innerText = "⏳ جاري الحفظ..."; await db.ref('workers/' + username + '_' + randomId).set({ token: token, status: 'standby', type: type, apiUsage: 0, repo: repoName, username: username });
                 tokenEl.value = ''; alert(`✅ تم الزرع بنجاح!`);
             } catch (e) { alert("❌ فشل الزرع: " + e.message); } finally { btn.innerText = origText; btn.disabled = false; renderUI(); }
         }
