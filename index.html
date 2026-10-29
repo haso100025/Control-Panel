@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>قمرة القيادة V17 - Armored Engine</title>
+    <title>قمرة القيادة V17.5 - Armored Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -15,51 +15,122 @@
         body { font-family: 'Cairo', sans-serif; background-color: #05070a; background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, transparent 60%), repeating-linear-gradient(45deg, rgba(255,255,255,0.01) 0px, rgba(255,255,255,0.01) 2px, transparent 2px, transparent 4px); color: #f8fafc; }
         .digital-font { font-family: 'Orbitron', monospace; }
         .carbon-card { background: linear-gradient(145deg, #0a0d14, #05070a); border: 1px solid #1e293b; box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.8), inset 0 1px 0 0 rgba(255, 255, 255, 0.05); }
-        .gauge-ring { transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease; transform: rotate(135deg); transform-origin: 50% 50%; }
-        .gauge-bg { transform: rotate(135deg); transform-origin: 50% 50%; }
+        
+        /* تصميم العدادات الرياضية */
+        .gauge-container { position: relative; width: 140px; height: 90px; overflow: hidden; margin: 0 auto; }
+        .gauge-bg-arc { fill: none; stroke: #111827; stroke-width: 14; stroke-linecap: round; }
+        .gauge-value-arc { fill: none; stroke-width: 14; stroke-linecap: round; transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease; }
+        /* الإبرة */
+        .gauge-needle { width: 4px; height: 55px; background: #f8fafc; position: absolute; bottom: -5px; left: 50%; transform-origin: bottom center; transform: translateX(-50%) rotate(-90deg); transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 4px 4px 0 0; box-shadow: 0 0 5px rgba(0,0,0,0.5); z-index: 10; }
+        .gauge-needle::after { content: ''; width: 12px; height: 12px; background: #334155; border-radius: 50%; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); border: 2px solid #f8fafc; }
+        
         .neon-text { text-shadow: 0 0 10px rgba(6, 182, 212, 0.5); }
     </style>
 </head>
 <body class="p-3 md:p-6 pb-20">
 
-    <div class="max-w-6xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto space-y-6">
         <div class="carbon-card rounded-2xl p-4 flex flex-wrap justify-between items-center gap-4 border-b-2 border-emerald-500/50 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50"></div>
             <div class="flex items-center gap-3 z-10">
                 <div id="statusDot" class="w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)] animate-pulse"></div>
                 <div>
-                    <h1 class="text-xl md:text-3xl font-black tracking-wider text-white">TIMESHIFT <span class="text-emerald-400 digital-font neon-text">V17-ARMORED</span></h1>
+                    <h1 class="text-xl md:text-3xl font-black tracking-wider text-white">TIMESHIFT <span class="text-emerald-400 digital-font neon-text">V17.5-ARMORED</span></h1>
                     <p id="systemStatusText" class="text-xs text-gray-400 font-bold mt-1">المحرك متوقف - النظام في وضع الخمول</p>
                 </div>
             </div>
-            <div class="flex items-center gap-4 bg-black/60 px-5 py-2.5 rounded-xl border border-gray-800 z-10 shadow-inner">
-                <div class="text-center"><span class="text-[10px] text-gray-500 block font-bold mb-1">P2P Peers</span><span id="p2pPeersCount" class="digital-font text-lg font-bold text-emerald-400">0</span></div>
+            <div class="flex flex-wrap items-center gap-4 bg-black/60 px-5 py-2.5 rounded-xl border border-gray-800 z-10 shadow-inner">
+                <div class="text-center"><span class="text-[10px] text-gray-500 block font-bold mb-1">وقت التشغيل</span><span id="uptimeCounter" class="digital-font text-lg font-bold text-amber-400">00:00:00</span></div>
                 <div class="h-8 w-[1px] bg-gray-700"></div>
-                <div class="text-center"><span class="text-[10px] text-gray-500 block font-bold mb-1">القلب النشط</span><span id="activeCmdBadge" class="digital-font text-xs font-bold px-2 py-0.5 rounded bg-gray-900 text-gray-300 border border-gray-700">لا يوجد</span></div>
+                <div class="text-center"><span class="text-[10px] text-gray-500 block font-bold mb-1">P2P Peers</span><span id="p2pPeersCount" class="digital-font text-lg font-bold text-emerald-400">0</span></div>
+                <div class="h-8 w-[1px] bg-gray-700 hidden sm:block"></div>
+                <div class="text-center hidden sm:block"><span class="text-[10px] text-gray-500 block font-bold mb-1">القلب النشط</span><span id="activeCmdBadge" class="digital-font text-xs font-bold px-2 py-0.5 rounded bg-gray-900 text-gray-300 border border-gray-700">لا يوجد</span></div>
             </div>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="carbon-card rounded-2xl p-4 flex flex-col items-center justify-center relative group">
-                <svg class="w-32 h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#111827" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeCmd" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#ef4444" stroke-width="12" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
-                <div class="absolute inset-0 flex flex-col items-center justify-center mt-2"><span id="valCmd" class="digital-font text-3xl font-black text-white">0%</span><span class="text-[9px] text-red-400 font-bold uppercase tracking-widest mt-1">API Load</span></div>
-                <span class="text-xs text-gray-400 mt-2 font-bold">ضغط القلب النابض</span>
+        <!-- 8 عدادات رياضية احترافية -->
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+            
+            <!-- 1. ضغط الـ API -->
+            <div class="carbon-card rounded-xl p-3 flex flex-col items-center relative group">
+                <div class="gauge-container">
+                    <svg viewBox="0 0 120 70"><path class="gauge-bg-arc" d="M 15 60 A 45 45 0 0 1 105 60" /><path id="arcApi" class="gauge-value-arc" d="M 15 60 A 45 45 0 0 1 105 60" stroke-dasharray="141" stroke-dashoffset="141" stroke="#3b82f6" /></svg>
+                    <div id="needleApi" class="gauge-needle"></div>
+                </div>
+                <div class="absolute bottom-10 flex flex-col items-center"><span id="valApi" class="digital-font text-xl font-black text-white">0%</span></div>
+                <span class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">ضغط API</span>
             </div>
-            <div class="carbon-card rounded-2xl p-4 flex flex-col items-center justify-center relative">
-                <svg class="w-32 h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#111827" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeMirrors" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#06b6d4" stroke-width="12" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
-                <div class="absolute inset-0 flex flex-col items-center justify-center mt-2"><span id="valMirrors" class="digital-font text-3xl font-black text-white">0/0</span><span class="text-[9px] text-cyan-400 font-bold uppercase tracking-widest mt-1">Mirrors</span></div>
-                <span class="text-xs text-gray-400 mt-2 font-bold">مرايا التوزيع</span>
+
+            <!-- 2. المرايا -->
+            <div class="carbon-card rounded-xl p-3 flex flex-col items-center relative group">
+                <div class="gauge-container">
+                    <svg viewBox="0 0 120 70"><path class="gauge-bg-arc" d="M 15 60 A 45 45 0 0 1 105 60" /><path id="arcMirrors" class="gauge-value-arc" d="M 15 60 A 45 45 0 0 1 105 60" stroke-dasharray="141" stroke-dashoffset="141" stroke="#06b6d4" /></svg>
+                    <div id="needleMirrors" class="gauge-needle"></div>
+                </div>
+                <div class="absolute bottom-10 flex flex-col items-center"><span id="valMirrors" class="digital-font text-xl font-black text-white">0/0</span></div>
+                <span class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">المرايا النشطة</span>
             </div>
-            <div class="carbon-card rounded-2xl p-4 flex flex-col items-center justify-center relative">
-                <svg class="w-32 h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#111827" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeSpeed" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#10b981" stroke-width="12" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
-                <div class="absolute inset-0 flex flex-col items-center justify-center mt-2"><span id="valSpeed" class="digital-font text-3xl font-black text-white">0.0</span><span class="text-[9px] text-emerald-400 font-bold uppercase tracking-widest mt-1">Mbps</span></div>
-                <span class="text-xs text-gray-400 mt-2 font-bold">سرعة السحب</span>
+
+            <!-- 3. سرعة السحب -->
+            <div class="carbon-card rounded-xl p-3 flex flex-col items-center relative group">
+                <div class="gauge-container">
+                    <svg viewBox="0 0 120 70"><path class="gauge-bg-arc" d="M 15 60 A 45 45 0 0 1 105 60" /><path id="arcSpeed" class="gauge-value-arc" d="M 15 60 A 45 45 0 0 1 105 60" stroke-dasharray="141" stroke-dashoffset="141" stroke="#10b981" /></svg>
+                    <div id="needleSpeed" class="gauge-needle"></div>
+                </div>
+                <div class="absolute bottom-10 flex flex-col items-center"><span id="valSpeed" class="digital-font text-xl font-black text-white">0.0</span></div>
+                <span class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">سرعة Mbps</span>
             </div>
-            <div class="carbon-card rounded-2xl p-4 flex flex-col items-center justify-center relative">
-                <svg class="w-32 h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#111827" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeHealth" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#f59e0b" stroke-width="12" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
-                <div class="absolute inset-0 flex flex-col items-center justify-center mt-2"><span id="valHealth" class="digital-font text-3xl font-black text-white">0.0s</span><span class="text-[9px] text-amber-400 font-bold uppercase tracking-widest mt-1">Buffer</span></div>
-                <span class="text-xs text-gray-400 mt-2 font-bold">مخزون الأمان</span>
+
+            <!-- 4. البفر -->
+            <div class="carbon-card rounded-xl p-3 flex flex-col items-center relative group">
+                <div class="gauge-container">
+                    <svg viewBox="0 0 120 70"><path class="gauge-bg-arc" d="M 15 60 A 45 45 0 0 1 105 60" /><path id="arcBuffer" class="gauge-value-arc" d="M 15 60 A 45 45 0 0 1 105 60" stroke-dasharray="141" stroke-dashoffset="141" stroke="#8b5cf6" /></svg>
+                    <div id="needleBuffer" class="gauge-needle"></div>
+                </div>
+                <div class="absolute bottom-10 flex flex-col items-center"><span id="valBuffer" class="digital-font text-xl font-black text-white">0.0s</span></div>
+                <span class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">مخزون الأمان</span>
             </div>
+
+            <!-- 5. توفير P2P -->
+            <div class="carbon-card rounded-xl p-3 flex flex-col items-center relative group">
+                <div class="gauge-container">
+                    <svg viewBox="0 0 120 70"><path class="gauge-bg-arc" d="M 15 60 A 45 45 0 0 1 105 60" /><path id="arcP2p" class="gauge-value-arc" d="M 15 60 A 45 45 0 0 1 105 60" stroke-dasharray="141" stroke-dashoffset="141" stroke="#14b8a6" /></svg>
+                    <div id="needleP2p" class="gauge-needle"></div>
+                </div>
+                <div class="absolute bottom-10 flex flex-col items-center"><span id="valP2p" class="digital-font text-xl font-black text-white">0%</span></div>
+                <span class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">توفير P2P</span>
+            </div>
+
+            <!-- 6. Latency الاستجابة -->
+            <div class="carbon-card rounded-xl p-3 flex flex-col items-center relative group">
+                <div class="gauge-container">
+                    <svg viewBox="0 0 120 70"><path class="gauge-bg-arc" d="M 15 60 A 45 45 0 0 1 105 60" /><path id="arcLat" class="gauge-value-arc" d="M 15 60 A 45 45 0 0 1 105 60" stroke-dasharray="141" stroke-dashoffset="141" stroke="#eab308" /></svg>
+                    <div id="needleLat" class="gauge-needle"></div>
+                </div>
+                <div class="absolute bottom-10 flex flex-col items-center"><span id="valLat" class="digital-font text-xl font-black text-white">0ms</span></div>
+                <span class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">تأخير الخادم</span>
+            </div>
+
+            <!-- 7. حرارة المحرك (وقت السيرفر) -->
+            <div class="carbon-card rounded-xl p-3 flex flex-col items-center relative group">
+                <div class="gauge-container">
+                    <svg viewBox="0 0 120 70"><path class="gauge-bg-arc" d="M 15 60 A 45 45 0 0 1 105 60" /><path id="arcTemp" class="gauge-value-arc" d="M 15 60 A 45 45 0 0 1 105 60" stroke-dasharray="141" stroke-dashoffset="141" stroke="#f97316" /></svg>
+                    <div id="needleTemp" class="gauge-needle"></div>
+                </div>
+                <div class="absolute bottom-10 flex flex-col items-center"><span id="valTemp" class="digital-font text-xl font-black text-white">0h</span></div>
+                <span class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">حرارة Git</span>
+            </div>
+
+            <!-- 8. استقرار البث -->
+            <div class="carbon-card rounded-xl p-3 flex flex-col items-center relative group">
+                <div class="gauge-container">
+                    <svg viewBox="0 0 120 70"><path class="gauge-bg-arc" d="M 15 60 A 45 45 0 0 1 105 60" /><path id="arcHealth" class="gauge-value-arc" d="M 15 60 A 45 45 0 0 1 105 60" stroke-dasharray="141" stroke-dashoffset="141" stroke="#22c55e" /></svg>
+                    <div id="needleHealth" class="gauge-needle"></div>
+                </div>
+                <div class="absolute bottom-10 flex flex-col items-center"><span id="valHealth2" class="digital-font text-xl font-black text-white">100%</span></div>
+                <span class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">استقرار المصدر</span>
+            </div>
+
         </div>
 
         <div class="carbon-card rounded-2xl p-5 md:p-7">
@@ -76,6 +147,8 @@
 
             <div class="w-full bg-black rounded-xl overflow-hidden border border-gray-800 relative shadow-inner">
                 <div class="absolute top-3 right-3 flex items-center gap-2 bg-black/90 px-3 py-1.5 rounded-lg border border-gray-700 z-10"><span id="playerRadarDot" class="w-2.5 h-2.5 rounded-full bg-gray-500"></span><span id="playerRadarText" class="text-xs text-gray-300 font-bold">الرادار: متوقف</span></div>
+                <!-- مساحة مخصصة للوجو إذا أردت إضافته مستقبلاً كـ Overlay -->
+                <!-- <img src="logo.png" style="position: absolute; top: 15px; left: 15px; width: 60px; z-index: 50; opacity: 0.8; pointer-events: none;"> -->
                 <video id="previewPlayer" controls muted playsinline class="w-full h-64 md:h-96 bg-black object-contain"></video>
             </div>
         </div>
@@ -117,22 +190,22 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCNLovuI6IOGsl2BrIgN9CImS4FgfY9xuY",
-            authDomain: "floating-project-afc8f.firebaseapp.com",
-            databaseURL: "https://floating-project-afc8f-default-rtdb.firebaseio.com",
-            projectId: "floating-project-afc8f"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        const firebaseConfig = { apiKey: "AIzaSyCNLovuI6IOGsl2BrIgN9CImS4FgfY9xuY", authDomain: "floating-project-afc8f.firebaseapp.com", databaseURL: "https://floating-project-afc8f-default-rtdb.firebaseio.com", projectId: "floating-project-afc8f" };
+        firebase.initializeApp(firebaseConfig); const db = firebase.database();
 
-        let workersMemory = {}; let streamStartTime = null; let currentStreamStatus = "stopped"; let lastFragTime = 0;
-        let activeCommanderId = null; let isActionBusy = false;
+        let workersMemory = {}; let streamStartTime = null; let currentStreamStatus = "stopped"; let lastFragTime = 0; let activeCommanderId = null; let isActionBusy = false;
+        let lastDroppedFrames = 0;
 
-        function setGaugeValue(gaugeId, percent, colorHex) {
-            const circle = document.getElementById(gaugeId); if (!circle) return;
-            const offset = 226 - (Math.max(0, Math.min(100, percent)) / 100) * 226;
-            circle.style.strokeDashoffset = offset; if (colorHex) circle.style.stroke = colorHex;
+        // دالة تحريك عدادات السيارات الرياضية
+        function setDashboardGauge(idPrefix, percent, colorHex) {
+            const arc = document.getElementById(`arc${idPrefix}`); const needle = document.getElementById(`needle${idPrefix}`);
+            if (!arc || !needle) return;
+            const clamped = Math.max(0, Math.min(100, percent));
+            const offset = 141 - (clamped / 100) * 141; // 141 هو طول القوس التقريبي لنصف الدائرة
+            arc.style.strokeDashoffset = offset; if (colorHex) arc.style.stroke = colorHex;
+            // تحريك الإبرة من -90 درجة (صفر) إلى +90 درجة (100%)
+            const degrees = -90 + (clamped / 100) * 180;
+            needle.style.transform = `translateX(-50%) rotate(${degrees}deg)`;
         }
 
         db.ref('settings/stream').on('value', (snapshot) => {
@@ -143,7 +216,9 @@
                 if (currentStreamStatus === "running") {
                     dot.className = "w-5 h-5 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-pulse"; statusTxt.innerText = "المحرك يعمل - البث متصل"; statusTxt.className = "text-xs text-emerald-400 font-bold mt-1"; streamStartTime = data.startedAt || Date.now();
                 } else {
-                    dot.className = "w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)]"; statusTxt.innerText = "المحرك متوقف"; statusTxt.className = "text-xs text-gray-400 font-bold mt-1"; streamStartTime = null; setGaugeValue("gaugeSpeed", 0); document.getElementById("valSpeed").innerText = "0.0"; setGaugeValue("gaugeHealth", 0); document.getElementById("valHealth").innerText = "0.0s";
+                    dot.className = "w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)]"; statusTxt.innerText = "المحرك متوقف"; statusTxt.className = "text-xs text-gray-400 font-bold mt-1"; streamStartTime = null; 
+                    setDashboardGauge("Speed", 0); document.getElementById("valSpeed").innerText = "0.0"; 
+                    setDashboardGauge("Buffer", 0); document.getElementById("valBuffer").innerText = "0.0s";
                 }
             } refreshTelemetry();
         });
@@ -151,15 +226,47 @@
         db.ref('settings/domain').on('value', (snap) => { document.getElementById("cfDomain").value = snap.val() || ""; });
 
         setInterval(() => {
-            if (window.p2pEngine) { const peers = window.p2pEngine.getSettings().swarmId ? Object.keys(window.p2pEngine.on('peerConnect', ()=>{})).length || Math.floor(Math.random() * 5) : 0; }
+            // حساب وقت التشغيل (Uptime / حرارة المحرك)
+            const uptimeEl = document.getElementById("uptimeCounter");
+            if (currentStreamStatus === "running" && streamStartTime) {
+                const diff = Math.max(0, Math.floor((Date.now() - streamStartTime) / 1000));
+                const hrs = String(Math.floor(diff / 3600)).padStart(2, '0'); const mins = String(Math.floor((diff % 3600) / 60)).padStart(2, '0'); const secs = String(diff % 60).padStart(2, '0');
+                uptimeEl.innerText = `${hrs}:${mins}:${secs}`;
+                
+                // عداد حرارة المحرك (يصل للماكس عند 5.5 ساعات لأن حد كيتهاب 6 ساعات)
+                const tempPercent = Math.min(100, (diff / (5.5 * 3600)) * 100);
+                setDashboardGauge("Temp", tempPercent, tempPercent > 85 ? "#ef4444" : (tempPercent > 60 ? "#f59e0b" : "#f97316"));
+                document.getElementById("valTemp").innerText = (diff / 3600).toFixed(1) + "h";
+            } else { uptimeEl.innerText = "00:00:00"; setDashboardGauge("Temp", 0); document.getElementById("valTemp").innerText = "0h"; }
+
+            // عدادات P2P والمشغل
+            if (window.p2pEngine) { 
+                const peers = window.p2pEngine.getSettings().swarmId ? Object.keys(window.p2pEngine.on('peerConnect', ()=>{})).length : 0; 
+                // حساب التوفير التقريبي (كل نظير يوفر حوالي 5-10% في الشبكات الصغيرة)
+                let saved = Math.min(95, peers * 8 + Math.floor(Math.random()*5)); 
+                if(peers === 0) saved = 0;
+                setDashboardGauge("P2p", saved, saved > 50 ? "#10b981" : "#14b8a6");
+                document.getElementById("valP2p").innerText = saved + "%";
+            }
+            
             const video = document.getElementById('previewPlayer'); const radarDot = document.getElementById('playerRadarDot'); const radarTxt = document.getElementById('playerRadarText');
             if (video && !video.paused && video.readyState >= 2) {
-                let bufferLen = 0;
-                for (let i = 0; i < video.buffered.length; i++) { if (video.currentTime >= video.buffered.start(i) && video.currentTime <= video.buffered.end(i)) { bufferLen = video.buffered.end(i) - video.currentTime; break; } }
-                document.getElementById("valHealth").innerText = bufferLen.toFixed(1) + "s"; setGaugeValue("gaugeHealth", Math.min(100, (bufferLen / 15) * 100), bufferLen > 3 ? "#10b981" : "#f59e0b");
+                // البفر
+                let bufferLen = 0; for (let i = 0; i < video.buffered.length; i++) { if (video.currentTime >= video.buffered.start(i) && video.currentTime <= video.buffered.end(i)) { bufferLen = video.buffered.end(i) - video.currentTime; break; } }
+                document.getElementById("valBuffer").innerText = bufferLen.toFixed(1) + "s"; setDashboardGauge("Buffer", Math.min(100, (bufferLen / 15) * 100), bufferLen > 5 ? "#8b5cf6" : "#f59e0b");
                 radarDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"; radarTxt.innerText = "الرادار: متصل (P2P فعال)"; radarTxt.className = "text-xs text-emerald-400 font-bold";
+                
+                // استقرار المصدر (Dropped Frames)
+                if(video.getVideoPlaybackQuality) {
+                    const quality = video.getVideoPlaybackQuality();
+                    const drops = quality.droppedVideoFrames;
+                    const diffDrops = drops - lastDroppedFrames; lastDroppedFrames = drops;
+                    let health = 100 - (diffDrops * 2); health = Math.max(0, Math.min(100, health));
+                    setDashboardGauge("Health", health, health > 90 ? "#22c55e" : (health > 70 ? "#eab308" : "#ef4444"));
+                    document.getElementById("valHealth2").innerText = health + "%";
+                }
             } else { 
-                document.getElementById("valHealth").innerText = "0.0s"; setGaugeValue("gaugeHealth", 0, "#f59e0b"); radarDot.className = "w-2.5 h-2.5 rounded-full bg-gray-500"; radarTxt.innerText = "الرادار: خامل"; radarTxt.className = "text-xs text-gray-400 font-bold";
+                document.getElementById("valBuffer").innerText = "0.0s"; setDashboardGauge("Buffer", 0, "#f59e0b"); radarDot.className = "w-2.5 h-2.5 rounded-full bg-gray-500"; radarTxt.innerText = "الرادار: خامل"; radarTxt.className = "text-xs text-gray-400 font-bold";
             }
         }, 1000);
 
@@ -167,6 +274,14 @@
 
         function playVideo(url) {
             const video = document.getElementById('previewPlayer'); if (!url) return;
+            // حساب الاستجابة عند الطلب (Ping)
+            const reqStart = Date.now();
+            fetch(url, {method: 'HEAD'}).then(()=>{
+                const ping = Date.now() - reqStart;
+                setDashboardGauge("Lat", Math.min(100, (ping/1000)*100), ping > 500 ? "#ef4444" : "#eab308");
+                document.getElementById("valLat").innerText = ping + "ms";
+            }).catch(()=>{});
+
             if (Hls.isSupported() && p2pml.hlsjs.Engine.isSupported()) {
                 if (window.hlsInstance) window.hlsInstance.destroy(); if (window.p2pEngine) window.p2pEngine.destroy();
                 window.p2pEngine = new p2pml.hlsjs.Engine({ segments: { swarmId: 'timeshift-live-swarm-v17', forwardSegmentCount: 20 } });
@@ -174,7 +289,7 @@
                 const hls = new Hls({ liveSyncDurationCount: 3, liveMaxLatencyDurationCount: 5, maxBufferLength: 30, loader: window.p2pEngine.createLoaderClass() });
                 p2pml.hlsjs.initHlsJsPlayer(hls); window.hlsInstance = hls; hls.loadSource(url); hls.attachMedia(video);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
-                hls.on(Hls.Events.FRAG_LOADED, (event, data) => { lastFragTime = Date.now(); const stats = data.frag.stats; const durationMs = stats.loading.end - stats.loading.start; const bytes = stats.total || stats.loaded || 0; if (durationMs > 0 && bytes > 0) { const mbps = ((bytes * 8) / (durationMs / 1000)) / 1000000; const cleanMbps = Math.min(30, Math.max(0.1, mbps)); document.getElementById("valSpeed").innerText = cleanMbps.toFixed(1); setGaugeValue("gaugeSpeed", Math.min(100, (cleanMbps / 10) * 100), "#10b981"); } });
+                hls.on(Hls.Events.FRAG_LOADED, (event, data) => { lastFragTime = Date.now(); const stats = data.frag.stats; const durationMs = stats.loading.end - stats.loading.start; const bytes = stats.total || stats.loaded || 0; if (durationMs > 0 && bytes > 0) { const mbps = ((bytes * 8) / (durationMs / 1000)) / 1000000; const cleanMbps = Math.min(30, Math.max(0.1, mbps)); document.getElementById("valSpeed").innerText = cleanMbps.toFixed(1); setDashboardGauge("Speed", Math.min(100, (cleanMbps / 10) * 100), "#10b981"); } });
                 hls.on(Hls.Events.ERROR, (e, data) => { if (data.fatal && currentStreamStatus === "running") setTimeout(() => hls.startLoad(), 2000); });
             }
         }
@@ -208,7 +323,10 @@
         async function refreshTelemetry() {
             if (isActionBusy) return;
             const keys = Object.keys(workersMemory || {});
-            if (keys.length === 0) { document.getElementById("valMirrors").innerText = "0/0"; setGaugeValue("gaugeMirrors", 0, "#475569"); document.getElementById("valCmd").innerText = "0%"; setGaugeValue("gaugeCmd", 0, "#3b82f6"); document.getElementById("activeCmdBadge").innerText = "لا يوجد"; return; }
+            if (keys.length === 0) { 
+                setDashboardGauge("Mirrors", 0); document.getElementById("valMirrors").innerText = "0/0"; 
+                setDashboardGauge("Cmd", 0); document.getElementById("valCmd").innerText = "0%"; document.getElementById("activeCmdBadge").innerText = "لا يوجد"; return; 
+            }
             let activeMirrors = 0; let totalMirrors = 0; let availableCommanders = []; let isCurrentCommanderPushing = false; let currentCmdApiUsage = 0;
             for (const key of keys) {
                 const w = workersMemory[key]; if (!w) continue;
@@ -221,7 +339,9 @@
                     if (w.status === 'active') { activeCommanderId = key; try { const runsRes = await fetch(`https://api.github.com/repos/${w.username}/${w.repo}/actions/runs?status=in_progress`, { headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" } }); if (runsRes.ok) { const runsData = await runsRes.json(); isCurrentCommanderPushing = (runsData.total_count > 0); w.isWorking = isCurrentCommanderPushing; } const rateRes = await fetch(`https://api.github.com/rate_limit`, { headers: { "Authorization": `token ${w.token}`, "Accept": "application/vnd.github.v3+json" } }); if (rateRes.ok) { const rateData = await rateRes.json(); const limit = rateData.rate.limit || 5000; const remaining = rateData.rate.remaining || 0; currentCmdApiUsage = Math.round(((limit - remaining) / limit) * 100); db.ref(`workers/${key}/apiUsage`).set(currentCmdApiUsage); } } catch (e) {} }
                 }
             }
-            document.getElementById("valMirrors").innerText = `${activeMirrors}/${totalMirrors}`; setGaugeValue("gaugeMirrors", totalMirrors > 0 ? (activeMirrors / totalMirrors) * 100 : 0, activeMirrors > 0 ? "#06b6d4" : "#475569"); document.getElementById("valCmd").innerText = `${currentCmdApiUsage}%`; setGaugeValue("gaugeCmd", currentCmdApiUsage, currentCmdApiUsage > 90 ? "#ef4444" : (currentCmdApiUsage > 70 ? "#f59e0b" : "#3b82f6")); document.getElementById("activeCmdBadge").innerText = activeCommanderId ? workersMemory[activeCommanderId].username : "متوقف";
+            document.getElementById("valMirrors").innerText = `${activeMirrors}/${totalMirrors}`; setDashboardGauge("Mirrors", totalMirrors > 0 ? (activeMirrors / totalMirrors) * 100 : 0, activeMirrors > 0 ? "#06b6d4" : "#475569"); 
+            document.getElementById("valCmd").innerText = `${currentCmdApiUsage}%`; setDashboardGauge("Cmd", currentCmdApiUsage, currentCmdApiUsage > 90 ? "#ef4444" : (currentCmdApiUsage > 70 ? "#f59e0b" : "#3b82f6")); 
+            document.getElementById("activeCmdBadge").innerText = activeCommanderId ? workersMemory[activeCommanderId].username : "متوقف";
             
             if (currentStreamStatus === "running" && !isActionBusy) {
                 if (!activeCommanderId || currentCmdApiUsage > 98) {
@@ -265,6 +385,7 @@
                 
                 let wfContent = "";
                 if (type === 'commander') {
+                    // تم إضافة الدرع الواقي للتعامل مع سيرفرات IPTV الرديئة بدون توقف
                     wfContent = `name: Armored Engine
 on: workflow_dispatch
 concurrency: 
