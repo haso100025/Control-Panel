@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>قمرة القيادة V15 - Ultimate P2P Engine</title>
+    <title>قمرة القيادة V16 - Perfect Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -28,7 +28,7 @@
             <div class="flex items-center gap-3 z-10">
                 <div id="statusDot" class="w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)] animate-pulse"></div>
                 <div>
-                    <h1 class="text-xl md:text-3xl font-black tracking-wider text-white">TIMESHIFT <span class="text-emerald-400 digital-font neon-text">V15-ULTIMATE</span></h1>
+                    <h1 class="text-xl md:text-3xl font-black tracking-wider text-white">TIMESHIFT <span class="text-emerald-400 digital-font neon-text">V16-PERFECT</span></h1>
                     <p id="systemStatusText" class="text-xs text-gray-400 font-bold mt-1">المحرك متوقف - النظام في وضع الخمول</p>
                 </div>
             </div>
@@ -66,7 +66,7 @@
             <h2 class="text-lg font-black mb-5 text-white flex items-center gap-2 border-b border-gray-800 pb-3"><span>🔑</span> 1. وحدة الإشعال (Ignition Control)</h2>
             <div class="space-y-4 mb-6">
                 <div><label class="text-xs font-bold text-gray-400 block mb-1">الرابط الأصلي (الاكستريم الرسمي / اللوكال):</label><input type="text" id="sourceLink" class="w-full p-4 rounded-xl bg-black/80 border border-gray-700 text-emerald-400 focus:outline-none focus:border-cyan-500 font-mono text-sm text-left shadow-inner" dir="ltr"></div>
-                <div><label class="text-[11px] font-bold text-gray-500">User-Agent (اختياري):</label><input type="text" id="userAgent" placeholder="VLC/3.0.18 LibVLC/3.0.18" class="w-full p-3 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr"></div>
+                <div><label class="text-[11px] font-bold text-gray-500">User-Agent (مهم جداً لسيرفر اللوكال):</label><input type="text" id="userAgent" placeholder="VLC/3.0.18 LibVLC/3.0.18" class="w-full p-3 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr"></div>
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -169,7 +169,7 @@
             const video = document.getElementById('previewPlayer'); if (!url) return;
             if (Hls.isSupported() && p2pml.hlsjs.Engine.isSupported()) {
                 if (window.hlsInstance) window.hlsInstance.destroy(); if (window.p2pEngine) window.p2pEngine.destroy();
-                window.p2pEngine = new p2pml.hlsjs.Engine({ segments: { swarmId: 'timeshift-live-swarm-v15', forwardSegmentCount: 20 } });
+                window.p2pEngine = new p2pml.hlsjs.Engine({ segments: { swarmId: 'timeshift-live-swarm-v16', forwardSegmentCount: 20 } });
                 window.p2pEngine.on('peerConnect', peer => { let count = parseInt(document.getElementById('p2pPeersCount').innerText) || 0; document.getElementById('p2pPeersCount').innerText = count + 1; });
                 const hls = new Hls({ liveSyncDurationCount: 3, liveMaxLatencyDurationCount: 5, maxBufferLength: 30, loader: window.p2pEngine.createLoaderClass() });
                 p2pml.hlsjs.initHlsJsPlayer(hls); window.hlsInstance = hls; hls.loadSource(url); hls.attachMedia(video);
@@ -265,7 +265,7 @@
                 
                 let wfContent = "";
                 if (type === 'commander') {
-                    wfContent = `name: Ultimate Engine
+                    wfContent = `name: Perfect Engine
 on: workflow_dispatch
 concurrency: 
   group: engine-group
@@ -278,47 +278,61 @@ jobs:
       - uses: actions/checkout@v3
       - run: sudo apt-get update -qq && sudo apt-get install -yq ffmpeg jq
       - run: |
-          git config --global user.name "V15 Ghost"
-          git config --global user.email "v15@timeshift.local"
+          git config --global user.name "V16 Ghost"
+          git config --global user.email "v16@timeshift.local"
           rm -rf live_stream && mkdir -p live_stream
           
           DATA=\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream.json)
           if [ "\$(echo "\$DATA" | jq -r '.status')" != "running" ]; then exit 0; fi
           SRC=\$(echo "\$DATA" | jq -r '.source')
+          UA=\$(echo "\$DATA" | jq -r '.userAgent')
+          
+          # تأمين User-Agent لمنع سيرفرات اللوكال من رفض الاتصال
+          if [ -z "\$UA" ] || [ "\$UA" == "null" ]; then UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"; fi
           
           (
             while true; do
               if [ "\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')" == "stopped" ]; then break; fi
               
-              ffmpeg -hide_banner -loglevel error \\
+              # تم إضافة loglevel warning لسحب الأخطاء، وإضافة User-Agent
+              ffmpeg -hide_banner -loglevel warning -user_agent "\$UA" \\
                 -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 5 \\
-                -i "\$SRC" -map 0:v:0? -map 0:a? -c copy -f hls \\
-                -hls_time 5 -hls_list_size 6 -hls_flags delete_segments+append_list+omit_endlist \\
+                -i "\$SRC" -c copy -f hls \\
+                -hls_time 4 -hls_list_size 6 -hls_flags delete_segments+append_list+omit_endlist \\
                 -hls_segment_filename "live_stream/seg_%04d.ts" live_stream/index.m3u8
               
               sleep 3
             done
           ) &
-          PID=\$!
+          FFMPEG_PID=\$!
           
           while true; do
-            sleep 8
-            if [ "\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')" == "stopped" ]; then kill -9 \$PID 2>/dev/null; break; fi
+            sleep 6
+            if [ "\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')" == "stopped" ]; then kill -9 \$FFMPEG_PID 2>/dev/null; break; fi
             
-            rm -rf .git
-            git init -b main
-            git add live_stream/ .github/
-            git commit -m "Live Sync"
-            git config --local --unset-all http.https://github.com/.extraheader || true
-            
-            curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/workers.json | \\
-            jq -r 'to_entries[] | select(.value.status=="active") | "https://" + .value.token + "@github.com/" + .value.username + "/" + .value.repo + ".git"' > all_nodes.txt
-            
-            while read -r URL; do if [ -n "\$URL" ]; then git push --force "\$URL" main & fi; done < all_nodes.txt
-            wait
+            # خط الحماية: الرفع فقط إذا تم إنشاء ملفات حقيقية
+            if ls live_stream/*.ts 1> /dev/null 2>&1; then
+              rm -rf .git
+              git init -b main
+              git add live_stream/ .github/
+              git commit -m "Live Sync"
+              git config --local --unset-all http.https://github.com/.extraheader || true
+              
+              curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/workers.json | \\
+              jq -r 'to_entries[] | select(.value.status=="active") | "https://" + .value.token + "@github.com/" + .value.username + "/" + .value.repo + ".git"' > all_nodes.txt
+              
+              PIDS=""
+              while read -r URL; do 
+                if [ -n "\$URL" ]; then 
+                  git push --force "\$URL" main & 
+                  PIDS="\$PIDS \$!"
+                fi
+              done < all_nodes.txt
+              wait \$PIDS 2>/dev/null
+            fi
           done
 `;
-                } else { wfContent = `name: Mirror Standby\non: workflow_dispatch\njobs:\n  run:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo "مرآة جاهزة تستقبل الملفات من القلب النابض."\n`; }
+                } else { wfContent = `name: Mirror Standby\non: workflow_dispatch\njobs:\n  run:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo "مرآة جاهزة."\n`; }
                 const putRes = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, { method: "PUT", headers: { "Authorization": `token ${token}` }, body: JSON.stringify({ message: "init", content: btoa(unescape(encodeURIComponent(wfContent))) }) });
                 if (!putRes.ok) throw new Error("جيتهاب رفض حفظ السكربت.");
                 btn.innerText = "⏳ جاري الحفظ..."; await db.ref('workers/' + username + '_' + randomId).set({ token: token, status: 'standby', type: type, apiUsage: 0, repo: repoName, username: username });
