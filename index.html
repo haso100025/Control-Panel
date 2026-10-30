@@ -79,12 +79,17 @@
 
         <div class="carbon-card rounded-2xl p-5 md:p-7">
             <h2 class="text-base md:text-lg font-bold mb-4 text-amber-400 flex items-center gap-2 border-b border-gray-800 pb-2"><span>🌐</span> 2. دومين البث (Gcore / Cloudflare)</h2>
-            <div class="flex flex-col sm:flex-row gap-2.5">
+            <div class="flex flex-col sm:flex-row gap-2.5 mb-4">
                 <input type="text" id="cfDomain" placeholder="https://timeshift-app.site" class="flex-1 p-3 rounded-xl bg-black/70 border border-gray-700 text-amber-300 font-mono text-xs md:text-sm text-left" dir="ltr">
                 <button onclick="updateDomain()" class="bg-amber-600 hover:bg-amber-500 text-black font-black py-3 px-6 rounded-xl transition text-xs md:text-sm">حفظ الرابط</button>
                 <button onclick="testCloudflareStream()" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-xl transition text-xs md:text-sm">اختبار البث الفوري</button>
             </div>
-            <p class="text-[10px] text-gray-400 mt-2">سيتم دمج الدومين المحفوظ هنا مع مسار المخزن الآمن لتوليد الرابط النهائي للمشغل.</p>
+            
+            <div class="bg-black/40 border border-gray-700 p-3 rounded-xl">
+                <label class="text-[10px] text-gray-400 font-bold block mb-1">الرابط النهائي لتطبيق الأندرويد (تلقائي):</label>
+                <input type="text" id="finalAppUrl" readonly class="w-full bg-transparent text-emerald-400 font-mono text-xs md:text-sm focus:outline-none" dir="ltr" onclick="this.select(); document.execCommand('copy'); alert('تم النسخ!');" placeholder="سيظهر الرابط هنا بعد الحفظ وبدء البث...">
+                <p class="text-[9px] text-gray-500 mt-1">اضغط على الرابط أعلاه لنسخه مباشرة.</p>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
@@ -162,6 +167,7 @@
         db.ref('settings/domain').on('value', (snap) => { 
             savedDomain = snap.val() || "";
             document.getElementById("cfDomain").value = savedDomain; 
+            updateFinalAppUrl();
         });
 
         setInterval(() => {
@@ -183,8 +189,8 @@
             if (Hls.isSupported()) {
                 if (window.hlsInstance) window.hlsInstance.destroy();
                 const hls = new Hls({ 
-                    liveSyncDurationCount: 2, 
-                    liveMaxLatencyDurationCount: 4, 
+                    liveSyncDurationCount: 6, 
+                    liveMaxLatencyDurationCount: 10, 
                     enableWorker: true,
                     fragLoadingTimeOut: 10000,
                     manifestLoadingTimeOut: 10000
@@ -196,23 +202,40 @@
             }
         }
 
+        function updateFinalAppUrl() {
+            const vaultNode = Object.values(nodesMemory).find(n => n.type === 'vault');
+            if (vaultNode && savedDomain) {
+                const vaultUsername = vaultNode.username;
+                const cleanDomain = savedDomain.endsWith('/') ? savedDomain.slice(0, -1) : savedDomain;
+                const finalUrl = `${cleanDomain}/${vaultUsername}/TimeShift-Vault-Main/main/live_stream/index.m3u8`;
+                document.getElementById("finalAppUrl").value = finalUrl;
+            } else {
+                document.getElementById("finalAppUrl").value = "";
+            }
+        }
+
         function testCloudflareStream() { 
             const vaultNode = Object.values(nodesMemory).find(n => n.type === 'vault');
             if (!vaultNode) {
                 return alert("⚠️ يرجى زراعة 'خزنة آمنة' أولاً لكي يستطيع المشغل سحب البث منها!");
             }
             const vaultUsername = vaultNode.username;
-            let pureLiveUrl = "";
-            if(savedDomain) {
-                const cleanDomain = savedDomain.endsWith('/') ? savedDomain.slice(0, -1) : savedDomain;
-                pureLiveUrl = `${cleanDomain}/${vaultUsername}/TimeShift-Vault-Main/main/live_stream/index.m3u8?cb=${Date.now()}`;
-            } else {
-                pureLiveUrl = `https://raw.githubusercontent.com/${vaultUsername}/TimeShift-Vault-Main/main/live_stream/index.m3u8?cb=${Date.now()}`;
-            }
+            
+            // قمنا باستخدام الرابط المباشر من GitHub هنا لاختبار المشغل لضمان عمله بغض النظر عن مشاكل DNS في Gcore
+            const pureLiveUrl = `https://raw.githubusercontent.com/${vaultUsername}/TimeShift-Vault-Main/main/live_stream/index.m3u8?cb=${Date.now()}`;
+            
             playVideo(pureLiveUrl); 
         }
 
-        function updateDomain() { const domain = document.getElementById("cfDomain").value.trim(); if(!domain) return alert("يرجى إدخال الرابط!"); const cleanDomain = domain.endsWith('/') ? domain.slice(0, -1) : domain; db.ref('settings/domain').set(cleanDomain); savedDomain = cleanDomain; alert("✅ تم حفظ الدومين!"); }
+        function updateDomain() { 
+            const domain = document.getElementById("cfDomain").value.trim(); 
+            if(!domain) return alert("يرجى إدخال الرابط!"); 
+            const cleanDomain = domain.endsWith('/') ? domain.slice(0, -1) : domain; 
+            db.ref('settings/domain').set(cleanDomain); 
+            savedDomain = cleanDomain; 
+            updateFinalAppUrl();
+            alert("✅ تم حفظ الدومين وتوليد الرابط النهائي بالأسفل!"); 
+        }
 
         function renderUI() {
             try {
@@ -232,6 +255,8 @@
                     if (n.type === 'commander') cmdContainer.innerHTML += card; else if (n.type === 'worker') workerContainer.innerHTML += card; else vaultContainer.innerHTML += card;
                 });
                 if(!hasCmd) cmdContainer.innerHTML = '<p class="text-[10px] text-gray-500 text-center py-2">لا يوجد قلوب نابضة.</p>'; if(!hasWorker) workerContainer.innerHTML = '<p class="text-[10px] text-gray-500 text-center py-2">لا يوجد عمال.</p>'; if(!hasVault) vaultContainer.innerHTML = '<p class="text-[10px] text-gray-500 text-center py-2">لا يوجد خزنات.</p>';
+            
+                updateFinalAppUrl();
             } catch (err) {}
         }
 
@@ -274,18 +299,12 @@
             }
             document.getElementById("valWorkers").innerText = `${activeWorkers}/${totalWorkers}`; setGaugeValue("gaugeWorkers", totalWorkers > 0 ? (activeWorkers / totalWorkers) * 100 : 0, activeWorkers > 0 ? "#06b6d4" : "#475569"); document.getElementById("valCmd").innerText = `${currentCmdApiUsage}%`; setGaugeValue("gaugeCmd", currentCmdApiUsage, currentCmdApiUsage > 90 ? "#ef4444" : (currentCmdApiUsage > 70 ? "#f59e0b" : "#3b82f6")); document.getElementById("activeCmdBadge").innerText = activeCmdId ? nodesMemory[activeCmdId].username : "متوقف";
             
-            // نظام التناوب الذكي (Handover Protocol)
             if (currentStreamStatus === "running" && !isActionBusy) {
-                // إذا لم يكن هناك قائد، أو القائد استهلك 95%، أو توقف عن العمل
                 if (!activeCmdId || currentCmdApiUsage >= 95 || (activeCmdId && nodesMemory[activeCmdId].isWorking === false)) {
                     isActionBusy = true; 
-                    if (activeCmdId) { 
-                        // إرساله للاستراحة المؤقتة
-                        await db.ref(`nodes/${activeCmdId}/status`).set('standby'); 
-                    }
+                    if (activeCmdId) { await db.ref(`nodes/${activeCmdId}/status`).set('standby'); }
                     const nextCmd = availableCmds.find(c => c !== activeCmdId);
                     if (nextCmd) { 
-                        // تشغيل القلب الاحتياطي فوراً
                         const nw = nodesMemory[nextCmd]; 
                         await db.ref(`nodes/${nextCmd}/status`).set('active'); 
                         await fetch(`https://api.github.com/repos/${nw.username}/${nw.repo}/actions/workflows/engine.yml/dispatches`, { 
@@ -419,7 +438,7 @@
 on: workflow_dispatch
 concurrency: 
   group: engine-group
-  cancel-in-progress: true
+  cancel-in-progress: false
 permissions: { contents: write }
 jobs:
   run:
@@ -498,4 +517,3 @@ jobs:
     </script>
 </body>
 </html>
-
