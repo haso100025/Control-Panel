@@ -190,7 +190,6 @@
                 window.p2pEngine = new p2pml.hlsjs.Engine({ segments: { swarmId: 'timeshift-live-swarm-3tier', forwardSegmentCount: 20 } });
                 window.p2pEngine.on('peerConnect', peer => { let count = parseInt(document.getElementById('p2pPeersCount').innerText) || 0; document.getElementById('p2pPeersCount').innerText = count + 1; });
                 
-                // تم تعديل إعدادات المشغل ليناسب البث المباشر
                 const hls = new Hls({ 
                     liveSyncDurationCount: 2, 
                     liveMaxLatencyDurationCount: 4, 
@@ -206,7 +205,15 @@
             }
         }
 
-        function testCloudflareStream() { const cf = document.getElementById("cfDomain").value.trim(); if (!cf) return alert("يرجى إدخال الرابط أولاً!"); playVideo(cf); }
+        // --- إصلاح فخ الكاش للمشغل ---
+        function testCloudflareStream() { 
+            const cf = document.getElementById("cfDomain").value.trim(); 
+            if (!cf) return alert("يرجى إدخال الرابط أولاً!"); 
+            // إضافة طابع زمني لاجبار المتصفح على جلب البث الجديد وتخطي الكاش
+            const cacheBusterUrl = cf + (cf.includes('?') ? '&' : '?') + "t=" + Date.now();
+            playVideo(cacheBusterUrl); 
+        }
+
         function updateDomain() { const domain = document.getElementById("cfDomain").value.trim(); if(!domain) return alert("يرجى إدخال الرابط!"); const cleanDomain = domain.endsWith('/') ? domain.slice(0, -1) : domain; db.ref('settings/domain').set(cleanDomain); alert("✅ تم حفظ الرابط!"); }
 
         function renderUI() {
@@ -223,7 +230,7 @@
                     else if (n.status === 'standby') { statusDot = 'bg-gray-500'; statusText = '💤 احتياط'; cardBorder = 'border-gray-800'; } 
                     else if (n.status === 'nuked') { statusDot = 'bg-purple-600'; statusText = '💥 مدمر'; cardBorder = 'border-purple-600/50'; } 
                     else { statusDot = 'bg-amber-500'; statusText = '⏸️ موقوف'; cardBorder = 'border-amber-500/50'; }
-                    const card = `<div class="bg-black/60 border ${cardBorder} rounded-lg p-2.5 flex flex-col gap-1.5 transition-all"><div class="flex justify-between items-center"><div><div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full ${statusDot}"></span><span class="font-bold text-white text-[11px]">${n.username}</span></div><span class="text-[9px] text-gray-500 font-mono block mt-0.5">${n.repo}</span></div><span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-gray-900 text-gray-300 border border-gray-700">${statusText}</span></div>${n.type==='commander' ? `<div class="w-full bg-gray-900 rounded-full h-1 mt-1 overflow-hidden"><div class="h-full ${usage > 90 ? 'bg-red-500' : 'bg-blue-500'}" style="width: ${usage}%"></div></div>` : ''}<div class="flex gap-1.5 mt-1.5">${n.status === 'nuked' ? `<button onclick="replantNode('${key}')" class="flex-1 bg-purple-700 hover:bg-purple-600 text-white py-1 rounded text-[10px] font-bold transition">🌱 إعادة زرع</button>` : `<button onclick="db.ref('nodes/${key}/status').set('${n.status === 'paused' ? 'standby' : 'paused'}')" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 py-1 rounded text-[10px] font-bold transition border border-gray-700">${n.status === 'paused' ? 'تفعيل' : 'إيقاف'}</button>` }<button onclick="if(confirm('حذف نهائياً؟')) db.ref('nodes/${key}').remove()" class="bg-red-950/60 hover:bg-red-900 text-red-300 py-1 px-2 rounded text-[10px] font-bold transition border border-red-900/40">حذف</button></div></div>`;
+                    const card = `<div class="bg-black/60 border ${cardBorder} rounded-lg p-2.5 flex flex-col gap-1.5 transition-all"><div class="flex justify-between items-center"><div><div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full ${statusDot}"></span><span class="font-bold text-white text-[11px]">${n.username}</span></div><span class="text-[9px] text-gray-500 font-mono block mt-0.5">${n.repo}</span></div><span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-gray-900 text-gray-300 border border-gray-700">${statusText}</span></div>${n.type==='commander' ? `<div class="w-full bg-gray-900 rounded-full h-1 mt-1 overflow-hidden"><div class="h-full ${usage > 90 ? 'bg-red-500' : 'bg-blue-500'}" style="width: ${usage}%"></div></div>` : ''}<div class="flex gap-1.5 mt-1.5">${n.status === 'nuked' ? `<button onclick="replantNode('${key}')" class="flex-1 bg-purple-700 hover:bg-purple-600 text-white py-1 rounded text-[10px] font-bold transition">🌱 إعادة زرع</button>` : `<button onclick="db.ref('nodes/${key}/status').set('${n.status === 'paused' ? 'standby' : 'paused'}')" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 py-1 rounded text-[10px] font-bold transition border border-gray-700">${n.status === 'paused' ? 'تفعيل' : 'إيقاف'}</button>` }<button onclick="if(confirm('حذف من اللوحة نهائياً؟')) db.ref('nodes/${key}').remove()" class="bg-red-950/60 hover:bg-red-900 text-red-300 py-1 px-2 rounded text-[10px] font-bold transition border border-red-900/40">حذف</button></div></div>`;
                     if (n.type === 'commander') cmdContainer.innerHTML += card; else if (n.type === 'worker') workerContainer.innerHTML += card; else vaultContainer.innerHTML += card;
                 });
                 if(!hasCmd) cmdContainer.innerHTML = '<p class="text-[10px] text-gray-500 text-center py-2">لا يوجد قلوب نابضة.</p>'; if(!hasWorker) workerContainer.innerHTML = '<p class="text-[10px] text-gray-500 text-center py-2">لا يوجد عمال.</p>'; if(!hasVault) vaultContainer.innerHTML = '<p class="text-[10px] text-gray-500 text-center py-2">لا يوجد خزنات.</p>';
@@ -276,24 +283,22 @@
                 
                 if (firstCmdKey) { const n = nodesMemory[firstCmdKey]; await clearOldRuns(n); await db.ref(`nodes/${firstCmdKey}/status`).set('active'); await fetch(`https://api.github.com/repos/${n.username}/${n.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${n.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }); }
                 
-                const cf = document.getElementById("cfDomain").value.trim(); if(cf) { db.ref('settings/domain').set(cf); setTimeout(() => playVideo(cf), 7000); } alert("✅ تم إطلاق القلب النابض، والعمال، والخزنة بنجاح!");
+                const cf = document.getElementById("cfDomain").value.trim(); if(cf) { db.ref('settings/domain').set(cf); setTimeout(() => testCloudflareStream(), 7000); } alert("✅ تم إطلاق القلب النابض، والعمال، والخزنة بنجاح!");
             } catch(e) { alert("خطأ أثناء الإطلاق: " + e.message); } finally { startBtn.innerHTML = originalText; startBtn.disabled = false; setTimeout(() => { isActionBusy = false; }, 4000); }
         }
 
-        // --- كود الإبادة الشاملة (Nuke) الجديد والمدمر للمستودعات الشبحية ---
+        // --- كود الإبادة الشاملة (Nuke) المعدل لاصطياد أشباح Stream-Worker و TimeShift- ---
         async function stopEngine() {
-            if(isActionBusy) return; if(!confirm("تحذير: سيتم إبادة كل مستودعات TimeShift من جذورها في جميع حسابات كيتهاب المرتبطة لضمان مسح الأشباح! هل أنت متأكد؟")) return;
+            if(isActionBusy) return; if(!confirm("تحذير: سيتم إبادة كل مستودعات المشروع من جذورها في جميع حسابات كيتهاب المرتبطة لضمان مسح الأشباح! هل أنت متأكد؟")) return;
             isActionBusy = true; const stopBtn = document.getElementById("stopBtn"); const originalText = stopBtn.innerHTML; stopBtn.innerHTML = "<span>☢️</span> جاري الإبادة الشاملة..."; stopBtn.disabled = true;
             try { 
                 await db.ref('settings/stream/status').set("stopped"); 
                 const video = document.getElementById('previewPlayer'); video.pause(); video.src = ""; 
                 
-                // جمع كل التوكنات لضمان التنظيف
                 let tokens = new Set();
                 Object.values(nodesMemory).forEach(n => { if(n.token) tokens.add(n.token); });
                 ['cmdToken', 'workerToken', 'vaultToken'].forEach(id => { let val = document.getElementById(id).value.trim(); if(val) tokens.add(val); });
 
-                // الهجوم المباشر على API كيتهاب لمسح أي مستودع يبدأ بـ TimeShift
                 for(let token of tokens) {
                     try {
                         let page = 1;
@@ -303,7 +308,8 @@
                             const repos = await res.json();
                             if(repos.length === 0) break;
                             for(let repo of repos) {
-                                if(repo.name.startsWith('TimeShift-')) {
+                                // هنا التعديل: نمسح المستودعات التي تبدأ بـ TimeShift- أو Stream-
+                                if(repo.name.startsWith('TimeShift-') || repo.name.startsWith('Stream-')) {
                                     await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}`, { method: "DELETE", headers: { "Authorization": `token ${token}` } });
                                 }
                             }
@@ -312,8 +318,13 @@
                     } catch(e) {}
                 }
                 
-                await db.ref('nodes').remove(); 
-                alert("🛑 تم إبادة جميع مستودعات TimeShift الشبحية من جذورها بنجاح تام."); 
+                // استعادة زر "إعادة الزرع" بدلاً من الحذف النهائي من اللوحة
+                Object.keys(nodesMemory).forEach(key => {
+                    db.ref(`nodes/${key}/status`).set('nuked');
+                    db.ref(`nodes/${key}/isWorking`).set(false);
+                });
+                
+                alert("🛑 تم إبادة جميع المستودعات الشبحية من جذورها بنجاح تام. يمكنك إعادة الزرع الآن."); 
             } catch (error) { 
                 alert("خطأ: " + error.message); 
             } finally { 
@@ -365,7 +376,6 @@ jobs:
             while true; do
               if [ "\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')" == "stopped" ]; then break; fi
               
-              # تم تخفيف الثقل هنا: 4 ثواني فقط لسرعة الرفع الصاروخي
               ffmpeg -hide_banner -loglevel warning -user_agent "\$UA" \\
                 -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 5 -timeout 10000000 -thread_queue_size 512 \\
                 -i "\$SRC" -c copy -f hls \\
