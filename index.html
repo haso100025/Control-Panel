@@ -196,25 +196,19 @@
             }
         }
 
-        // --- المشغل المحدث: يدمج الدومين الخاص بك مع مسار المخزن ---
         function testCloudflareStream() { 
             const vaultNode = Object.values(nodesMemory).find(n => n.type === 'vault');
             if (!vaultNode) {
                 return alert("⚠️ يرجى زراعة 'خزنة آمنة' أولاً لكي يستطيع المشغل سحب البث منها!");
             }
-            
             const vaultUsername = vaultNode.username;
             let pureLiveUrl = "";
-
             if(savedDomain) {
-                // إذا تم إدخال دومين مثل Gcore، ندمجه مع المسار
                 const cleanDomain = savedDomain.endsWith('/') ? savedDomain.slice(0, -1) : savedDomain;
                 pureLiveUrl = `${cleanDomain}/${vaultUsername}/TimeShift-Vault-Main/main/live_stream/index.m3u8?cb=${Date.now()}`;
             } else {
-                // الوضع الافتراضي للحماية إذا لم يُدخل دومين
                 pureLiveUrl = `https://raw.githubusercontent.com/${vaultUsername}/TimeShift-Vault-Main/main/live_stream/index.m3u8?cb=${Date.now()}`;
             }
-            
             playVideo(pureLiveUrl); 
         }
 
@@ -248,6 +242,7 @@
             const keys = Object.keys(nodesMemory || {});
             if (keys.length === 0) { document.getElementById("valWorkers").innerText = "0/0"; setGaugeValue("gaugeWorkers", 0, "#475569"); document.getElementById("valCmd").innerText = "0%"; setGaugeValue("gaugeCmd", 0, "#3b82f6"); document.getElementById("activeCmdBadge").innerText = "لا يوجد"; return; }
             let activeWorkers = 0; let totalWorkers = 0; let availableCmds = []; let isCurrentCmdPushing = false; let currentCmdApiUsage = 0;
+            
             for (const key of keys) {
                 const n = nodesMemory[key]; if (!n) continue;
                 if (n.type === 'worker' || n.type === 'vault') {
@@ -256,16 +251,49 @@
                 }
                 if (n.type === 'commander') {
                     if (n.status !== 'failed' && n.status !== 'paused' && n.status !== 'nuked') availableCmds.push(key);
-                    if (n.status === 'active') { activeCmdId = key; try { const runsRes = await fetch(`https://api.github.com/repos/${n.username}/${n.repo}/actions/runs?status=in_progress`, { headers: { "Authorization": `token ${n.token}`, "Accept": "application/vnd.github.v3+json" } }); if (runsRes.ok) { const runsData = await runsRes.json(); isCurrentCmdPushing = (runsData.total_count > 0); n.isWorking = isCurrentCmdPushing; } const rateRes = await fetch(`https://api.github.com/rate_limit`, { headers: { "Authorization": `token ${n.token}`, "Accept": "application/vnd.github.v3+json" } }); if (rateRes.ok) { const rateData = await rateRes.json(); const limit = rateData.rate.limit || 5000; const remaining = rateData.rate.remaining || 0; currentCmdApiUsage = Math.round(((limit - remaining) / limit) * 100); db.ref(`nodes/${key}/apiUsage`).set(currentCmdApiUsage); } } catch (e) {} }
+                    if (n.status === 'active') { 
+                        activeCmdId = key; 
+                        try { 
+                            const runsRes = await fetch(`https://api.github.com/repos/${n.username}/${n.repo}/actions/runs?status=in_progress`, { headers: { "Authorization": `token ${n.token}`, "Accept": "application/vnd.github.v3+json" } }); 
+                            if (runsRes.ok) { 
+                                const runsData = await runsRes.json(); 
+                                isCurrentCmdPushing = (runsData.total_count > 0); 
+                                n.isWorking = isCurrentCmdPushing; 
+                            } 
+                            const rateRes = await fetch(`https://api.github.com/rate_limit`, { headers: { "Authorization": `token ${n.token}`, "Accept": "application/vnd.github.v3+json" } }); 
+                            if (rateRes.ok) { 
+                                const rateData = await rateRes.json(); 
+                                const limit = rateData.rate.limit || 5000; 
+                                const remaining = rateData.rate.remaining || 0; 
+                                currentCmdApiUsage = Math.round(((limit - remaining) / limit) * 100); 
+                                db.ref(`nodes/${key}/apiUsage`).set(currentCmdApiUsage); 
+                            } 
+                        } catch (e) {} 
+                    }
                 }
             }
             document.getElementById("valWorkers").innerText = `${activeWorkers}/${totalWorkers}`; setGaugeValue("gaugeWorkers", totalWorkers > 0 ? (activeWorkers / totalWorkers) * 100 : 0, activeWorkers > 0 ? "#06b6d4" : "#475569"); document.getElementById("valCmd").innerText = `${currentCmdApiUsage}%`; setGaugeValue("gaugeCmd", currentCmdApiUsage, currentCmdApiUsage > 90 ? "#ef4444" : (currentCmdApiUsage > 70 ? "#f59e0b" : "#3b82f6")); document.getElementById("activeCmdBadge").innerText = activeCmdId ? nodesMemory[activeCmdId].username : "متوقف";
             
+            // نظام التناوب الذكي (Handover Protocol)
             if (currentStreamStatus === "running" && !isActionBusy) {
-                if (!activeCmdId || currentCmdApiUsage > 98) {
-                    isActionBusy = true; if (activeCmdId) { await db.ref(`nodes/${activeCmdId}/status`).set('standby'); }
+                // إذا لم يكن هناك قائد، أو القائد استهلك 95%، أو توقف عن العمل
+                if (!activeCmdId || currentCmdApiUsage >= 95 || (activeCmdId && nodesMemory[activeCmdId].isWorking === false)) {
+                    isActionBusy = true; 
+                    if (activeCmdId) { 
+                        // إرساله للاستراحة المؤقتة
+                        await db.ref(`nodes/${activeCmdId}/status`).set('standby'); 
+                    }
                     const nextCmd = availableCmds.find(c => c !== activeCmdId);
-                    if (nextCmd) { const nw = nodesMemory[nextCmd]; await db.ref(`nodes/${nextCmd}/status`).set('active'); await fetch(`https://api.github.com/repos/${nw.username}/${nw.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${nw.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }).catch(()=>{}); }
+                    if (nextCmd) { 
+                        // تشغيل القلب الاحتياطي فوراً
+                        const nw = nodesMemory[nextCmd]; 
+                        await db.ref(`nodes/${nextCmd}/status`).set('active'); 
+                        await fetch(`https://api.github.com/repos/${nw.username}/${nw.repo}/actions/workflows/engine.yml/dispatches`, { 
+                            method: "POST", 
+                            headers: { "Authorization": `token ${nw.token}`, "Accept": "application/vnd.github.v3+json" }, 
+                            body: JSON.stringify({ ref: "main" }) 
+                        }).catch(()=>{}); 
+                    }
                     setTimeout(() => { isActionBusy = false; }, 5000);
                 }
             } renderUI();
@@ -419,7 +447,7 @@ jobs:
                 -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 5 -timeout 10000000 -thread_queue_size 512 \\
                 -i "\$SRC" -c copy -f hls \\
                 -hls_time 3 -hls_list_size 4 -hls_flags delete_segments+append_list+omit_endlist \\
-                -hls_segment_filename "live_stream/seg_%04d.ts" live_stream/index.m3u8
+                -hls_segment_filename "live_stream/seg_%04d.png" live_stream/index.m3u8
               
               sleep 2
             done
@@ -430,9 +458,9 @@ jobs:
             sleep 3
             if [ "\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')" == "stopped" ]; then kill -9 \$FFMPEG_PID 2>/dev/null; break; fi
             
-            if ls live_stream/*.ts 1> /dev/null 2>&1; then
+            if ls live_stream/*.png 1> /dev/null 2>&1; then
               
-              rm -rf .git && git init -b main && git add live_stream/*.ts .github/ && git commit -m "Workers Sync"
+              rm -rf .git && git init -b main && git add live_stream/*.png .github/ && git commit -m "Workers Sync"
               curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/nodes.json | jq -r 'to_entries[] | select(.value.status=="active" and .value.type=="worker") | "https://" + .value.token + "@github.com/" + .value.username + "/" + .value.repo + ".git"' > all_workers_git.txt
               PIDS=""
               while read -r URL; do if [ -n "\$URL" ]; then git push --force "\$URL" main & PIDS="\$PIDS \$!"; fi; done < all_workers_git.txt
