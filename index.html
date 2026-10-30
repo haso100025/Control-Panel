@@ -78,19 +78,19 @@
         </div>
 
         <div class="carbon-card rounded-2xl p-5 md:p-7">
-            <h2 class="text-base md:text-lg font-bold mb-4 text-amber-400 flex items-center gap-2 border-b border-gray-800 pb-2"><span>🌐</span> 2. الرابط الثابت (اختبار اللوحة الذكي المباشر)</h2>
+            <h2 class="text-base md:text-lg font-bold mb-4 text-amber-400 flex items-center gap-2 border-b border-gray-800 pb-2"><span>🌐</span> 2. دومين البث (Gcore / Cloudflare)</h2>
             <div class="flex flex-col sm:flex-row gap-2.5">
-                <input type="text" id="cfDomain" placeholder="ضع أي رابط هنا للحفظ..." class="flex-1 p-3 rounded-xl bg-black/70 border border-gray-700 text-amber-300 font-mono text-xs md:text-sm text-left" dir="ltr">
+                <input type="text" id="cfDomain" placeholder="https://timeshift-app.site" class="flex-1 p-3 rounded-xl bg-black/70 border border-gray-700 text-amber-300 font-mono text-xs md:text-sm text-left" dir="ltr">
                 <button onclick="updateDomain()" class="bg-amber-600 hover:bg-amber-500 text-black font-black py-3 px-6 rounded-xl transition text-xs md:text-sm">حفظ الرابط</button>
                 <button onclick="testCloudflareStream()" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-xl transition text-xs md:text-sm">اختبار البث الفوري</button>
             </div>
-            <p class="text-[10px] text-gray-400 mt-2">الكود الآن سيكتشف خزنتك ويسحب البث مباشرة من كيتهاب (Raw) لتخطي فخ الكاش تماماً أثناء الاختبار.</p>
+            <p class="text-[10px] text-gray-400 mt-2">سيتم دمج الدومين المحفوظ هنا مع مسار المخزن الآمن لتوليد الرابط النهائي للمشغل.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
             <div class="carbon-card rounded-2xl p-4">
                 <div class="flex justify-between items-center mb-3 border-b border-gray-800 pb-2">
-                    <h2 class="text-base font-black text-red-400 flex items-center gap-2"><span>❤️</span> القلوب النابضة</h2>
+                    <h2 class="text-base font-black text-red-400 flex items-center gap-2"><span>❤️</span> القلوب النابضة (تسحب المصدر فقط)</h2>
                 </div>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="cmdToken" placeholder="GitHub Token..." class="flex-1 p-2 rounded bg-gray-950 border border-gray-800 text-red-300 font-mono text-xs text-left" dir="ltr">
@@ -101,7 +101,7 @@
 
             <div class="carbon-card rounded-2xl p-4 border border-cyan-900/30">
                 <div class="flex justify-between items-center mb-3 border-b border-gray-800 pb-2">
-                    <h2 class="text-base font-black text-cyan-400 flex items-center gap-2"><span>👷</span> العمال الكادحين</h2>
+                    <h2 class="text-base font-black text-cyan-400 flex items-center gap-2"><span>👷</span> العمال الكادحين (يتحملون الضغط)</h2>
                 </div>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="workerToken" placeholder="GitHub Token..." class="flex-1 p-2 rounded bg-gray-950 border border-gray-800 text-cyan-300 font-mono text-xs text-left" dir="ltr">
@@ -112,7 +112,7 @@
 
             <div class="carbon-card rounded-2xl p-4 border border-emerald-900/30">
                 <div class="flex justify-between items-center mb-3 border-b border-gray-800 pb-2">
-                    <h2 class="text-base font-black text-emerald-400 flex items-center gap-2"><span>🛡️</span> الخزنات الآمنة (ثابتة)</h2>
+                    <h2 class="text-base font-black text-emerald-400 flex items-center gap-2"><span>🛡️</span> الخزنات الآمنة (توفر ملف الدليل)</h2>
                 </div>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="vaultToken" placeholder="GitHub Token..." class="flex-1 p-2 rounded bg-gray-950 border border-gray-800 text-emerald-300 font-mono text-xs text-left" dir="ltr">
@@ -134,7 +134,7 @@
         const db = firebase.database();
 
         let nodesMemory = {}; let currentStreamStatus = "stopped"; 
-        let activeCmdId = null; let isActionBusy = false;
+        let activeCmdId = null; let isActionBusy = false; let savedDomain = "";
 
         function setGaugeValue(gaugeId, percent, colorHex) {
             const circle = document.getElementById(gaugeId); if (!circle) return;
@@ -159,7 +159,10 @@
             } refreshTelemetry();
         });
 
-        db.ref('settings/domain').on('value', (snap) => { document.getElementById("cfDomain").value = snap.val() || ""; });
+        db.ref('settings/domain').on('value', (snap) => { 
+            savedDomain = snap.val() || "";
+            document.getElementById("cfDomain").value = savedDomain; 
+        });
 
         setInterval(() => {
             const video = document.getElementById('previewPlayer'); const radarDot = document.getElementById('playerRadarDot'); const radarTxt = document.getElementById('playerRadarText');
@@ -193,22 +196,29 @@
             }
         }
 
-        // --- المشغل العبقري: يتجاهل رابطك ويصنع الرابط النقي المباشر من الخزنة فوراً ---
+        // --- المشغل المحدث: يدمج الدومين الخاص بك مع مسار المخزن ---
         function testCloudflareStream() { 
-            // 1. البحث عن حساب الخزنة في اللوحة
             const vaultNode = Object.values(nodesMemory).find(n => n.type === 'vault');
             if (!vaultNode) {
                 return alert("⚠️ يرجى زراعة 'خزنة آمنة' أولاً لكي يستطيع المشغل سحب البث منها!");
             }
             
-            // 2. بناء رابط Raw مباشر يتخطى أي كاش ويتجاهل ما كتبته في المربع
             const vaultUsername = vaultNode.username;
-            const pureLiveUrl = `https://raw.githubusercontent.com/${vaultUsername}/TimeShift-Vault-Main/main/live_stream/index.m3u8?cb=${Date.now()}`;
+            let pureLiveUrl = "";
+
+            if(savedDomain) {
+                // إذا تم إدخال دومين مثل Gcore، ندمجه مع المسار
+                const cleanDomain = savedDomain.endsWith('/') ? savedDomain.slice(0, -1) : savedDomain;
+                pureLiveUrl = `${cleanDomain}/${vaultUsername}/TimeShift-Vault-Main/main/live_stream/index.m3u8?cb=${Date.now()}`;
+            } else {
+                // الوضع الافتراضي للحماية إذا لم يُدخل دومين
+                pureLiveUrl = `https://raw.githubusercontent.com/${vaultUsername}/TimeShift-Vault-Main/main/live_stream/index.m3u8?cb=${Date.now()}`;
+            }
             
             playVideo(pureLiveUrl); 
         }
 
-        function updateDomain() { const domain = document.getElementById("cfDomain").value.trim(); if(!domain) return alert("يرجى إدخال الرابط!"); const cleanDomain = domain.endsWith('/') ? domain.slice(0, -1) : domain; db.ref('settings/domain').set(cleanDomain); alert("✅ تم حفظ الرابط!"); }
+        function updateDomain() { const domain = document.getElementById("cfDomain").value.trim(); if(!domain) return alert("يرجى إدخال الرابط!"); const cleanDomain = domain.endsWith('/') ? domain.slice(0, -1) : domain; db.ref('settings/domain').set(cleanDomain); savedDomain = cleanDomain; alert("✅ تم حفظ الدومين!"); }
 
         function renderUI() {
             try {
@@ -277,7 +287,8 @@
                 
                 if (firstCmdKey) { const n = nodesMemory[firstCmdKey]; await clearOldRuns(n); await db.ref(`nodes/${firstCmdKey}/status`).set('active'); await fetch(`https://api.github.com/repos/${n.username}/${n.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${n.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }); }
                 
-                const cf = document.getElementById("cfDomain").value.trim(); if(cf) { db.ref('settings/domain').set(cf); setTimeout(() => testCloudflareStream(), 7000); } alert("✅ تم إطلاق المعمارية بنجاح!");
+                alert("✅ تم إطلاق المعمارية بنجاح! سيتم اختبار البث تلقائياً بعد 7 ثوانٍ...");
+                setTimeout(() => testCloudflareStream(), 7000);
             } catch(e) { alert("خطأ أثناء الإطلاق: " + e.message); } finally { startBtn.innerHTML = originalText; startBtn.disabled = false; setTimeout(() => { isActionBusy = false; }, 4000); }
         }
 
@@ -322,7 +333,6 @@
             }
         }
 
-        // --- ميزة إعادة الزرع التلقائي للكل ---
         async function replantAllNuked() {
             if (isActionBusy) return;
             const buttons = document.querySelectorAll(".replant-btn");
@@ -340,8 +350,7 @@
             btn.disabled = true;
 
             for (let i = 0; i < buttons.length; i++) {
-                buttons[i].click(); // محاكاة الضغط على الزر الفردي
-                // انتظار 7 ثوانٍ بين كل زرعة لتجنب حظر API كيتهاب
+                buttons[i].click(); 
                 await new Promise(r => setTimeout(r, 7000));
             }
 
