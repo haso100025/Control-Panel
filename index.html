@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>قمرة القيادة V16 - Ultimate Engine</title>
+    <title>قمرة القيادة V16 - Ultimate Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -26,7 +26,7 @@
             <div class="flex items-center gap-3 z-10">
                 <div id="statusDot" class="w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)] animate-pulse"></div>
                 <div>
-                    <h1 class="text-xl md:text-3xl font-black tracking-wider text-white">TIMESHIFT <span class="text-emerald-400 digital-font neon-text">ULTIMATE</span></h1>
+                    <h1 class="text-xl md:text-3xl font-black tracking-wider text-white">TIMESHIFT <span class="text-emerald-400 digital-font neon-text">ANTI-CACHE</span></h1>
                     <p id="systemStatusText" class="text-xs text-gray-400 font-bold mt-1">النظام متوقف - لا يوجد بث</p>
                 </div>
             </div>
@@ -39,7 +39,7 @@
             <div class="carbon-card rounded-2xl p-4 flex flex-col items-center justify-center relative group">
                 <svg class="w-32 h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#111827" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeCmd" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#ef4444" stroke-width="12" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center mt-2"><span id="valCmd" class="digital-font text-3xl font-black text-white">0%</span><span class="text-[9px] text-red-400 font-bold uppercase tracking-widest mt-1">API Load</span></div>
-                <span class="text-xs text-gray-400 mt-2 font-bold">طاقة القلب النابض</span>
+                <span class="text-xs text-gray-400 mt-2 font-bold">طاقة القلب</span>
             </div>
             <div class="carbon-card rounded-2xl p-4 flex flex-col items-center justify-center relative">
                 <svg class="w-32 h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#111827" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeWorkers" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#06b6d4" stroke-width="12" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
@@ -47,14 +47,14 @@
                 <span class="text-xs text-gray-400 mt-2 font-bold">العمال (الموزعين)</span>
             </div>
             <div class="carbon-card rounded-2xl p-4 flex flex-col items-center justify-center relative">
-                <svg class="w-32 h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#111827" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeSpeed" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#10b981" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/></svg>
+                <svg class="w-32 h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#111827" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeSpeed" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#10b981" stroke-width="12" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center mt-2"><span id="valSpeed" class="digital-font text-3xl font-black text-white">0.0</span><span class="text-[9px] text-emerald-400 font-bold uppercase tracking-widest mt-1">Mbps</span></div>
                 <span class="text-xs text-gray-400 mt-2 font-bold">سرعة السحب</span>
             </div>
             <div class="carbon-card rounded-2xl p-4 flex flex-col items-center justify-center relative">
                 <svg class="w-32 h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#111827" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeHealth" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#f59e0b" stroke-width="12" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center mt-2"><span id="valHealth" class="digital-font text-3xl font-black text-white">0.0s</span><span class="text-[9px] text-amber-400 font-bold uppercase tracking-widest mt-1">Buffer</span></div>
-                <span class="text-xs text-gray-400 mt-2 font-bold">مخزون الدلو</span>
+                <span class="text-xs text-gray-400 mt-2 font-bold">مخزون المشغل</span>
             </div>
         </div>
 
@@ -62,12 +62,12 @@
             <h2 class="text-lg font-black mb-5 text-white flex items-center gap-2 border-b border-gray-800 pb-3"><span>🚀</span> 1. وحدة التحكم والإطلاق</h2>
             <div class="space-y-4 mb-6">
                 <div><label class="text-xs font-bold text-gray-400 block mb-1">الرابط الأصلي (الاكستريم / اللوكال):</label><input type="text" id="sourceLink" class="w-full p-4 rounded-xl bg-black/80 border border-gray-700 text-emerald-400 focus:outline-none focus:border-cyan-500 font-mono text-sm text-left shadow-inner" dir="ltr"></div>
-                <div><label class="text-[11px] font-bold text-gray-500">User-Agent (لمنع حظر اللوكال):</label><input type="text" id="userAgent" placeholder="VLC/3.0.18 LibVLC/3.0.18" class="w-full p-3 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr"></div>
+                <div><label class="text-[11px] font-bold text-gray-500">User-Agent:</label><input type="text" id="userAgent" placeholder="VLC/3.0.18 LibVLC/3.0.18" class="w-full p-3 rounded-xl bg-black/50 border border-gray-800 text-gray-300 font-mono text-xs text-left" dir="ltr"></div>
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <button id="startBtn" onclick="startEngine()" class="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-black py-4 px-4 rounded-xl transition flex justify-center items-center gap-2 text-base shadow-[0_0_15px_rgba(16,185,129,0.3)]"><span>⚡</span> تشغيل المعمارية كاملة</button>
-                <button id="stopBtn" onclick="stopEngine()" class="bg-gradient-to-r from-red-700 to-rose-900 hover:from-red-600 hover:to-rose-800 text-white font-black py-4 px-4 rounded-xl transition flex justify-center items-center gap-2 text-base shadow-[0_0_15px_rgba(225,29,72,0.3)]"><span>☢️</span> إيقاف تام وإبادة البث (Stop & Nuke)</button>
+                <button id="stopBtn" onclick="stopEngine()" class="bg-gradient-to-r from-red-700 to-rose-900 hover:from-red-600 hover:to-rose-800 text-white font-black py-4 px-4 rounded-xl transition flex justify-center items-center gap-2 text-base shadow-[0_0_15px_rgba(225,29,72,0.3)]"><span>☢️</span> إيقاف تام وإبادة (Nuke)</button>
             </div>
 
             <div class="w-full bg-black rounded-xl overflow-hidden border border-gray-800 relative shadow-inner">
@@ -77,12 +77,13 @@
         </div>
 
         <div class="carbon-card rounded-2xl p-5 md:p-7">
-            <h2 class="text-base md:text-lg font-bold mb-4 text-amber-400 flex items-center gap-2 border-b border-gray-800 pb-2"><span>🌐</span> 2. رابط المعاينة في الويب (عبر jsDelivr مع كسر الكاش)</h2>
+            <h2 class="text-base md:text-lg font-bold mb-4 text-amber-400 flex items-center gap-2 border-b border-gray-800 pb-2"><span>🌐</span> 2. رابط الخزنة (للاختبار)</h2>
             <div class="flex flex-col sm:flex-row gap-2.5">
-                <input type="text" id="cfDomain" placeholder="https://cdn.jsdelivr.net/gh/USERNAME/TimeShift-Vault-Main@main/live_stream/index.m3u8" class="flex-1 p-3 rounded-xl bg-black/70 border border-gray-700 text-amber-300 font-mono text-xs md:text-sm text-left" dir="ltr">
+                <input type="text" id="cfDomain" placeholder="ضع رابط الخزنة هنا..." class="flex-1 p-3 rounded-xl bg-black/70 border border-gray-700 text-amber-300 font-mono text-xs md:text-sm text-left" dir="ltr">
                 <button onclick="updateDomain()" class="bg-amber-600 hover:bg-amber-500 text-black font-black py-3 px-6 rounded-xl transition text-xs md:text-sm">حفظ الرابط</button>
                 <button onclick="testCloudflareStream()" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-xl transition text-xs md:text-sm">اختبار البث الفوري</button>
             </div>
+            <p class="text-[10px] text-gray-400 mt-2">ملاحظة: الكود سيقوم أوتوماتيكياً بتحويل رابط jsDelivr إلى رابط مباشر (Raw) لتجنب التعليق.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
@@ -94,7 +95,7 @@
                     <input type="text" id="cmdToken" placeholder="GitHub Token..." class="flex-1 p-2 rounded bg-gray-950 border border-gray-800 text-red-300 font-mono text-xs text-left" dir="ltr">
                     <button onclick="plantNode('commander', this)" class="bg-red-700 hover:bg-red-600 text-white font-bold py-1.5 px-3 rounded text-xs transition shadow-md">زرع قلب</button>
                 </div>
-                <div id="cmdsList" class="space-y-2"><p class="text-[10px] text-gray-500 text-center py-2">لا يوجد قلوب نابضة.</p></div>
+                <div id="cmdsList" class="space-y-2"></div>
             </div>
 
             <div class="carbon-card rounded-2xl p-4 border border-cyan-900/30">
@@ -105,18 +106,18 @@
                     <input type="text" id="workerToken" placeholder="GitHub Token..." class="flex-1 p-2 rounded bg-gray-950 border border-gray-800 text-cyan-300 font-mono text-xs text-left" dir="ltr">
                     <button onclick="plantNode('worker', this)" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-1.5 px-3 rounded text-xs transition shadow-md">إضافة عامل</button>
                 </div>
-                <div id="workersList" class="space-y-2"><p class="text-[10px] text-gray-500 text-center py-2">لا يوجد عمال.</p></div>
+                <div id="workersList" class="space-y-2"></div>
             </div>
 
             <div class="carbon-card rounded-2xl p-4 border border-emerald-900/30">
                 <div class="flex justify-between items-center mb-3 border-b border-gray-800 pb-2">
-                    <h2 class="text-base font-black text-emerald-400 flex items-center gap-2"><span>🛡️</span> الخزنات الآمنة</h2>
+                    <h2 class="text-base font-black text-emerald-400 flex items-center gap-2"><span>🛡️</span> الخزنات الآمنة (ثابتة)</h2>
                 </div>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="vaultToken" placeholder="GitHub Token..." class="flex-1 p-2 rounded bg-gray-950 border border-gray-800 text-emerald-300 font-mono text-xs text-left" dir="ltr">
                     <button onclick="plantNode('vault', this)" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-1.5 px-3 rounded text-xs transition shadow-md">إنشاء خزنة</button>
                 </div>
-                <div id="vaultsList" class="space-y-2"><p class="text-[10px] text-gray-500 text-center py-2">لا يوجد خزنات.</p></div>
+                <div id="vaultsList" class="space-y-2"></div>
             </div>
         </div>
     </div>
@@ -151,7 +152,6 @@
                     dot.className = "w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)]"; statusTxt.innerText = "النظام متوقف - تم إفراغ البث"; statusTxt.className = "text-xs text-gray-400 font-bold mt-1"; 
                     setGaugeValue("gaugeSpeed", 0); document.getElementById("valSpeed").innerText = "0.0"; 
                     setGaugeValue("gaugeHealth", 0); document.getElementById("valHealth").innerText = "0.0s";
-                    // إيقاف المشغل وتفريغه تماماً لكي لا يبقى البث القديم معروضاً
                     if(window.hlsInstance) { window.hlsInstance.destroy(); }
                     const video = document.getElementById('previewPlayer'); if(video) { video.pause(); video.src = ""; }
                 }
@@ -166,7 +166,7 @@
                 let bufferLen = 0;
                 for (let i = 0; i < video.buffered.length; i++) { if (video.currentTime >= video.buffered.start(i) && video.currentTime <= video.buffered.end(i)) { bufferLen = video.buffered.end(i) - video.currentTime; break; } }
                 document.getElementById("valHealth").innerText = bufferLen.toFixed(1) + "s"; setGaugeValue("gaugeHealth", Math.min(100, (bufferLen / 15) * 100), bufferLen > 3 ? "#10b981" : "#f59e0b");
-                radarDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"; radarTxt.innerText = "المشغل: يعمل بامتياز"; radarTxt.className = "text-xs text-emerald-400 font-bold";
+                radarDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"; radarTxt.innerText = "المشغل: يعرض البث المباشر"; radarTxt.className = "text-xs text-emerald-400 font-bold";
             } else { 
                 document.getElementById("valHealth").innerText = "0.0s"; setGaugeValue("gaugeHealth", 0, "#f59e0b"); radarDot.className = "w-2.5 h-2.5 rounded-full bg-gray-500"; radarTxt.innerText = "المشغل: متوقف"; radarTxt.className = "text-xs text-gray-400 font-bold";
             }
@@ -174,33 +174,40 @@
 
         setInterval(refreshTelemetry, 8000);
 
-        // --- المشغل المضاد للكاش (Live Stream Pure HLS) ---
         function playVideo(url) {
             const video = document.getElementById('previewPlayer'); if (!url) return;
             if (Hls.isSupported()) {
                 if (window.hlsInstance) window.hlsInstance.destroy();
                 const hls = new Hls({ 
-                    liveSyncDurationCount: 1, 
-                    liveMaxLatencyDurationCount: 3, 
-                    maxLiveSyncPlaybackRate: 1.2,
+                    liveSyncDurationCount: 2, 
+                    liveMaxLatencyDurationCount: 4, 
                     enableWorker: true,
                     fragLoadingTimeOut: 15000,
-                    manifestLoadingTimeOut: 15000
+                    manifestLoadingTimeOut: 15000,
+                    levelLoadingTimeOut: 15000
                 });
                 
                 window.hlsInstance = hls; hls.loadSource(url); hls.attachMedia(video);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
-                
                 hls.on(Hls.Events.FRAG_LOADED, (event, data) => { const stats = data.frag.stats; const durationMs = stats.loading.end - stats.loading.start; const bytes = stats.total || stats.loaded || 0; if (durationMs > 0 && bytes > 0) { const mbps = ((bytes * 8) / (durationMs / 1000)) / 1000000; const cleanMbps = Math.min(30, Math.max(0.1, mbps)); document.getElementById("valSpeed").innerText = cleanMbps.toFixed(1); setGaugeValue("gaugeSpeed", Math.min(100, (cleanMbps / 10) * 100), "#10b981"); } });
                 hls.on(Hls.Events.ERROR, (e, data) => { if (data.fatal && currentStreamStatus === "running") { setTimeout(() => hls.startLoad(), 2000); } });
             }
         }
 
-        // استخدام تقنية Time-Buster لكسر كاش jsDelivr فوراً
+        // --- الذكاء الاصطناعي في المشغل (منع الكاش تلقائياً) ---
         function testCloudflareStream() { 
-            const cf = document.getElementById("cfDomain").value.trim(); 
+            let cf = document.getElementById("cfDomain").value.trim(); 
             if (!cf) return alert("يرجى إدخال الرابط أولاً!"); 
-            const antiCacheUrl = cf + (cf.includes('?') ? '&' : '?') + "_t=" + Date.now();
+            
+            // إذا وضع المستخدم رابط jsDelivr بالخطأ، نقوم بتحويله إلى Raw إجبارياً لكي لا يعلق البث
+            if (cf.includes('cdn.jsdelivr.net/gh/')) {
+                let parts = cf.split('cdn.jsdelivr.net/gh/')[1].split('@main/');
+                if(parts.length === 2) {
+                    cf = `https://raw.githubusercontent.com/${parts[0]}/main/${parts[1]}`;
+                }
+            }
+            // إضافة كاسر الكاش
+            const antiCacheUrl = cf + (cf.includes('?') ? '&' : '?') + "cb=" + Date.now();
             playVideo(antiCacheUrl); 
         }
 
@@ -277,18 +284,17 @@
             } catch(e) { alert("خطأ أثناء الإطلاق: " + e.message); } finally { startBtn.innerHTML = originalText; startBtn.disabled = false; setTimeout(() => { isActionBusy = false; }, 4000); }
         }
 
-        // --- زر الإبادة الشاملة المحدث (يمسح كل ملفات البث لضمان عدم بقاء أي بث قديم) ---
         async function stopEngine() {
-            if(isActionBusy) return; if(!confirm("تحذير: سيتم إيقاف البث ومسح ملفاته من جميع مستودعات الخزنة والعمال لضمان توقفه تماماً! هل أنت متأكد؟")) return;
+            if(isActionBusy) return; if(!confirm("تحذير: سيتم إيقاف ومسح كل المستودعات الخاصة بالمشروع لضمان إبادة البث من الجذور! هل أنت متأكد؟")) return;
             isActionBusy = true; const stopBtn = document.getElementById("stopBtn"); const originalText = stopBtn.innerHTML; stopBtn.innerHTML = "<span>☢️</span> جاري الإبادة الشاملة..."; stopBtn.disabled = true;
             try { 
                 await db.ref('settings/stream/status').set("stopped"); 
+                const video = document.getElementById('previewPlayer'); video.pause(); video.src = ""; 
                 
                 let tokens = new Set();
                 Object.values(nodesMemory).forEach(n => { if(n.token) tokens.add(n.token); });
                 ['cmdToken', 'workerToken', 'vaultToken'].forEach(id => { let val = document.getElementById(id).value.trim(); if(val) tokens.add(val); });
 
-                // إبادة الملفات المادية من داخل المستودعات النشطة لضمان الموت الفوري للبث
                 for(let token of tokens) {
                     try {
                         let page = 1;
@@ -299,18 +305,7 @@
                             if(repos.length === 0) break;
                             for(let repo of repos) {
                                 if(repo.name.startsWith('TimeShift') || repo.name.startsWith('Stream') || repo.name.startsWith('Vault')) {
-                                    // جلب محتوى مجلد live_stream لحذفه ليموت البث في جذوره
-                                    const contentsRes = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/contents/live_stream`, { headers: { "Authorization": `token ${token}` } });
-                                    if(contentsRes.ok) {
-                                        const files = await contentsRes.json();
-                                        for(let file of files) {
-                                            await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/contents/${file.path}`, {
-                                                method: "DELETE",
-                                                headers: { "Authorization": `token ${token}` },
-                                                body: JSON.stringify({ message: "Kill stream", sha: file.sha })
-                                            }).catch(()=>{});
-                                        }
-                                    }
+                                    await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}`, { method: "DELETE", headers: { "Authorization": `token ${token}` } });
                                 }
                             }
                             page++;
@@ -323,7 +318,7 @@
                     db.ref(`nodes/${key}/isWorking`).set(false);
                 });
                 
-                alert("🛑 تم إيقاف البث وإبادة جميع ملفاته بنجاح تام."); 
+                alert("🛑 تمت الإبادة. البث مات تماماً والمستودعات نظيفة."); 
             } catch (error) { 
                 alert("خطأ: " + error.message); 
             } finally { 
@@ -340,10 +335,11 @@
                 const userRes = await fetch("https://api.github.com/user", { headers: { "Authorization": `token ${token}` } }); if (!userRes.ok) throw new Error("توكن غير صالح.");
                 const user = await userRes.json(); const username = user.login; const randomId = Math.floor(1000 + Math.random() * 9000); 
                 
+                // الخزنة ستظل تحمل اسم Vault-Main لكي يظل الدومين ثابتاً (لا يمكن إضافة خزنتين بنفس الحساب)
                 const repoName = type === 'vault' ? 'TimeShift-Vault-Main' : `TimeShift-${type==='commander'?'CMD':'WORKER'}-${randomId}`;
                 
                 btn.innerText = "⏳ إنشاء..."; const repoRes = await fetch("https://api.github.com/user/repos", { method: "POST", headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ name: repoName, private: false, auto_init: true }) });
-                if (!repoRes.ok) throw new Error("موجود مسبقاً أو مرفوض."); await new Promise(r => setTimeout(r, 3000)); btn.innerText = "⏳ حقن الكود..."; 
+                if (!repoRes.ok) throw new Error("مستودع الخزنة موجود مسبقاً في هذا الحساب. يرجى استخدام حساب آخر للخزنة، أو مسح القديم."); await new Promise(r => setTimeout(r, 3000)); btn.innerText = "⏳ حقن الكود..."; 
                 
                 let wfContent = "";
                 if (type === 'commander') {
@@ -420,11 +416,11 @@ jobs:
             fi
           done
 `;
-                } else { wfContent = `name: Passive Node\non: workflow_dispatch\njobs:\n  run:\n- runs-on: ubuntu-latest\n    steps:\n      - run: echo "Passive node active."\n`; }
+                } else { wfContent = `name: Passive Node\non: workflow_dispatch\njobs:\n  run:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo "انا مستودع جاهز"\n`; }
                 const putRes = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, { method: "PUT", headers: { "Authorization": `token ${token}` }, body: JSON.stringify({ message: "init", content: btoa(unescape(encodeURIComponent(wfContent))) }) });
                 if (!putRes.ok) throw new Error("رفض الحفظ في كيتهاب.");
                 btn.innerText = "⏳ حفظ..."; await db.ref('nodes/' + username + '_' + randomId).set({ token: token, status: 'standby', type: type, apiUsage: 0, repo: repoName, username: username });
-                document.getElementById(inputId).value = ''; alert(`✅ تم زرع العقدة بنجاح!`);
+                document.getElementById(inputId).value = ''; alert(`✅ تم زرع ${type==='commander'?'القلب':(type==='worker'?'العامل':'الخزنة')} بنجاح!`);
             } catch (e) { alert("❌ فشل الزرع: " + e.message); } finally { btn.innerText = origText; btn.disabled = false; renderUI(); }
         }
     </script>
