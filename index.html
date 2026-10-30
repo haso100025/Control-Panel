@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>قمرة القيادة V16 - Perfect Engine</title>
+    <title>قمرة القيادة V16 - Ultimate Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.12"></script>
-    <script src="https://cdn.jsdelivr.net/npm/p2p-media-loader-core@0.6.2/build/p2p-media-loader-core.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/p2p-media-loader-hlsjs@0.6.2/build/p2p-media-loader-hlsjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Orbitron:wght@500;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #05070a; background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, transparent 60%), repeating-linear-gradient(45deg, rgba(255,255,255,0.01) 0px, rgba(255,255,255,0.01) 2px, transparent 2px, transparent 4px); color: #f8fafc; }
@@ -28,13 +26,11 @@
             <div class="flex items-center gap-3 z-10">
                 <div id="statusDot" class="w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)] animate-pulse"></div>
                 <div>
-                    <h1 class="text-xl md:text-3xl font-black tracking-wider text-white">TIMESHIFT <span class="text-emerald-400 digital-font neon-text">V16-3TIER</span></h1>
+                    <h1 class="text-xl md:text-3xl font-black tracking-wider text-white">TIMESHIFT <span class="text-emerald-400 digital-font neon-text">ULTIMATE</span></h1>
                     <p id="systemStatusText" class="text-xs text-gray-400 font-bold mt-1">النظام متوقف - لا يوجد بث</p>
                 </div>
             </div>
             <div class="flex items-center gap-4 bg-black/60 px-5 py-2.5 rounded-xl border border-gray-800 z-10 shadow-inner">
-                <div class="text-center"><span class="text-[10px] text-gray-500 block font-bold mb-1">P2P Peers</span><span id="p2pPeersCount" class="digital-font text-lg font-bold text-emerald-400">0</span></div>
-                <div class="h-8 w-[1px] bg-gray-700"></div>
                 <div class="text-center"><span class="text-[10px] text-gray-500 block font-bold mb-1">القلب المدير النشط</span><span id="activeCmdBadge" class="digital-font text-xs font-bold px-2 py-0.5 rounded bg-gray-900 text-gray-300 border border-gray-700">لا يوجد</span></div>
             </div>
         </div>
@@ -51,9 +47,9 @@
                 <span class="text-xs text-gray-400 mt-2 font-bold">العمال (الموزعين)</span>
             </div>
             <div class="carbon-card rounded-2xl p-4 flex flex-col items-center justify-center relative">
-                <svg class="w-32 h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#111827" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeSpeed" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#10b981" stroke-width="12" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
+                <svg class="w-32 h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#111827" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeSpeed" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#10b981" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/></svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center mt-2"><span id="valSpeed" class="digital-font text-3xl font-black text-white">0.0</span><span class="text-[9px] text-emerald-400 font-bold uppercase tracking-widest mt-1">Mbps</span></div>
-                <span class="text-xs text-gray-400 mt-2 font-bold">سرعة البث</span>
+                <span class="text-xs text-gray-400 mt-2 font-bold">سرعة السحب</span>
             </div>
             <div class="carbon-card rounded-2xl p-4 flex flex-col items-center justify-center relative">
                 <svg class="w-32 h-32" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="48" fill="none" stroke="#111827" stroke-width="12" stroke-dasharray="226 301" stroke-linecap="round"/><circle id="gaugeHealth" class="gauge-ring" cx="60" cy="60" r="48" fill="none" stroke="#f59e0b" stroke-width="12" stroke-dasharray="226 301" stroke-dashoffset="226" stroke-linecap="round"/></svg>
@@ -71,33 +67,29 @@
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <button id="startBtn" onclick="startEngine()" class="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-black py-4 px-4 rounded-xl transition flex justify-center items-center gap-2 text-base shadow-[0_0_15px_rgba(16,185,129,0.3)]"><span>⚡</span> تشغيل المعمارية كاملة</button>
-                <button id="stopBtn" onclick="stopEngine()" class="bg-gradient-to-r from-red-700 to-rose-900 hover:from-red-600 hover:to-rose-800 text-white font-black py-4 px-4 rounded-xl transition flex justify-center items-center gap-2 text-base shadow-[0_0_15px_rgba(225,29,72,0.3)]"><span>☢️</span> تدمير كل المستودعات (إبادة شاملة)</button>
+                <button id="stopBtn" onclick="stopEngine()" class="bg-gradient-to-r from-red-700 to-rose-900 hover:from-red-600 hover:to-rose-800 text-white font-black py-4 px-4 rounded-xl transition flex justify-center items-center gap-2 text-base shadow-[0_0_15px_rgba(225,29,72,0.3)]"><span>☢️</span> إيقاف تام وإبادة البث (Stop & Nuke)</button>
             </div>
 
             <div class="w-full bg-black rounded-xl overflow-hidden border border-gray-800 relative shadow-inner">
-                <div class="absolute top-3 right-3 flex items-center gap-2 bg-black/90 px-3 py-1.5 rounded-lg border border-gray-700 z-10"><span id="playerRadarDot" class="w-2.5 h-2.5 rounded-full bg-gray-500"></span><span id="playerRadarText" class="text-xs text-gray-300 font-bold">الرادار: متوقف</span></div>
+                <div class="absolute top-3 right-3 flex items-center gap-2 bg-black/90 px-3 py-1.5 rounded-lg border border-gray-700 z-10"><span id="playerRadarDot" class="w-2.5 h-2.5 rounded-full bg-gray-500"></span><span id="playerRadarText" class="text-xs text-gray-300 font-bold">المشغل: متوقف</span></div>
                 <video id="previewPlayer" controls muted playsinline class="w-full h-64 md:h-96 bg-black object-contain"></video>
             </div>
         </div>
 
         <div class="carbon-card rounded-2xl p-5 md:p-7">
-            <h2 class="text-base md:text-lg font-bold mb-4 text-amber-400 flex items-center gap-2 border-b border-gray-800 pb-2"><span>🌐</span> 2. الرابط الثابت (رابط Raw للاختبار)</h2>
+            <h2 class="text-base md:text-lg font-bold mb-4 text-amber-400 flex items-center gap-2 border-b border-gray-800 pb-2"><span>🌐</span> 2. رابط المعاينة في الويب (عبر jsDelivr مع كسر الكاش)</h2>
             <div class="flex flex-col sm:flex-row gap-2.5">
-                <input type="text" id="cfDomain" placeholder="https://raw.githubusercontent.com/VAULT_USER/TimeShift-Vault-Main/main/live_stream/index.m3u8" class="flex-1 p-3 rounded-xl bg-black/70 border border-gray-700 text-amber-300 font-mono text-xs md:text-sm text-left" dir="ltr">
+                <input type="text" id="cfDomain" placeholder="https://cdn.jsdelivr.net/gh/USERNAME/TimeShift-Vault-Main@main/live_stream/index.m3u8" class="flex-1 p-3 rounded-xl bg-black/70 border border-gray-700 text-amber-300 font-mono text-xs md:text-sm text-left" dir="ltr">
                 <button onclick="updateDomain()" class="bg-amber-600 hover:bg-amber-500 text-black font-black py-3 px-6 rounded-xl transition text-xs md:text-sm">حفظ الرابط</button>
-                <button onclick="testCloudflareStream()" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-xl transition text-xs md:text-sm">اختبار البث</button>
+                <button onclick="testCloudflareStream()" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-xl transition text-xs md:text-sm">اختبار البث الفوري</button>
             </div>
         </div>
 
-        <!-- المعمارية ثلاثية الأبعاد -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            
-            <!-- القلب النابض -->
             <div class="carbon-card rounded-2xl p-4">
                 <div class="flex justify-between items-center mb-3 border-b border-gray-800 pb-2">
                     <h2 class="text-base font-black text-red-400 flex items-center gap-2"><span>❤️</span> القلوب النابضة</h2>
                 </div>
-                <p class="text-[9px] text-gray-400 mb-3 leading-tight">المدير: يسحب البث، يقطعه، يرفعه للعمال، ويوزع الروابط على الخزنة.</p>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="cmdToken" placeholder="GitHub Token..." class="flex-1 p-2 rounded bg-gray-950 border border-gray-800 text-red-300 font-mono text-xs text-left" dir="ltr">
                     <button onclick="plantNode('commander', this)" class="bg-red-700 hover:bg-red-600 text-white font-bold py-1.5 px-3 rounded text-xs transition shadow-md">زرع قلب</button>
@@ -105,12 +97,10 @@
                 <div id="cmdsList" class="space-y-2"><p class="text-[10px] text-gray-500 text-center py-2">لا يوجد قلوب نابضة.</p></div>
             </div>
 
-            <!-- العمال -->
             <div class="carbon-card rounded-2xl p-4 border border-cyan-900/30">
                 <div class="flex justify-between items-center mb-3 border-b border-gray-800 pb-2">
                     <h2 class="text-base font-black text-cyan-400 flex items-center gap-2"><span>👷</span> العمال الكادحين</h2>
                 </div>
-                <p class="text-[9px] text-gray-400 mb-3 leading-tight">العضلات: يخزنون قطع الفيديو (.ts) ويتحملون ضغط المشاهدين يداً بيد.</p>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="workerToken" placeholder="GitHub Token..." class="flex-1 p-2 rounded bg-gray-950 border border-gray-800 text-cyan-300 font-mono text-xs text-left" dir="ltr">
                     <button onclick="plantNode('worker', this)" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-1.5 px-3 rounded text-xs transition shadow-md">إضافة عامل</button>
@@ -118,19 +108,16 @@
                 <div id="workersList" class="space-y-2"><p class="text-[10px] text-gray-500 text-center py-2">لا يوجد عمال.</p></div>
             </div>
 
-            <!-- الخزنات -->
             <div class="carbon-card rounded-2xl p-4 border border-emerald-900/30">
                 <div class="flex justify-between items-center mb-3 border-b border-gray-800 pb-2">
                     <h2 class="text-base font-black text-emerald-400 flex items-center gap-2"><span>🛡️</span> الخزنات الآمنة</h2>
                 </div>
-                <p class="text-[9px] text-gray-400 mb-3 leading-tight">الواجهة: آمنة تماماً، تستقبل التوجيهات فقط للمشاهدين.</p>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="vaultToken" placeholder="GitHub Token..." class="flex-1 p-2 rounded bg-gray-950 border border-gray-800 text-emerald-300 font-mono text-xs text-left" dir="ltr">
                     <button onclick="plantNode('vault', this)" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-1.5 px-3 rounded text-xs transition shadow-md">إنشاء خزنة</button>
                 </div>
                 <div id="vaultsList" class="space-y-2"><p class="text-[10px] text-gray-500 text-center py-2">لا يوجد خزنات.</p></div>
             </div>
-
         </div>
     </div>
 
@@ -161,7 +148,12 @@
                 if (currentStreamStatus === "running") {
                     dot.className = "w-5 h-5 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-pulse"; statusTxt.innerText = "النظام يعمل - البث متصل"; statusTxt.className = "text-xs text-emerald-400 font-bold mt-1";
                 } else {
-                    dot.className = "w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)]"; statusTxt.innerText = "النظام متوقف"; statusTxt.className = "text-xs text-gray-400 font-bold mt-1"; setGaugeValue("gaugeSpeed", 0); document.getElementById("valSpeed").innerText = "0.0"; setGaugeValue("gaugeHealth", 0); document.getElementById("valHealth").innerText = "0.0s";
+                    dot.className = "w-5 h-5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)]"; statusTxt.innerText = "النظام متوقف - تم إفراغ البث"; statusTxt.className = "text-xs text-gray-400 font-bold mt-1"; 
+                    setGaugeValue("gaugeSpeed", 0); document.getElementById("valSpeed").innerText = "0.0"; 
+                    setGaugeValue("gaugeHealth", 0); document.getElementById("valHealth").innerText = "0.0s";
+                    // إيقاف المشغل وتفريغه تماماً لكي لا يبقى البث القديم معروضاً
+                    if(window.hlsInstance) { window.hlsInstance.destroy(); }
+                    const video = document.getElementById('previewPlayer'); if(video) { video.pause(); video.src = ""; }
                 }
             } refreshTelemetry();
         });
@@ -169,49 +161,47 @@
         db.ref('settings/domain').on('value', (snap) => { document.getElementById("cfDomain").value = snap.val() || ""; });
 
         setInterval(() => {
-            if (window.p2pEngine) { const peers = window.p2pEngine.getSettings().swarmId ? Object.keys(window.p2pEngine.on('peerConnect', ()=>{})).length || Math.floor(Math.random() * 5) : 0; }
             const video = document.getElementById('previewPlayer'); const radarDot = document.getElementById('playerRadarDot'); const radarTxt = document.getElementById('playerRadarText');
             if (video && !video.paused && video.readyState >= 2) {
                 let bufferLen = 0;
                 for (let i = 0; i < video.buffered.length; i++) { if (video.currentTime >= video.buffered.start(i) && video.currentTime <= video.buffered.end(i)) { bufferLen = video.buffered.end(i) - video.currentTime; break; } }
                 document.getElementById("valHealth").innerText = bufferLen.toFixed(1) + "s"; setGaugeValue("gaugeHealth", Math.min(100, (bufferLen / 15) * 100), bufferLen > 3 ? "#10b981" : "#f59e0b");
-                radarDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"; radarTxt.innerText = "الرادار: متصل (P2P فعال)"; radarTxt.className = "text-xs text-emerald-400 font-bold";
+                radarDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"; radarTxt.innerText = "المشغل: يعمل بامتياز"; radarTxt.className = "text-xs text-emerald-400 font-bold";
             } else { 
-                document.getElementById("valHealth").innerText = "0.0s"; setGaugeValue("gaugeHealth", 0, "#f59e0b"); radarDot.className = "w-2.5 h-2.5 rounded-full bg-gray-500"; radarTxt.innerText = "الرادار: خامل"; radarTxt.className = "text-xs text-gray-400 font-bold";
+                document.getElementById("valHealth").innerText = "0.0s"; setGaugeValue("gaugeHealth", 0, "#f59e0b"); radarDot.className = "w-2.5 h-2.5 rounded-full bg-gray-500"; radarTxt.innerText = "المشغل: متوقف"; radarTxt.className = "text-xs text-gray-400 font-bold";
             }
         }, 1000);
 
         setInterval(refreshTelemetry, 8000);
 
+        // --- المشغل المضاد للكاش (Live Stream Pure HLS) ---
         function playVideo(url) {
             const video = document.getElementById('previewPlayer'); if (!url) return;
-            if (Hls.isSupported() && p2pml.hlsjs.Engine.isSupported()) {
-                if (window.hlsInstance) window.hlsInstance.destroy(); if (window.p2pEngine) window.p2pEngine.destroy();
-                window.p2pEngine = new p2pml.hlsjs.Engine({ segments: { swarmId: 'timeshift-live-swarm-3tier', forwardSegmentCount: 20 } });
-                window.p2pEngine.on('peerConnect', peer => { let count = parseInt(document.getElementById('p2pPeersCount').innerText) || 0; document.getElementById('p2pPeersCount').innerText = count + 1; });
-                
+            if (Hls.isSupported()) {
+                if (window.hlsInstance) window.hlsInstance.destroy();
                 const hls = new Hls({ 
-                    liveSyncDurationCount: 2, 
-                    liveMaxLatencyDurationCount: 4, 
-                    maxBufferLength: 15, 
+                    liveSyncDurationCount: 1, 
+                    liveMaxLatencyDurationCount: 3, 
+                    maxLiveSyncPlaybackRate: 1.2,
                     enableWorker: true,
-                    loader: window.p2pEngine.createLoaderClass() 
+                    fragLoadingTimeOut: 15000,
+                    manifestLoadingTimeOut: 15000
                 });
                 
-                p2pml.hlsjs.initHlsJsPlayer(hls); window.hlsInstance = hls; hls.loadSource(url); hls.attachMedia(video);
+                window.hlsInstance = hls; hls.loadSource(url); hls.attachMedia(video);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
+                
                 hls.on(Hls.Events.FRAG_LOADED, (event, data) => { const stats = data.frag.stats; const durationMs = stats.loading.end - stats.loading.start; const bytes = stats.total || stats.loaded || 0; if (durationMs > 0 && bytes > 0) { const mbps = ((bytes * 8) / (durationMs / 1000)) / 1000000; const cleanMbps = Math.min(30, Math.max(0.1, mbps)); document.getElementById("valSpeed").innerText = cleanMbps.toFixed(1); setGaugeValue("gaugeSpeed", Math.min(100, (cleanMbps / 10) * 100), "#10b981"); } });
-                hls.on(Hls.Events.ERROR, (e, data) => { if (data.fatal && currentStreamStatus === "running") setTimeout(() => hls.startLoad(), 2000); });
+                hls.on(Hls.Events.ERROR, (e, data) => { if (data.fatal && currentStreamStatus === "running") { setTimeout(() => hls.startLoad(), 2000); } });
             }
         }
 
-        // --- إصلاح فخ الكاش للمشغل ---
+        // استخدام تقنية Time-Buster لكسر كاش jsDelivr فوراً
         function testCloudflareStream() { 
             const cf = document.getElementById("cfDomain").value.trim(); 
             if (!cf) return alert("يرجى إدخال الرابط أولاً!"); 
-            // إضافة طابع زمني لاجبار المتصفح على جلب البث الجديد وتخطي الكاش
-            const cacheBusterUrl = cf + (cf.includes('?') ? '&' : '?') + "t=" + Date.now();
-            playVideo(cacheBusterUrl); 
+            const antiCacheUrl = cf + (cf.includes('?') ? '&' : '?') + "_t=" + Date.now();
+            playVideo(antiCacheUrl); 
         }
 
         function updateDomain() { const domain = document.getElementById("cfDomain").value.trim(); if(!domain) return alert("يرجى إدخال الرابط!"); const cleanDomain = domain.endsWith('/') ? domain.slice(0, -1) : domain; db.ref('settings/domain').set(cleanDomain); alert("✅ تم حفظ الرابط!"); }
@@ -283,22 +273,22 @@
                 
                 if (firstCmdKey) { const n = nodesMemory[firstCmdKey]; await clearOldRuns(n); await db.ref(`nodes/${firstCmdKey}/status`).set('active'); await fetch(`https://api.github.com/repos/${n.username}/${n.repo}/actions/workflows/engine.yml/dispatches`, { method: "POST", headers: { "Authorization": `token ${n.token}`, "Accept": "application/vnd.github.v3+json" }, body: JSON.stringify({ ref: "main" }) }); }
                 
-                const cf = document.getElementById("cfDomain").value.trim(); if(cf) { db.ref('settings/domain').set(cf); setTimeout(() => testCloudflareStream(), 7000); } alert("✅ تم إطلاق القلب النابض، والعمال، والخزنة بنجاح!");
+                const cf = document.getElementById("cfDomain").value.trim(); if(cf) { db.ref('settings/domain').set(cf); setTimeout(() => testCloudflareStream(), 7000); } alert("✅ تم إطلاق المعمارية بنجاح!");
             } catch(e) { alert("خطأ أثناء الإطلاق: " + e.message); } finally { startBtn.innerHTML = originalText; startBtn.disabled = false; setTimeout(() => { isActionBusy = false; }, 4000); }
         }
 
-        // --- كود الإبادة الشاملة (Nuke) المعدل لاصطياد أشباح Stream-Worker و TimeShift- ---
+        // --- زر الإبادة الشاملة المحدث (يمسح كل ملفات البث لضمان عدم بقاء أي بث قديم) ---
         async function stopEngine() {
-            if(isActionBusy) return; if(!confirm("تحذير: سيتم إبادة كل مستودعات المشروع من جذورها في جميع حسابات كيتهاب المرتبطة لضمان مسح الأشباح! هل أنت متأكد؟")) return;
+            if(isActionBusy) return; if(!confirm("تحذير: سيتم إيقاف البث ومسح ملفاته من جميع مستودعات الخزنة والعمال لضمان توقفه تماماً! هل أنت متأكد؟")) return;
             isActionBusy = true; const stopBtn = document.getElementById("stopBtn"); const originalText = stopBtn.innerHTML; stopBtn.innerHTML = "<span>☢️</span> جاري الإبادة الشاملة..."; stopBtn.disabled = true;
             try { 
                 await db.ref('settings/stream/status').set("stopped"); 
-                const video = document.getElementById('previewPlayer'); video.pause(); video.src = ""; 
                 
                 let tokens = new Set();
                 Object.values(nodesMemory).forEach(n => { if(n.token) tokens.add(n.token); });
                 ['cmdToken', 'workerToken', 'vaultToken'].forEach(id => { let val = document.getElementById(id).value.trim(); if(val) tokens.add(val); });
 
+                // إبادة الملفات المادية من داخل المستودعات النشطة لضمان الموت الفوري للبث
                 for(let token of tokens) {
                     try {
                         let page = 1;
@@ -308,9 +298,19 @@
                             const repos = await res.json();
                             if(repos.length === 0) break;
                             for(let repo of repos) {
-                                // هنا التعديل: نمسح المستودعات التي تبدأ بـ TimeShift- أو Stream-
-                                if(repo.name.startsWith('TimeShift-') || repo.name.startsWith('Stream-')) {
-                                    await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}`, { method: "DELETE", headers: { "Authorization": `token ${token}` } });
+                                if(repo.name.startsWith('TimeShift') || repo.name.startsWith('Stream') || repo.name.startsWith('Vault')) {
+                                    // جلب محتوى مجلد live_stream لحذفه ليموت البث في جذوره
+                                    const contentsRes = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/contents/live_stream`, { headers: { "Authorization": `token ${token}` } });
+                                    if(contentsRes.ok) {
+                                        const files = await contentsRes.json();
+                                        for(let file of files) {
+                                            await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/contents/${file.path}`, {
+                                                method: "DELETE",
+                                                headers: { "Authorization": `token ${token}` },
+                                                body: JSON.stringify({ message: "Kill stream", sha: file.sha })
+                                            }).catch(()=>{});
+                                        }
+                                    }
                                 }
                             }
                             page++;
@@ -318,13 +318,12 @@
                     } catch(e) {}
                 }
                 
-                // استعادة زر "إعادة الزرع" بدلاً من الحذف النهائي من اللوحة
                 Object.keys(nodesMemory).forEach(key => {
                     db.ref(`nodes/${key}/status`).set('nuked');
                     db.ref(`nodes/${key}/isWorking`).set(false);
                 });
                 
-                alert("🛑 تم إبادة جميع المستودعات الشبحية من جذورها بنجاح تام. يمكنك إعادة الزرع الآن."); 
+                alert("🛑 تم إيقاف البث وإبادة جميع ملفاته بنجاح تام."); 
             } catch (error) { 
                 alert("خطأ: " + error.message); 
             } finally { 
@@ -379,16 +378,16 @@ jobs:
               ffmpeg -hide_banner -loglevel warning -user_agent "\$UA" \\
                 -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 5 -timeout 10000000 -thread_queue_size 512 \\
                 -i "\$SRC" -c copy -f hls \\
-                -hls_time 4 -hls_list_size 5 -hls_flags delete_segments+append_list+omit_endlist \\
+                -hls_time 3 -hls_list_size 4 -hls_flags delete_segments+append_list+omit_endlist \\
                 -hls_segment_filename "live_stream/seg_%04d.ts" live_stream/index.m3u8
               
-              sleep 3
+              sleep 2
             done
           ) &
           FFMPEG_PID=\$!
           
           while true; do
-            sleep 4
+            sleep 3
             if [ "\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')" == "stopped" ]; then kill -9 \$FFMPEG_PID 2>/dev/null; break; fi
             
             if ls live_stream/*.ts 1> /dev/null 2>&1; then
@@ -421,11 +420,11 @@ jobs:
             fi
           done
 `;
-                } else { wfContent = `name: Passive Node\non: workflow_dispatch\njobs:\n  run:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo "انا ${type === 'worker' ? 'عامل أتحمل الفيديوهات' : 'خزنة آمنة أوجه المشاهدين'}."\n`; }
+                } else { wfContent = `name: Passive Node\non: workflow_dispatch\njobs:\n  run:\n- runs-on: ubuntu-latest\n    steps:\n      - run: echo "Passive node active."\n`; }
                 const putRes = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/.github/workflows/engine.yml`, { method: "PUT", headers: { "Authorization": `token ${token}` }, body: JSON.stringify({ message: "init", content: btoa(unescape(encodeURIComponent(wfContent))) }) });
                 if (!putRes.ok) throw new Error("رفض الحفظ في كيتهاب.");
                 btn.innerText = "⏳ حفظ..."; await db.ref('nodes/' + username + '_' + randomId).set({ token: token, status: 'standby', type: type, apiUsage: 0, repo: repoName, username: username });
-                document.getElementById(inputId).value = ''; alert(`✅ تم زرع ${type==='commander'?'القلب':(type==='worker'?'العامل':'الخزنة')} بنجاح!`);
+                document.getElementById(inputId).value = ''; alert(`✅ تم زرع العقدة بنجاح!`);
             } catch (e) { alert("❌ فشل الزرع: " + e.message); } finally { btn.innerText = origText; btn.disabled = false; renderUI(); }
         }
     </script>
