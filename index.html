@@ -458,28 +458,21 @@ jobs:
           
           if [ -z "\$UA" ] || [ "\$UA" == "null" ]; then UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"; fi
           
-          (
-            while true; do
-              if [ "\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')" == "stopped" ]; then break; fi
-              
-              ffmpeg -hide_banner -loglevel warning -user_agent "\$UA" \\
-                -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 5 -timeout 10000000 -thread_queue_size 512 \\
-                -i "\$SRC" -c copy -f hls \\
-                -hls_time 3 -hls_list_size 4 -hls_flags delete_segments+append_list+omit_endlist \\
-                -hls_segment_filename "live_stream/seg_%04d.png" live_stream/index.m3u8
-              
-              sleep 2
-            done
-          ) &
+          ffmpeg -hide_banner -loglevel warning -user_agent "\$UA" \\
+            -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 5 -timeout 10000000 -thread_queue_size 512 \\
+            -i "\$SRC" -c copy -f hls \\
+            -hls_time 4 -hls_list_size 6 -hls_flags delete_segments+append_list+omit_endlist \\
+            -hls_segment_filename "live_stream/seg_%04d.png" live_stream/index.m3u8 > ffmpeg.log 2>&1 &
+          
           FFMPEG_PID=\$!
           
           while true; do
-            sleep 3
+            sleep 8
             if [ "\$(curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/settings/stream/status.json | tr -d '"')" == "stopped" ]; then kill -9 \$FFMPEG_PID 2>/dev/null; break; fi
             
             if ls live_stream/*.png 1> /dev/null 2>&1; then
               
-              rm -rf .git && git init -b main && git add live_stream/*.png .github/ && git commit -m "Workers Sync"
+              rm -rf .git && git init -b main && git add live_stream/*.png .github/ && git commit -m "Workers Sync [skip ci]"
               curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/nodes.json | jq -r 'to_entries[] | select(.value.status=="active" and .value.type=="worker") | "https://" + .value.token + "@github.com/" + .value.username + "/" + .value.repo + ".git"' > all_workers_git.txt
               PIDS=""
               while read -r URL; do if [ -n "\$URL" ]; then git push --force "\$URL" main & PIDS="\$PIDS \$!"; fi; done < all_workers_git.txt
@@ -499,7 +492,7 @@ jobs:
                   mv temp_index.m3u8 live_stream/index.m3u8
               fi
 
-              rm -rf .git && git init -b main && git add live_stream/index.m3u8 && git commit -m "Vault Sync"
+              rm -rf .git && git init -b main && git add live_stream/index.m3u8 && git commit -m "Vault Sync [skip ci]"
               curl -s https://floating-project-afc8f-default-rtdb.firebaseio.com/nodes.json | jq -r 'to_entries[] | select(.value.status=="active" and .value.type=="vault") | "https://" + .value.token + "@github.com/" + .value.username + "/" + .value.repo + ".git"' > all_vaults_git.txt
               PIDS=""
               while read -r URL; do if [ -n "\$URL" ]; then git push --force "\$URL" main & PIDS="\$PIDS \$!"; fi; done < all_vaults_git.txt
